@@ -1,0 +1,12 @@
+export { AggregateGradeArgs } from "./AggregateGradeArgs";
+export { CreateGradeArgs } from "./CreateGradeArgs";
+export { CreateManyGradeArgs } from "./CreateManyGradeArgs";
+export { DeleteGradeArgs } from "./DeleteGradeArgs";
+export { DeleteManyGradeArgs } from "./DeleteManyGradeArgs";
+export { FindFirstGradeArgs } from "./FindFirstGradeArgs";
+export { FindManyGradeArgs } from "./FindManyGradeArgs";
+export { FindUniqueGradeArgs } from "./FindUniqueGradeArgs";
+export { GroupByGradeArgs } from "./GroupByGradeArgs";
+export { UpdateGradeArgs } from "./UpdateGradeArgs";
+export { UpdateManyGradeArgs } from "./UpdateManyGradeArgs";
+export { UpsertGradeArgs } from "./UpsertGradeArgs";

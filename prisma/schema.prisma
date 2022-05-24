@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+generator typegraphql {
+    provider = "typegraphql-prisma"
+    output   = "../prisma/generated/type-graphql"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    ADMIN
+    USER
+    Student
+}
+
+model UserPassword {
+    id          String   @id
+    password    String
+    forceChange Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    user        User     @relation(fields: [id], references: [id])
+
+
+    @@map("user_passwords")
+}
+
+model RefreshToken {
+    id         String   @id @default(uuid())
+    label      String
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+    hash       String
+    valid      Boolean  @default(true)
+    expiration DateTime
+
+    // Relation fields
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+
+    @@map("refresh_tokens")
+}
+
+model User {
+    id             String         @id @default(uuid())
+    name           String
+    avatar         String?
+    email          String?        @unique
+    emailConfirmed Boolean        @default(false)
+    role           Role           @default(Student)
+    createdAt      DateTime       @default(now())
+    updatedAt      DateTime       @updatedAt
+    password       UserPassword?
+    profile        Profile?
+    tokens         RefreshToken[]
+
+    @@map("users")
+}
+
+model Profile {
+    id        String   @id
+    bio       String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    user      User     @relation(fields: [id], references: [id])
+    exams     Exam[]
+
+    // Relation fields
+    groupId String
+    group   Group  @relation(fields: [groupId], references: [id])
+
+
+    @@map("profiles")
+}
+
+model Grade {
+    id        String   @id @default(uuid())
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    groups    Group[]
+
+    @@map("grades")
+}
+
+model Group {
+    id        String    @id @default(uuid())
+    name      String
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    startAt   String?
+    endAt     String?
+    profiles  Profile[]
+
+    // Relation fields
+    gradeId String
+    grade   Grade? @relation(fields: [gradeId], references: [id])
+
+    @@map("groups")
+}
+
+model Exam {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    score     Float    @default(0.0)
+    note      String?
+
+    // Relation fields
+    profileId String
+    Profile   Profile? @relation(fields: [profileId], references: [id])
+    @@map("exams")
+}
