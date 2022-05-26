@@ -2,6 +2,7 @@ import * as TypeGraphQL from "type-graphql";
 import * as GraphQLScalars from "graphql-scalars";
 import { Prisma } from "@prisma/client";
 import { DecimalJSScalar } from "../../scalars";
+import { AttendanceListRelationFilter } from "../inputs/AttendanceListRelationFilter";
 import { DateTimeFilter } from "../inputs/DateTimeFilter";
 import { ExamListRelationFilter } from "../inputs/ExamListRelationFilter";
 import { GroupRelationFilter } from "../inputs/GroupRelationFilter";
@@ -57,6 +58,11 @@ export class ProfileWhereInput {
     nullable: true
   })
   exams?: ExamListRelationFilter | undefined;
+
+  @TypeGraphQL.Field(_type => AttendanceListRelationFilter, {
+    nullable: true
+  })
+  attendances?: AttendanceListRelationFilter | undefined;
 
   @TypeGraphQL.Field(_type => StringFilter, {
     nullable: true

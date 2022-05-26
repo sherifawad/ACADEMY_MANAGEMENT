@@ -2,6 +2,16 @@
 ### Do not make changes to this file directly
 
 
+type Attendance {
+  endAt: DateTime
+  group: Group
+  id: String
+  note: String
+  profile: Profile
+  profileId: String
+  startAt: DateTime
+}
+
 """Payload containing auth token"""
 type AuthPayload {
   token: String!
@@ -32,35 +42,40 @@ type Grade {
 }
 
 type Group {
+  attendance: [Attendance]
   createdAt: DateTime
-  endAt: Time
+  endAt: String
   grade: Grade
-  groups: [Group]
   id: String
   name: String
-  startAt: Time
+  profiles: [Profile]
+  startAt: String
   updatedAt: DateTime
 }
 
 type Mutation {
+  createAttendance(endAt: DateTime, note: String, profileId: String!, startAt: DateTime!): Attendance!
   createExam(email: String, image: String, name: String!): Exam!
   createGrade(email: String, image: String, name: String!): Grade!
   createGroup(email: String, image: String, name: String!): Group!
-  createProfile(bio: String!): Profile!
+  createProfile(bio: String, id: String!): Profile!
+  deleteAttendance(id: String!): Attendance!
   deleteExam(id: String!): Exam!
   deleteGrade(id: String!): Grade!
   deleteGroup(id: String!): Group!
   deleteProfile(id: String!): Profile!
-  updateExam(email: String, id: String, image: String, name: String): Exam!
-  updateGrade(email: String, id: String, image: String, name: String): Grade!
-  updateGroup(email: String, id: String, image: String, name: String): Group!
-  updateProfile(bio: String): Profile!
-  updateUser(avatar: String, email: String, id: String, name: String, password: String): User!
+  updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
+  updateExam(email: String, id: String!, image: String, name: String): Exam!
+  updateGrade(email: String, id: String!, image: String, name: String): Grade!
+  updateGroup(email: String, id: String!, image: String, name: String): Group!
+  updateProfile(bio: String, id: String!): Profile!
+  updateUser(avatar: String, email: String, id: String!, name: String, password: String): User!
   userLogin(email: String!, password: String!): AuthPayload!
   userRegister(avatar: String, email: String!, name: String, password: String!): User!
 }
 
 type Profile {
+  attendances: [Attendance]
   bio: String
   createdAt: DateTime
   exams: [Exam]
@@ -71,6 +86,8 @@ type Profile {
 }
 
 type Query {
+  AttendanceInDate(date: DateTime!, id: String!): Attendance!
+  Attendances(id: String!): [Attendance]!
   Exam(id: String!): Exam!
   Exams: [Exam]!
   Grade(id: String!): Grade!

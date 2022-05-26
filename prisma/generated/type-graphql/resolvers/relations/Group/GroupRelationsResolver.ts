@@ -1,7 +1,9 @@
 import * as TypeGraphQL from "type-graphql";
+import { Attendance } from "../../../models/Attendance";
 import { Grade } from "../../../models/Grade";
 import { Group } from "../../../models/Group";
 import { Profile } from "../../../models/Profile";
+import { GroupAttendanceArgs } from "./args/GroupAttendanceArgs";
 import { GroupProfilesArgs } from "./args/GroupProfilesArgs";
 import { transformFields, getPrismaFromContext, transformCountFieldIntoSelectRelationsCount } from "../../../helpers";
 
@@ -16,6 +18,17 @@ export class GroupRelationsResolver {
         id: group.id,
       },
     }).profiles(args);
+  }
+
+  @TypeGraphQL.FieldResolver(_type => [Attendance], {
+    nullable: false
+  })
+  async attendance(@TypeGraphQL.Root() group: Group, @TypeGraphQL.Ctx() ctx: any, @TypeGraphQL.Args() args: GroupAttendanceArgs): Promise<Attendance[]> {
+    return getPrismaFromContext(ctx).group.findUnique({
+      where: {
+        id: group.id,
+      },
+    }).attendance(args);
   }
 
   @TypeGraphQL.FieldResolver(_type => Grade, {

@@ -89,7 +89,7 @@ export const UpdateExamMutation = extendType({
 		t.nonNull.field("updateExam", {
 			type: "Exam",
 			args: {
-				id: stringArg(),
+				id: nonNull(stringArg()),
 				name: stringArg(),
 				email: stringArg(),
 				image: stringArg(),

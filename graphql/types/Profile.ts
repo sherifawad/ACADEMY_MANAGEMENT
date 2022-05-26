@@ -1,5 +1,6 @@
 import { Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable } from "nexus";
+import { Attendance } from "./Attendance";
 import { Exam } from "./Exam";
 import { User } from "./User";
 
@@ -33,6 +34,18 @@ export const Profile = objectType({
 						},
 					})
 					.users();
+			},
+		});
+		t.list.field("attendances", {
+			type: Attendance,
+			async resolve(_parent, _args, ctx) {
+				return await ctx.prisma.profile
+					.findUnique({
+						where: {
+							id: _parent.id,
+						},
+					})
+					.attendances();
 			},
 		});
 		t.field("group", {
@@ -79,6 +92,27 @@ export const ProfileByIdQuery = extendType({
 	},
 });
 
+//get user attendance
+export const ProfileAttendancesQuery = extendType({
+	type: "Query",
+	definition(t) {
+		t.nonNull.list.field("Attendances", {
+			type: "Attendance",
+			args: { id: nonNull(stringArg()) },
+
+			resolve: async (_parent, { id }, { prisma, user }) => {
+				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
+
+				return await prisma.attendance
+					.findMany({
+						where: { profileId: id },
+					})
+					.attendances();
+			},
+		});
+	},
+});
+
 //create Profile
 export const createProfileMutation = extendType({
 	type: "Mutation",
@@ -86,12 +120,14 @@ export const createProfileMutation = extendType({
 		t.nonNull.field("createProfile", {
 			type: "Profile",
 			args: {
-				bio: nonNull(stringArg()),
+				id: nonNull(stringArg()),
+				bio: stringArg(),
 			},
-			resolve: async ({ id }, { bio }, { prisma, user }) => {
-				if (!user || user.id !== id) return null;
+			resolve: async (_parent, { id, bio }, { prisma, user }) => {
+				if (!user || user.id !== Role.USER || user.role !== Role.ADMIN) return null;
 
 				const newProfile = {
+					id,
 					bio,
 				};
 				return await prisma.profile.create({
@@ -109,6 +145,7 @@ export const UpdateProfileMutation = extendType({
 		t.nonNull.field("updateProfile", {
 			type: "Profile",
 			args: {
+				id: nonNull(stringArg()),
 				bio: stringArg(),
 			},
 			resolve: async (_parent, { id, bio }, { prisma, user }) => {

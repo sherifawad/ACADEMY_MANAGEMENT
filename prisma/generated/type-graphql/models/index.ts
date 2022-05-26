@@ -1,3 +1,4 @@
+export { Attendance } from "./Attendance";
 export { Exam } from "./Exam";
 export { Grade } from "./Grade";
 export { Group } from "./Group";

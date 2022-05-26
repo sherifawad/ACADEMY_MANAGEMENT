@@ -2,6 +2,7 @@ import * as TypeGraphQL from "type-graphql";
 import * as GraphQLScalars from "graphql-scalars";
 import { Prisma } from "@prisma/client";
 import { DecimalJSScalar } from "../../scalars";
+import { AttendanceCreateNestedManyWithoutGroupInput } from "../inputs/AttendanceCreateNestedManyWithoutGroupInput";
 import { GradeCreateNestedOneWithoutGroupsInput } from "../inputs/GradeCreateNestedOneWithoutGroupsInput";
 import { ProfileCreateNestedManyWithoutGroupInput } from "../inputs/ProfileCreateNestedManyWithoutGroupInput";
 
@@ -43,6 +44,11 @@ export class GroupCreateInput {
     nullable: true
   })
   profiles?: ProfileCreateNestedManyWithoutGroupInput | undefined;
+
+  @TypeGraphQL.Field(_type => AttendanceCreateNestedManyWithoutGroupInput, {
+    nullable: true
+  })
+  attendance?: AttendanceCreateNestedManyWithoutGroupInput | undefined;
 
   @TypeGraphQL.Field(_type => GradeCreateNestedOneWithoutGroupsInput, {
     nullable: true

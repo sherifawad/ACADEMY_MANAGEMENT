@@ -1,5 +1,7 @@
 import { Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable } from "nexus";
+import { Attendance } from "./Attendance";
+import { Profile } from "./Profile";
 
 //generates Group type at schema.graphql
 export const Group = objectType({
@@ -9,10 +11,10 @@ export const Group = objectType({
 		t.string("name");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
-		t.field("startAt", { type: "Time" });
-		t.field("endAt", { type: "Time" });
-		t.list.field("groups", {
-			type: Group,
+		t.string("startAt");
+		t.string("endAt");
+		t.list.field("profiles", {
+			type: Profile,
 			async resolve(_parent, _args, ctx) {
 				return await ctx.prisma.grade
 					.findUnique({
@@ -20,7 +22,19 @@ export const Group = objectType({
 							id: _parent.id,
 						},
 					})
-					.groups();
+					.profiles();
+			},
+		});
+		t.list.field("attendance", {
+			type: Attendance,
+			async resolve(_parent, _args, ctx) {
+				return await ctx.prisma.grade
+					.findUnique({
+						where: {
+							id: _parent.id,
+						},
+					})
+					.attendance();
 			},
 		});
 		t.field("grade", {
@@ -103,7 +117,7 @@ export const UpdateGroupMutation = extendType({
 		t.nonNull.field("updateGroup", {
 			type: "Group",
 			args: {
-				id: stringArg(),
+				id: nonNull(stringArg()),
 				name: stringArg(),
 				email: stringArg(),
 				image: stringArg(),

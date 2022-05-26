@@ -2,6 +2,7 @@ import * as TypeGraphQL from "type-graphql";
 import * as GraphQLScalars from "graphql-scalars";
 import { Prisma } from "@prisma/client";
 import { DecimalJSScalar } from "../scalars";
+import { Attendance } from "../models/Attendance";
 import { Grade } from "../models/Grade";
 import { Profile } from "../models/Profile";
 import { GroupCount } from "../resolvers/outputs/GroupCount";
@@ -41,6 +42,8 @@ export class Group {
   endAt?: string | null;
 
   profiles?: Profile[];
+
+  attendance?: Attendance[];
 
   @TypeGraphQL.Field(_type => String, {
     nullable: false

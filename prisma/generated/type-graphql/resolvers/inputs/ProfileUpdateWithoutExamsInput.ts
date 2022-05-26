@@ -2,6 +2,7 @@ import * as TypeGraphQL from "type-graphql";
 import * as GraphQLScalars from "graphql-scalars";
 import { Prisma } from "@prisma/client";
 import { DecimalJSScalar } from "../../scalars";
+import { AttendanceUpdateManyWithoutProfileInput } from "../inputs/AttendanceUpdateManyWithoutProfileInput";
 import { DateTimeFieldUpdateOperationsInput } from "../inputs/DateTimeFieldUpdateOperationsInput";
 import { GroupUpdateOneRequiredWithoutProfilesInput } from "../inputs/GroupUpdateOneRequiredWithoutProfilesInput";
 import { NullableStringFieldUpdateOperationsInput } from "../inputs/NullableStringFieldUpdateOperationsInput";
@@ -30,6 +31,11 @@ export class ProfileUpdateWithoutExamsInput {
     nullable: true
   })
   user?: UserUpdateOneRequiredWithoutProfileInput | undefined;
+
+  @TypeGraphQL.Field(_type => AttendanceUpdateManyWithoutProfileInput, {
+    nullable: true
+  })
+  attendances?: AttendanceUpdateManyWithoutProfileInput | undefined;
 
   @TypeGraphQL.Field(_type => GroupUpdateOneRequiredWithoutProfilesInput, {
     nullable: true

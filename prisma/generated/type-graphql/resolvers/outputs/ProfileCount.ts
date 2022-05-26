@@ -11,4 +11,9 @@ export class ProfileCount {
     nullable: false
   })
   exams!: number;
+
+  @TypeGraphQL.Field(_type => TypeGraphQL.Int, {
+    nullable: false
+  })
+  attendances!: number;
 }

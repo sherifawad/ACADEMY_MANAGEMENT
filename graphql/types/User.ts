@@ -1,4 +1,4 @@
-import { RefreshToken, User as prismaUser } from "@prisma/client";
+import { RefreshToken, Role, User as prismaUser } from "@prisma/client";
 import { hashPassword, verifyPassword } from "graphql/utils/crypto";
 import { sign } from "jsonwebtoken";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, enumType } from "nexus";
@@ -41,7 +41,11 @@ export const UsersQuery = extendType({
 	definition(t) {
 		t.nonNull.list.field("Users", {
 			type: "User",
-			resolve: async (_parent, _args, { prisma }) => await prisma.user.findMany(),
+			resolve: async (_parent, _args, { prisma, user }) => {
+				if (!user || user.role !== Role.ADMIN) return null;
+
+				await prisma.user.findMany();
+			},
 		});
 	},
 });
@@ -142,7 +146,7 @@ export const UpdateUserMutation = extendType({
 		t.nonNull.field("updateUser", {
 			type: "User",
 			args: {
-				id: stringArg(),
+				id: nonNull(stringArg()),
 				name: stringArg(),
 				email: stringArg(),
 				avatar: stringArg(),
@@ -202,6 +206,8 @@ export const userLogin = extendType({
 				password: nonNull(stringArg()),
 			},
 			resolve: async (_, { email, password }, ctx) => {
+				const { res, req } = ctx;
+				console.log("🚀 ~ file: User.ts ~ line 209 ~ resolve: ~ ctx", ctx);
 				const user = await GetUserByEmail(ctx, email);
 
 				if (user == null || !(await ValidateUserCredentials(ctx, user, password))) {
@@ -217,9 +223,9 @@ export const userLogin = extendType({
 					secure: true,
 					maxAge: 60 * 60 * 24 * 7 * 2, // 2 weeks
 				});
-
-				console.log(cookieStr);
-				ctx.res.setHeader("Set-Cookie", cookieStr);
+				if (ctx.res) {
+					ctx.res.setHeader("Set-Cookie", cookieStr);
+				}
 
 				return {
 					token,

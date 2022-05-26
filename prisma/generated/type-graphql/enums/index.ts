@@ -1,3 +1,4 @@
+export { AttendanceScalarFieldEnum } from "./AttendanceScalarFieldEnum";
 export { ExamScalarFieldEnum } from "./ExamScalarFieldEnum";
 export { GradeScalarFieldEnum } from "./GradeScalarFieldEnum";
 export { GroupScalarFieldEnum } from "./GroupScalarFieldEnum";

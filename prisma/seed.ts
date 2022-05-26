@@ -7,6 +7,7 @@ async function seed() {
 	await client.refreshToken.deleteMany();
 	await client.userPassword.deleteMany();
 	await client.exam.deleteMany();
+	await client.attendance.deleteMany();
 	await client.profile.deleteMany();
 	await client.user.deleteMany();
 	await client.group.deleteMany();
@@ -89,6 +90,16 @@ async function seed() {
 		data: {
 			profileId: profile.id,
 			score: 55.5,
+		},
+	});
+
+	const attendance = await client.attendance.create({
+		data: {
+			profileId: profile.id,
+			groupId: group.id,
+			startAt: new Date(),
+			endAt: new Date(new Date().setHours(new Date().getHours() + 2)),
+			note: "seeded",
 		},
 	});
 }

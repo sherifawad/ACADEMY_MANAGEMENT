@@ -1,3 +1,15 @@
+export { FindUniqueAttendanceResolver } from "./Attendance/FindUniqueAttendanceResolver";
+export { FindFirstAttendanceResolver } from "./Attendance/FindFirstAttendanceResolver";
+export { FindManyAttendanceResolver } from "./Attendance/FindManyAttendanceResolver";
+export { CreateAttendanceResolver } from "./Attendance/CreateAttendanceResolver";
+export { CreateManyAttendanceResolver } from "./Attendance/CreateManyAttendanceResolver";
+export { DeleteAttendanceResolver } from "./Attendance/DeleteAttendanceResolver";
+export { UpdateAttendanceResolver } from "./Attendance/UpdateAttendanceResolver";
+export { DeleteManyAttendanceResolver } from "./Attendance/DeleteManyAttendanceResolver";
+export { UpdateManyAttendanceResolver } from "./Attendance/UpdateManyAttendanceResolver";
+export { UpsertAttendanceResolver } from "./Attendance/UpsertAttendanceResolver";
+export { AggregateAttendanceResolver } from "./Attendance/AggregateAttendanceResolver";
+export { GroupByAttendanceResolver } from "./Attendance/GroupByAttendanceResolver";
 export { FindUniqueExamResolver } from "./Exam/FindUniqueExamResolver";
 export { FindFirstExamResolver } from "./Exam/FindFirstExamResolver";
 export { FindManyExamResolver } from "./Exam/FindManyExamResolver";

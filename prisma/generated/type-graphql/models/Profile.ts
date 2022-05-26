@@ -2,6 +2,7 @@ import * as TypeGraphQL from "type-graphql";
 import * as GraphQLScalars from "graphql-scalars";
 import { Prisma } from "@prisma/client";
 import { DecimalJSScalar } from "../scalars";
+import { Attendance } from "../models/Attendance";
 import { Exam } from "../models/Exam";
 import { Group } from "../models/Group";
 import { User } from "../models/User";
@@ -34,6 +35,8 @@ export class Profile {
   user?: User;
 
   exams?: Exam[];
+
+  attendances?: Attendance[];
 
   @TypeGraphQL.Field(_type => String, {
     nullable: false

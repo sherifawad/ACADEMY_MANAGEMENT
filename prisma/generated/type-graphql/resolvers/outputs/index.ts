@@ -1,4 +1,5 @@
 export { AffectedRowsOutput } from "./AffectedRowsOutput";
+export { AggregateAttendance } from "./AggregateAttendance";
 export { AggregateExam } from "./AggregateExam";
 export { AggregateGrade } from "./AggregateGrade";
 export { AggregateGroup } from "./AggregateGroup";
@@ -6,6 +7,10 @@ export { AggregateProfile } from "./AggregateProfile";
 export { AggregateRefreshToken } from "./AggregateRefreshToken";
 export { AggregateUser } from "./AggregateUser";
 export { AggregateUserPassword } from "./AggregateUserPassword";
+export { AttendanceCountAggregate } from "./AttendanceCountAggregate";
+export { AttendanceGroupBy } from "./AttendanceGroupBy";
+export { AttendanceMaxAggregate } from "./AttendanceMaxAggregate";
+export { AttendanceMinAggregate } from "./AttendanceMinAggregate";
 export { ExamAvgAggregate } from "./ExamAvgAggregate";
 export { ExamCountAggregate } from "./ExamCountAggregate";
 export { ExamGroupBy } from "./ExamGroupBy";

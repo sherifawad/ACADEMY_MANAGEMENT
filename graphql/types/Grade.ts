@@ -104,7 +104,7 @@ export const UpdateGradeMutation = extendType({
 		t.nonNull.field("updateGrade", {
 			type: "Grade",
 			args: {
-				id: stringArg(),
+				id: nonNull(stringArg()),
 				name: stringArg(),
 				email: stringArg(),
 				image: stringArg(),
