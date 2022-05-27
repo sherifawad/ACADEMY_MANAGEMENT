@@ -6,6 +6,7 @@ export enum ExamScalarFieldEnum {
   updatedAt = "updatedAt",
   score = "score",
   note = "note",
+  date = "date",
   profileId = "profileId"
 }
 TypeGraphQL.registerEnumType(ExamScalarFieldEnum, {

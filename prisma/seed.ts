@@ -20,6 +20,7 @@ async function seed() {
 		data: {
 			email: "user@user.com",
 			name: "user",
+			role: Role.USER,
 			password: {
 				create: {
 					password: hashedPassword,
@@ -90,6 +91,7 @@ async function seed() {
 		data: {
 			profileId: profile.id,
 			score: 55.5,
+			date: new Date(),
 		},
 	});
 

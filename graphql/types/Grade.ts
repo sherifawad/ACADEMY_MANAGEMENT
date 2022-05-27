@@ -78,16 +78,12 @@ export const createGradeMutation = extendType({
 			type: "Grade",
 			args: {
 				name: nonNull(stringArg()),
-				email: nullable(stringArg()),
-				image: nullable(stringArg()),
 			},
-			resolve: async (_parent, { name, image, email }, { prisma, user }) => {
+			resolve: async (_parent, { name }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const newGrade = {
 					name,
-					image,
-					email,
 				};
 				return await prisma.Grade.create({
 					data: newGrade,
@@ -105,17 +101,13 @@ export const UpdateGradeMutation = extendType({
 			type: "Grade",
 			args: {
 				id: nonNull(stringArg()),
-				name: stringArg(),
-				email: stringArg(),
-				image: stringArg(),
+				name: nonNull(stringArg()),
 			},
-			resolve: async (_parent, { id, name, image, email }, { prisma, user }) => {
+			resolve: async (_parent, { id, name }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const updateGrade = {
 					name,
-					image,
-					email,
 				};
 				return await prisma.Grade.update({
 					where: { id },

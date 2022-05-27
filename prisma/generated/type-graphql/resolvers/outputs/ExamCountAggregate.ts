@@ -35,6 +35,11 @@ export class ExamCountAggregate {
   @TypeGraphQL.Field(_type => TypeGraphQL.Int, {
     nullable: false
   })
+  date!: number;
+
+  @TypeGraphQL.Field(_type => TypeGraphQL.Int, {
+    nullable: false
+  })
   profileId!: number;
 
   @TypeGraphQL.Field(_type => TypeGraphQL.Int, {

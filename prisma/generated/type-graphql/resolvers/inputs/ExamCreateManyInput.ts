@@ -32,6 +32,11 @@ export class ExamCreateManyInput {
   })
   note?: string | undefined;
 
+  @TypeGraphQL.Field(_type => Date, {
+    nullable: false
+  })
+  date!: Date;
+
   @TypeGraphQL.Field(_type => String, {
     nullable: false
   })

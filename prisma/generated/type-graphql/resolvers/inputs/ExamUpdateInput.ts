@@ -37,6 +37,11 @@ export class ExamUpdateInput {
   })
   note?: NullableStringFieldUpdateOperationsInput | undefined;
 
+  @TypeGraphQL.Field(_type => DateTimeFieldUpdateOperationsInput, {
+    nullable: true
+  })
+  date?: DateTimeFieldUpdateOperationsInput | undefined;
+
   @TypeGraphQL.Field(_type => ProfileUpdateOneWithoutExamsInput, {
     nullable: true
   })

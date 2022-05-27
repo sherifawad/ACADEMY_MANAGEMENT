@@ -33,6 +33,11 @@ export class Exam {
   })
   note?: string | null;
 
+  @TypeGraphQL.Field(_type => Date, {
+    nullable: false
+  })
+  date!: Date;
+
   @TypeGraphQL.Field(_type => String, {
     nullable: false
   })

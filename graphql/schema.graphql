@@ -25,6 +25,7 @@ scalar DateTime
 
 type Exam {
   createdAt: DateTime
+  date: DateTime
   id: String
   note: String
   profile: Profile
@@ -55,9 +56,9 @@ type Group {
 
 type Mutation {
   createAttendance(endAt: DateTime, note: String, profileId: String!, startAt: DateTime!): Attendance!
-  createExam(email: String, image: String, name: String!): Exam!
-  createGrade(email: String, image: String, name: String!): Grade!
-  createGroup(email: String, image: String, name: String!): Group!
+  createExam(date: DateTime!, note: String, score: String!): Exam!
+  createGrade(name: String!): Grade!
+  createGroup(endAt: DateTime, name: String!, startAt: DateTime): Group!
   createProfile(bio: String, id: String!): Profile!
   deleteAttendance(id: String!): Attendance!
   deleteExam(id: String!): Exam!
@@ -65,9 +66,9 @@ type Mutation {
   deleteGroup(id: String!): Group!
   deleteProfile(id: String!): Profile!
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
-  updateExam(email: String, id: String!, image: String, name: String): Exam!
-  updateGrade(email: String, id: String!, image: String, name: String): Grade!
-  updateGroup(email: String, id: String!, image: String, name: String): Group!
+  updateExam(date: DateTime, id: String!, note: String, score: String): Exam!
+  updateGrade(id: String!, name: String!): Grade!
+  updateGroup(endAt: DateTime, id: String!, name: String, startAt: DateTime): Group!
   updateProfile(bio: String, id: String!): Profile!
   updateUser(avatar: String, email: String, id: String!, name: String, password: String): User!
   userLogin(email: String!, password: String!): AuthPayload!

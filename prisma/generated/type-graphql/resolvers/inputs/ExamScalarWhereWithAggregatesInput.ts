@@ -51,6 +51,11 @@ export class ExamScalarWhereWithAggregatesInput {
   })
   note?: StringNullableWithAggregatesFilter | undefined;
 
+  @TypeGraphQL.Field(_type => DateTimeWithAggregatesFilter, {
+    nullable: true
+  })
+  date?: DateTimeWithAggregatesFilter | undefined;
+
   @TypeGraphQL.Field(_type => StringWithAggregatesFilter, {
     nullable: true
   })

@@ -116,6 +116,7 @@ model Exam {
     updatedAt DateTime @updatedAt
     score     Float    @default(0.0)
     note      String?
+    date      DateTime
 
     // Relation fields
     profileId String

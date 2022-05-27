@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { nonNull, objectType, stringArg, extendType, intArg, nullable } from "nexus";
+import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg } from "nexus";
 
 //generates Exam type at schema.graphql
 export const Exam = objectType({
@@ -10,6 +10,7 @@ export const Exam = objectType({
 		t.float("score");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
+		t.field("date", { type: "DateTime" });
 		t.field("profile", {
 			type: "Profile",
 			resolve: async ({ id }, _, { prisma }) => {
@@ -63,17 +64,17 @@ export const createExamMutation = extendType({
 		t.nonNull.field("createExam", {
 			type: "Exam",
 			args: {
-				name: nonNull(stringArg()),
-				email: nullable(stringArg()),
-				image: nullable(stringArg()),
+				score: nonNull(stringArg()),
+				date: nonNull(arg({ type: "DateTime" })),
+				note: nullable(stringArg()),
 			},
-			resolve: async (_parent, { name, image, email }, { prisma, user }) => {
+			resolve: async (_parent, { score, date, note }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const newExam = {
-					name,
-					image,
-					email,
+					score,
+					date,
+					note,
 				};
 				return await prisma.exam.create({
 					data: newExam,
@@ -91,17 +92,17 @@ export const UpdateExamMutation = extendType({
 			type: "Exam",
 			args: {
 				id: nonNull(stringArg()),
-				name: stringArg(),
-				email: stringArg(),
-				image: stringArg(),
+				score: stringArg(),
+				date: arg({ type: "DateTime" }),
+				note: stringArg(),
 			},
-			resolve: async (_parent, { id, name, image, email }, { prisma, user }) => {
+			resolve: async (_parent, { id, score, date, note }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const updateExam = {
-					name,
-					image,
-					email,
+					score,
+					date,
+					note,
 				};
 				return await prisma.exam.update({
 					where: { id },

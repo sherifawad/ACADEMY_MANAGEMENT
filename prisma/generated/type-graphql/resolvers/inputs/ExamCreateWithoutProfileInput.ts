@@ -31,4 +31,9 @@ export class ExamCreateWithoutProfileInput {
     nullable: true
   })
   note?: string | undefined;
+
+  @TypeGraphQL.Field(_type => Date, {
+    nullable: false
+  })
+  date!: Date;
 }

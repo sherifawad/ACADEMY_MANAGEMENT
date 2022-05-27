@@ -33,6 +33,11 @@ export class ExamCreateInput {
   })
   note?: string | undefined;
 
+  @TypeGraphQL.Field(_type => Date, {
+    nullable: false
+  })
+  date!: Date;
+
   @TypeGraphQL.Field(_type => ProfileCreateNestedOneWithoutExamsInput, {
     nullable: true
   })

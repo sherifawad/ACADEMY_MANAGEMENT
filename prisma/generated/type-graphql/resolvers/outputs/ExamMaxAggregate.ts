@@ -32,6 +32,11 @@ export class ExamMaxAggregate {
   })
   note!: string | null;
 
+  @TypeGraphQL.Field(_type => Date, {
+    nullable: true
+  })
+  date!: Date | null;
+
   @TypeGraphQL.Field(_type => String, {
     nullable: true
   })

@@ -52,6 +52,11 @@ export class ExamWhereInput {
   })
   note?: StringNullableFilter | undefined;
 
+  @TypeGraphQL.Field(_type => DateTimeFilter, {
+    nullable: true
+  })
+  date?: DateTimeFilter | undefined;
+
   @TypeGraphQL.Field(_type => StringFilter, {
     nullable: true
   })

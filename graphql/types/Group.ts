@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { nonNull, objectType, stringArg, extendType, intArg, nullable } from "nexus";
+import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg } from "nexus";
 import { Attendance } from "./Attendance";
 import { Profile } from "./Profile";
 
@@ -91,16 +91,16 @@ export const createGroupMutation = extendType({
 			type: "Group",
 			args: {
 				name: nonNull(stringArg()),
-				email: nullable(stringArg()),
-				image: nullable(stringArg()),
+				startAt: nullable(arg({ type: "DateTime" })),
+				endAt: nullable(arg({ type: "DateTime" })),
 			},
-			resolve: async (_parent, { name, image, email }, { prisma, user }) => {
+			resolve: async (_parent, { name, startAt, endAt }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const newGroup = {
 					name,
-					image,
-					email,
+					startAt,
+					endAt,
 				};
 				return await prisma.Group.create({
 					data: newGroup,
@@ -119,16 +119,16 @@ export const UpdateGroupMutation = extendType({
 			args: {
 				id: nonNull(stringArg()),
 				name: stringArg(),
-				email: stringArg(),
-				image: stringArg(),
+				startAt: arg({ type: "DateTime" }),
+				endAt: arg({ type: "DateTime" }),
 			},
-			resolve: async (_parent, { id, name, image, email }, { prisma, user }) => {
+			resolve: async (_parent, { id, name, startAt, endAt }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const updateGroup = {
 					name,
-					image,
-					email,
+					startAt,
+					endAt,
 				};
 				return await prisma.Group.update({
 					where: { id },

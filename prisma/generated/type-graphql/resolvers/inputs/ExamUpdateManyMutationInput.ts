@@ -35,4 +35,9 @@ export class ExamUpdateManyMutationInput {
     nullable: true
   })
   note?: NullableStringFieldUpdateOperationsInput | undefined;
+
+  @TypeGraphQL.Field(_type => DateTimeFieldUpdateOperationsInput, {
+    nullable: true
+  })
+  date?: DateTimeFieldUpdateOperationsInput | undefined;
 }
