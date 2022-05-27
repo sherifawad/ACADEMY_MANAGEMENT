@@ -57,7 +57,7 @@ export const GroupsQuery = extendType({
 		t.nonNull.list.field("Groups", {
 			type: "Group",
 			resolve: async (_parent, _args, { prisma, user }) => {
-				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				return await prisma.Group.findMany();
 			},
@@ -73,7 +73,7 @@ export const GroupByIdQuery = extendType({
 			type: "Group",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				return await prisma.Group.findUnique({
 					where: { id },

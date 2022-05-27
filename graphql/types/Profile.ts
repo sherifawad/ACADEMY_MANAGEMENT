@@ -83,7 +83,7 @@ export const ProfileByIdQuery = extendType({
 			type: "Profile",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
+				if (!user || (user.id !== id && user.role !== Role.ADMIN)) return null;
 				return await prisma.profile.findUnique({
 					where: { id },
 				});
@@ -101,7 +101,7 @@ export const ProfileAttendancesQuery = extendType({
 			args: { id: nonNull(stringArg()) },
 
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				return await prisma.attendance
 					.findMany({
@@ -124,7 +124,7 @@ export const createProfileMutation = extendType({
 				bio: stringArg(),
 			},
 			resolve: async (_parent, { id, bio }, { prisma, user }) => {
-				if (!user || user.id !== Role.USER || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				const newProfile = {
 					id,
@@ -172,10 +172,10 @@ export const DeleteProfileMutation = extendType({
 			args: {
 				id: nonNull(stringArg()),
 			},
-			resolve(_parent, { id }, { prisma, user }) {
+			async resolve(_parent, { id }, { prisma, user }) {
 				if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
 
-				return prisma.profile.delete({
+				return await prisma.profile.delete({
 					where: { id },
 				});
 			},

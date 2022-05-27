@@ -45,7 +45,7 @@ export const GradesQuery = extendType({
 		t.nonNull.list.field("Grades", {
 			type: "Grade",
 			resolve: async (_parent, _args, { prisma, user }) => {
-				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 				return await prisma.Grade.findMany();
 			},
 		});
@@ -60,7 +60,7 @@ export const GradeByIdQuery = extendType({
 			type: "Grade",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				return await prisma.Grade.findUnique({
 					where: { id },

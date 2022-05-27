@@ -1,7 +1,7 @@
 import { PrismaClient, User } from "@prisma/client";
 import { MicroRequest } from "apollo-server-micro/dist/types";
 import { DateTimeResolver, TimeResolver } from "graphql-scalars";
-import { IncomingMessage, ServerResponse } from "http";
+import { ServerResponse } from "http";
 import { NextApiRequest, NextApiResponse } from "next";
 import { asNexusMethod, enumType } from "nexus";
 
@@ -26,8 +26,8 @@ export const Time = asNexusMethod(TimeResolver, "date");
 
 // export type request = { req }: { req: NextApiRequest }
 export type Context = {
-	req: NextApiRequest;
-	res: NextApiResponse;
+	req: NextApiRequest | MicroRequest;
+	res: NextApiResponse | ServerResponse;
 	prisma: PrismaClient;
 	user: User | null;
 };

@@ -30,8 +30,9 @@ export const ExamsQuery = extendType({
 		t.nonNull.list.field("Exams", {
 			type: "Exam",
 			resolve: async (_parent, _args, { prisma, user }) => {
-				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
-				await prisma.Exam.findMany();
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+
+				return await prisma.exam.findMany();
 			},
 		});
 	},
@@ -45,9 +46,9 @@ export const ExamByIdQuery = extendType({
 			type: "Exam",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
-				await prisma.Exam.findUnique({
+				return await prisma.exam.findUnique({
 					where: { id },
 				});
 			},
@@ -74,7 +75,7 @@ export const createExamMutation = extendType({
 					image,
 					email,
 				};
-				return await prisma.Exam.create({
+				return await prisma.exam.create({
 					data: newExam,
 				});
 			},
@@ -102,7 +103,7 @@ export const UpdateExamMutation = extendType({
 					image,
 					email,
 				};
-				return await prisma.Exam.update({
+				return await prisma.exam.update({
 					where: { id },
 					data: { ...updateExam },
 				});
@@ -120,10 +121,10 @@ export const DeleteExamMutation = extendType({
 			args: {
 				id: nonNull(stringArg()),
 			},
-			resolve(_parent, { id }, { prisma, user }) {
+			async resolve(_parent, { id }, { prisma, user }) {
 				if (!user || user.role !== Role.ADMIN) return null;
 
-				return prisma.Exam.delete({
+				return await prisma.exam.delete({
 					where: { id },
 				});
 			},

@@ -41,12 +41,11 @@ export const User = objectType({
 export const UsersQuery = extendType({
 	type: "Query",
 	definition(t) {
-		t.nonNull.list.field("Users", {
+		t.list.field("Users", {
 			type: "User",
 			resolve: async (_parent, _args, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
-
-				await prisma.user.findMany();
+				return await prisma.user.findMany();
 			},
 		});
 	},
@@ -136,7 +135,7 @@ export const UserByIdQuery = extendType({
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { user, prisma }) => {
 				if (!user || user.role !== userRole.ADMIN) return null;
-				await prisma.user.findUnique({
+				return await prisma.user.findUnique({
 					where: { id },
 				});
 			},
@@ -210,16 +209,16 @@ export const userLogin = extendType({
 				email: nonNull(stringArg()),
 				password: nonNull(stringArg()),
 			},
-			resolve: async (_, { email, password }, ctx) => {
-				const user = await GetUserByEmail(ctx.prisma, email);
+			resolve: async (_, { email, password }, { res, prisma }) => {
+				const user = await GetUserByEmail(prisma, email);
 
-				if (user == null || !(await ValidateUserCredentials(ctx.prisma, user, password))) {
+				if (user == null || !(await ValidateUserCredentials(prisma, user, password))) {
 					throw new LoginInvalidError("Invalid username or password");
 				}
 
-				const refreshToken = await CreateRefreshTokenForUser(ctx.prisma, user);
+				const refreshToken = await CreateRefreshTokenForUser(prisma, user);
 				const token = CreateJWTForUser(user);
-				// setTokenCookie(ctx, token);
+				setTokenCookie(res, token);
 
 				return {
 					token,

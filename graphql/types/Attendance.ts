@@ -46,7 +46,7 @@ export const AttendanceByUserDateQuery = extendType({
 				date: nonNull(arg({ type: "DateTime" })),
 			},
 			resolve: async (_parent, { id, date }, { prisma, user }) => {
-				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				return await prisma.attendance.findMany({
 					where: { profileId: id, startAt: { gte: date } },
@@ -69,7 +69,7 @@ export const createAttendanceMutation = extendType({
 				profileId: nonNull(stringArg()),
 			},
 			resolve: async (_parent, { startAt, endAt, note, profileId }, { prisma, user }) => {
-				if (!user || user.role !== Role.USER || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				const newAttendance = {
 					startAt,
@@ -117,7 +117,7 @@ export const UpdateAttendanceMutation = extendType({
 });
 
 // delete Attendance
-export const DeleteupdateAttendanceMutation = extendType({
+export const DeleteAttendanceMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("deleteAttendance", {
@@ -125,10 +125,10 @@ export const DeleteupdateAttendanceMutation = extendType({
 			args: {
 				id: nonNull(stringArg()),
 			},
-			resolve(_parent, { id }, { prisma, user }) {
+			async resolve(_parent, { id }, { prisma, user }) {
 				if (!user || user.role !== Role.ADMIN) return null;
 
-				return prisma.attendance.delete({
+				return await prisma.attendance.delete({
 					where: { id },
 				});
 			},

@@ -97,7 +97,7 @@ type Query {
   Profile(id: String!): Profile!
   Profiles: [Profile]!
   User(id: String!): User!
-  Users: [User]!
+  Users: [User]
 }
 
 """User Role"""
