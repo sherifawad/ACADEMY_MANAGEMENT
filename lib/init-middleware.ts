@@ -5,7 +5,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default function initMiddleware(middleware: Function) {
-	return (req: NextApiRequest, res: NextApiResponse) =>
+	return (req: NextApiRequest, res: NextApiResponse) => {
 		new Promise((resolve, reject) => {
 			middleware(req, res, (result: unknown) => {
 				if (result instanceof Error) {
@@ -14,4 +14,5 @@ export default function initMiddleware(middleware: Function) {
 				return resolve(result);
 			});
 		});
+	};
 }

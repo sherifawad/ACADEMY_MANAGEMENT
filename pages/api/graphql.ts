@@ -36,12 +36,6 @@ import { cors } from "Middlewares/CorsMiddleWare";
 // 	},
 // };
 
-export const config = {
-	api: {
-		bodyParser: false,
-	},
-};
-
 export const server = new ApolloServer({
 	context: createContext,
 	schema,
@@ -51,7 +45,7 @@ const serverStart = server.start();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	//cors origin middleware
-	await cors(req, res);
+	cors(req, res);
 	if (req.method === "OPTIONS") {
 		res.end();
 		return false;
@@ -59,6 +53,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	// schema-wide middleware
 
 	await serverStart;
-	await server.createHandler({ path: "/api/graphql" })(req, res);
-	return;
+	return await server.createHandler({ path: "/api/graphql" })(req, res);
 }
+
+export const config = {
+	api: {
+		bodyParser: false,
+	},
+};

@@ -1,4 +1,4 @@
-import { RefreshToken, Role, User as prismaUser } from "@prisma/client";
+import { PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
 import { hashPassword, verifyPassword } from "graphql/utils/crypto";
 import { sign } from "jsonwebtoken";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, enumType } from "nexus";
@@ -9,6 +9,8 @@ import { assert } from "graphql/utils/assert";
 import LoginInvalidError from "graphql/utils/errors/loginInvalid";
 import { serialize } from "cookie";
 import { Role as userRole } from "@prisma/client";
+import { setTokenCookie } from "../utils/auth-cookies";
+import { NextApiResponse } from "next";
 
 //generates User type at schema.graphql
 export const User = objectType({
@@ -52,8 +54,8 @@ export const UsersQuery = extendType({
 
 export type UserParam = Pick<prismaUser, "avatar" | "email" | "name">;
 
-export async function GetUserByEmail(ctx: Context, email: string): Promise<prismaUser | null> {
-	return await ctx.prisma.user.findUnique({
+export async function GetUserByEmail(prisma: PrismaClient, email: string): Promise<prismaUser | null> {
+	return await prisma.user.findUnique({
 		where: {
 			email,
 		},
@@ -61,11 +63,11 @@ export async function GetUserByEmail(ctx: Context, email: string): Promise<prism
 }
 
 export async function ValidateUserCredentials(
-	ctx: Context,
+	prisma: PrismaClient,
 	user: prismaUser,
 	password: string
 ): Promise<boolean> {
-	const userPassword = await GetUserPassword(ctx, user);
+	const userPassword = await GetUserPassword(prisma, user);
 
 	if (userPassword == null) {
 		return false;
@@ -93,12 +95,15 @@ export async function CreateUser(ctx: Context, userParam: UserParam, password: s
 	});
 }
 
-export async function CreateRefreshTokenForUser(ctx: Context, user: prismaUser): Promise<RefreshToken> {
+export async function CreateRefreshTokenForUser(
+	prisma: PrismaClient,
+	user: prismaUser
+): Promise<RefreshToken> {
 	let hash = srs({ length: 100 });
 	var expiration = new Date();
 
 	expiration.setDate(expiration.getDate() + 14);
-	return await ctx.prisma.refreshToken.create({
+	return await prisma.refreshToken.create({
 		data: {
 			expiration,
 			hash,
@@ -206,26 +211,15 @@ export const userLogin = extendType({
 				password: nonNull(stringArg()),
 			},
 			resolve: async (_, { email, password }, ctx) => {
-				const { res, req } = ctx;
-				console.log("🚀 ~ file: User.ts ~ line 209 ~ resolve: ~ ctx", ctx);
-				const user = await GetUserByEmail(ctx, email);
+				const user = await GetUserByEmail(ctx.prisma, email);
 
-				if (user == null || !(await ValidateUserCredentials(ctx, user, password))) {
+				if (user == null || !(await ValidateUserCredentials(ctx.prisma, user, password))) {
 					throw new LoginInvalidError("Invalid username or password");
 				}
 
-				const refreshToken = await CreateRefreshTokenForUser(ctx, user);
+				const refreshToken = await CreateRefreshTokenForUser(ctx.prisma, user);
 				const token = CreateJWTForUser(user);
-
-				const cookieStr = serialize("refresh_token", refreshToken.hash, {
-					httpOnly: true,
-					sameSite: "none",
-					secure: true,
-					maxAge: 60 * 60 * 24 * 7 * 2, // 2 weeks
-				});
-				if (ctx.res) {
-					ctx.res.setHeader("Set-Cookie", cookieStr);
-				}
+				// setTokenCookie(ctx, token);
 
 				return {
 					token,

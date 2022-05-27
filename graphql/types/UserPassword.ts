@@ -1,9 +1,7 @@
-import { User, UserPassword } from "@prisma/client";
+import { PrismaClient, User, UserPassword } from "@prisma/client";
 
-import { Context } from "../types";
-
-export async function GetUserPassword(ctx: Context, user: User): Promise<UserPassword | null> {
-	return await ctx.prisma.userPassword.findUnique({
+export async function GetUserPassword(prisma: PrismaClient, user: User): Promise<UserPassword | null> {
+	return await prisma.userPassword.findUnique({
 		where: {
 			id: user.id,
 		},
