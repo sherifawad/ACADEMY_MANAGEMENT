@@ -9,6 +9,8 @@ export const Grade = objectType({
 	definition(t) {
 		t.nonNull.string("id");
 		t.string("name");
+		t.string("createdBy");
+		t.string("updatedBy");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("groups", {
@@ -84,6 +86,7 @@ export const createGradeMutation = extendType({
 
 				const newGrade = {
 					name,
+					createdBy: user.id,
 				};
 				return await prisma.Grade.create({
 					data: newGrade,
@@ -108,6 +111,7 @@ export const UpdateGradeMutation = extendType({
 
 				const updateGrade = {
 					name,
+					updatedBy: user.id,
 				};
 				return await prisma.Grade.update({
 					where: { id },

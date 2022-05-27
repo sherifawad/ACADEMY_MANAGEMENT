@@ -35,5 +35,5 @@ export class GroupProfilesArgs {
   @TypeGraphQL.Field(_type => [ProfileScalarFieldEnum], {
     nullable: true
   })
-  distinct?: Array<"id" | "bio" | "createdAt" | "updatedAt" | "groupId"> | undefined;
+  distinct?: Array<"id" | "bio" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "groupId"> | undefined;
 }

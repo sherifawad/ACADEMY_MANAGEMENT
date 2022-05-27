@@ -5,6 +5,8 @@ export enum AttendanceScalarFieldEnum {
   startAt = "startAt",
   endAt = "endAt",
   note = "note",
+  createdBy = "createdBy",
+  updatedBy = "updatedBy",
   profileId = "profileId",
   groupId = "groupId"
 }

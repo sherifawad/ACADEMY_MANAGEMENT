@@ -4,7 +4,9 @@ export enum GradeScalarFieldEnum {
   id = "id",
   name = "name",
   createdAt = "createdAt",
-  updatedAt = "updatedAt"
+  updatedAt = "updatedAt",
+  createdBy = "createdBy",
+  updatedBy = "updatedBy"
 }
 TypeGraphQL.registerEnumType(GradeScalarFieldEnum, {
   name: "GradeScalarFieldEnum",

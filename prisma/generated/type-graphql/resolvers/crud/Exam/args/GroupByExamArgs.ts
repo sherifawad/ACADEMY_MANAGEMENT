@@ -20,7 +20,7 @@ export class GroupByExamArgs {
   @TypeGraphQL.Field(_type => [ExamScalarFieldEnum], {
     nullable: false
   })
-  by!: Array<"id" | "createdAt" | "updatedAt" | "score" | "note" | "date" | "profileId">;
+  by!: Array<"id" | "createdAt" | "updatedAt" | "score" | "note" | "date" | "createdBy" | "updatedBy" | "profileId">;
 
   @TypeGraphQL.Field(_type => ExamScalarWhereWithAggregatesInput, {
     nullable: true

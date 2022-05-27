@@ -20,7 +20,7 @@ export class GroupByGradeArgs {
   @TypeGraphQL.Field(_type => [GradeScalarFieldEnum], {
     nullable: false
   })
-  by!: Array<"id" | "name" | "createdAt" | "updatedAt">;
+  by!: Array<"id" | "name" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy">;
 
   @TypeGraphQL.Field(_type => GradeScalarWhereWithAggregatesInput, {
     nullable: true

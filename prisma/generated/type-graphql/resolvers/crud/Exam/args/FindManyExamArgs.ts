@@ -35,5 +35,5 @@ export class FindManyExamArgs {
   @TypeGraphQL.Field(_type => [ExamScalarFieldEnum], {
     nullable: true
   })
-  distinct?: Array<"id" | "createdAt" | "updatedAt" | "score" | "note" | "date" | "profileId"> | undefined;
+  distinct?: Array<"id" | "createdAt" | "updatedAt" | "score" | "note" | "date" | "createdBy" | "updatedBy" | "profileId"> | undefined;
 }

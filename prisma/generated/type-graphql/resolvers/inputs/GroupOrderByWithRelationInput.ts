@@ -41,6 +41,16 @@ export class GroupOrderByWithRelationInput {
   })
   endAt?: "asc" | "desc" | undefined;
 
+  @TypeGraphQL.Field(_type => SortOrder, {
+    nullable: true
+  })
+  createdBy?: "asc" | "desc" | undefined;
+
+  @TypeGraphQL.Field(_type => SortOrder, {
+    nullable: true
+  })
+  updatedBy?: "asc" | "desc" | undefined;
+
   @TypeGraphQL.Field(_type => ProfileOrderByRelationAggregateInput, {
     nullable: true
   })

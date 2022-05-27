@@ -69,6 +69,7 @@ async function seed() {
 	const grade = await client.grade.create({
 		data: {
 			name: "prepSchool",
+			createdBy: admin.id,
 		},
 	});
 
@@ -78,6 +79,7 @@ async function seed() {
 			startAt: "13:00",
 			endAt: "14:00",
 			gradeId: grade.id,
+			createdBy: admin.id,
 		},
 	});
 	const profile = await client.profile.create({
@@ -85,6 +87,7 @@ async function seed() {
 			id: student.id,
 			bio: "student Bio",
 			groupId: group.id,
+			createdBy: admin.id,
 		},
 	});
 	const exam = await client.exam.create({
@@ -92,6 +95,7 @@ async function seed() {
 			profileId: profile.id,
 			score: 55.5,
 			date: new Date(),
+			createdBy: admin.id,
 		},
 	});
 
@@ -102,6 +106,7 @@ async function seed() {
 			startAt: new Date(),
 			endAt: new Date(new Date().setHours(new Date().getHours() + 2)),
 			note: "seeded",
+			createdBy: admin.id,
 		},
 	});
 }

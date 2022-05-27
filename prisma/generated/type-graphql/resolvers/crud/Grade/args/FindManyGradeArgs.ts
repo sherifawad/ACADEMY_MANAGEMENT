@@ -35,5 +35,5 @@ export class FindManyGradeArgs {
   @TypeGraphQL.Field(_type => [GradeScalarFieldEnum], {
     nullable: true
   })
-  distinct?: Array<"id" | "name" | "createdAt" | "updatedAt"> | undefined;
+  distinct?: Array<"id" | "name" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy"> | undefined;
 }

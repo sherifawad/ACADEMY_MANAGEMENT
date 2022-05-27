@@ -35,5 +35,5 @@ export class ProfileAttendancesArgs {
   @TypeGraphQL.Field(_type => [AttendanceScalarFieldEnum], {
     nullable: true
   })
-  distinct?: Array<"id" | "startAt" | "endAt" | "note" | "profileId" | "groupId"> | undefined;
+  distinct?: Array<"id" | "startAt" | "endAt" | "note" | "createdBy" | "updatedBy" | "profileId" | "groupId"> | undefined;
 }

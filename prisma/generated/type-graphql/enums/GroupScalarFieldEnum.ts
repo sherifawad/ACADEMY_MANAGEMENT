@@ -7,6 +7,8 @@ export enum GroupScalarFieldEnum {
   updatedAt = "updatedAt",
   startAt = "startAt",
   endAt = "endAt",
+  createdBy = "createdBy",
+  updatedBy = "updatedBy",
   gradeId = "gradeId"
 }
 TypeGraphQL.registerEnumType(GroupScalarFieldEnum, {

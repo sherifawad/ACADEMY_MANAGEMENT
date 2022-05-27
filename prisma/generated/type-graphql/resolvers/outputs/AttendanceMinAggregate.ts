@@ -30,6 +30,16 @@ export class AttendanceMinAggregate {
   @TypeGraphQL.Field(_type => String, {
     nullable: true
   })
+  createdBy!: string | null;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
+  updatedBy!: string | null;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
   profileId!: string | null;
 
   @TypeGraphQL.Field(_type => String, {

@@ -20,7 +20,7 @@ export class GroupByAttendanceArgs {
   @TypeGraphQL.Field(_type => [AttendanceScalarFieldEnum], {
     nullable: false
   })
-  by!: Array<"id" | "startAt" | "endAt" | "note" | "profileId" | "groupId">;
+  by!: Array<"id" | "startAt" | "endAt" | "note" | "createdBy" | "updatedBy" | "profileId" | "groupId">;
 
   @TypeGraphQL.Field(_type => AttendanceScalarWhereWithAggregatesInput, {
     nullable: true

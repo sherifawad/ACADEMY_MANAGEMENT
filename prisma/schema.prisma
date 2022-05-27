@@ -70,6 +70,8 @@ model Profile {
     bio         String?
     createdAt   DateTime     @default(now())
     updatedAt   DateTime     @updatedAt
+    createdBy   String
+    updatedBy   String?
     user        User         @relation(fields: [id], references: [id])
     exams       Exam[]
     attendances Attendance[]
@@ -88,6 +90,8 @@ model Grade {
     name      String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    createdBy String
+    updatedBy String?
     groups    Group[]
 
     @@map("grades")
@@ -100,6 +104,8 @@ model Group {
     updatedAt  DateTime     @updatedAt
     startAt    String?
     endAt      String?
+    createdBy  String
+    updatedBy  String?
     profiles   Profile[]
     attendance Attendance[]
 
@@ -117,6 +123,8 @@ model Exam {
     score     Float    @default(0.0)
     note      String?
     date      DateTime
+    createdBy String
+    updatedBy String?
 
     // Relation fields
     profileId String
@@ -125,10 +133,12 @@ model Exam {
 }
 
 model Attendance {
-    id      String    @id @default(uuid())
-    startAt DateTime
-    endAt   DateTime?
-    note    String?
+    id        String    @id @default(uuid())
+    startAt   DateTime
+    endAt     DateTime?
+    note      String?
+    createdBy String
+    updatedBy String?
 
     // Relation fields
     profileId String

@@ -9,6 +9,8 @@ export const Group = objectType({
 	definition(t) {
 		t.string("id");
 		t.string("name");
+		t.string("createdBy");
+		t.string("updatedBy");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
 		t.string("startAt");
@@ -101,6 +103,7 @@ export const createGroupMutation = extendType({
 					name,
 					startAt,
 					endAt,
+					createdBy: user.id,
 				};
 				return await prisma.Group.create({
 					data: newGroup,
@@ -129,6 +132,7 @@ export const UpdateGroupMutation = extendType({
 					name,
 					startAt,
 					endAt,
+					updatedBy: user.id,
 				};
 				return await prisma.Group.update({
 					where: { id },

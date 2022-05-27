@@ -60,6 +60,16 @@ export class ExamWhereInput {
   @TypeGraphQL.Field(_type => StringFilter, {
     nullable: true
   })
+  createdBy?: StringFilter | undefined;
+
+  @TypeGraphQL.Field(_type => StringNullableFilter, {
+    nullable: true
+  })
+  updatedBy?: StringNullableFilter | undefined;
+
+  @TypeGraphQL.Field(_type => StringFilter, {
+    nullable: true
+  })
   profileId?: StringFilter | undefined;
 
   @TypeGraphQL.Field(_type => ProfileRelationFilter, {

@@ -35,5 +35,5 @@ export class GradeGroupsArgs {
   @TypeGraphQL.Field(_type => [GroupScalarFieldEnum], {
     nullable: true
   })
-  distinct?: Array<"id" | "name" | "createdAt" | "updatedAt" | "startAt" | "endAt" | "gradeId"> | undefined;
+  distinct?: Array<"id" | "name" | "createdAt" | "updatedAt" | "startAt" | "endAt" | "createdBy" | "updatedBy" | "gradeId"> | undefined;
 }

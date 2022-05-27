@@ -44,6 +44,16 @@ export class GroupOrderByWithAggregationInput {
   @TypeGraphQL.Field(_type => SortOrder, {
     nullable: true
   })
+  createdBy?: "asc" | "desc" | undefined;
+
+  @TypeGraphQL.Field(_type => SortOrder, {
+    nullable: true
+  })
+  updatedBy?: "asc" | "desc" | undefined;
+
+  @TypeGraphQL.Field(_type => SortOrder, {
+    nullable: true
+  })
   gradeId?: "asc" | "desc" | undefined;
 
   @TypeGraphQL.Field(_type => GroupCountOrderByAggregateInput, {

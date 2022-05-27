@@ -43,6 +43,16 @@ export class GroupGroupBy {
   @TypeGraphQL.Field(_type => String, {
     nullable: false
   })
+  createdBy!: string;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
+  updatedBy!: string | null;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: false
+  })
   gradeId!: string;
 
   @TypeGraphQL.Field(_type => GroupCountAggregate, {

@@ -41,6 +41,16 @@ export class Group {
   })
   endAt?: string | null;
 
+  @TypeGraphQL.Field(_type => String, {
+    nullable: false
+  })
+  createdBy!: string;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
+  updatedBy?: string | null;
+
   profiles?: Profile[];
 
   attendance?: Attendance[];

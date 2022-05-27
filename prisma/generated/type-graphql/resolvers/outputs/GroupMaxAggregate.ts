@@ -40,5 +40,15 @@ export class GroupMaxAggregate {
   @TypeGraphQL.Field(_type => String, {
     nullable: true
   })
+  createdBy!: string | null;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
+  updatedBy!: string | null;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
   gradeId!: string | null;
 }

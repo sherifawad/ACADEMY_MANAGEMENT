@@ -30,5 +30,15 @@ export class ProfileMaxAggregate {
   @TypeGraphQL.Field(_type => String, {
     nullable: true
   })
+  createdBy!: string | null;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
+  updatedBy!: string | null;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
   groupId!: string | null;
 }

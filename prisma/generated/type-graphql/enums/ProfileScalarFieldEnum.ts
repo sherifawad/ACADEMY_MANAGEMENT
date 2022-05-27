@@ -5,6 +5,8 @@ export enum ProfileScalarFieldEnum {
   bio = "bio",
   createdAt = "createdAt",
   updatedAt = "updatedAt",
+  createdBy = "createdBy",
+  updatedBy = "updatedBy",
   groupId = "groupId"
 }
 TypeGraphQL.registerEnumType(ProfileScalarFieldEnum, {

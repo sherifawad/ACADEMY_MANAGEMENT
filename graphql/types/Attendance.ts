@@ -8,6 +8,8 @@ export const Attendance = objectType({
 		t.string("id");
 		t.string("note");
 		t.string("profileId");
+		t.string("createdBy");
+		t.string("updatedBy");
 		t.field("startAt", { type: "DateTime" });
 		t.field("endAt", { type: "DateTime" });
 		t.field("profile", {
@@ -76,6 +78,7 @@ export const createAttendanceMutation = extendType({
 					endAt,
 					note,
 					profileId,
+					createdBy: user.id,
 				};
 				return await prisma.attendance.create({
 					data: newAttendance,
@@ -106,6 +109,7 @@ export const UpdateAttendanceMutation = extendType({
 					endAt,
 					note,
 					profileId,
+					updatedBy: user.id,
 				};
 				return await prisma.attendance.update({
 					where: { id },

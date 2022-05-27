@@ -30,6 +30,16 @@ export class GradeGroupBy {
   })
   updatedAt!: Date;
 
+  @TypeGraphQL.Field(_type => String, {
+    nullable: false
+  })
+  createdBy!: string;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
+  updatedBy!: string | null;
+
   @TypeGraphQL.Field(_type => GradeCountAggregate, {
     nullable: true
   })

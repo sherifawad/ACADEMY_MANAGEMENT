@@ -5,6 +5,7 @@ import { DecimalJSScalar } from "../../scalars";
 import { DateTimeFilter } from "../inputs/DateTimeFilter";
 import { GroupListRelationFilter } from "../inputs/GroupListRelationFilter";
 import { StringFilter } from "../inputs/StringFilter";
+import { StringNullableFilter } from "../inputs/StringNullableFilter";
 
 @TypeGraphQL.InputType("GradeWhereInput", {
   isAbstract: true
@@ -44,6 +45,16 @@ export class GradeWhereInput {
     nullable: true
   })
   updatedAt?: DateTimeFilter | undefined;
+
+  @TypeGraphQL.Field(_type => StringFilter, {
+    nullable: true
+  })
+  createdBy?: StringFilter | undefined;
+
+  @TypeGraphQL.Field(_type => StringNullableFilter, {
+    nullable: true
+  })
+  updatedBy?: StringNullableFilter | undefined;
 
   @TypeGraphQL.Field(_type => GroupListRelationFilter, {
     nullable: true

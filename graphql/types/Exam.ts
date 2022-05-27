@@ -8,6 +8,8 @@ export const Exam = objectType({
 		t.string("id");
 		t.string("note");
 		t.float("score");
+		t.string("createdBy");
+		t.string("updatedBy");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
 		t.field("date", { type: "DateTime" });
@@ -75,6 +77,7 @@ export const createExamMutation = extendType({
 					score,
 					date,
 					note,
+					createdBy: user.id,
 				};
 				return await prisma.exam.create({
 					data: newExam,
@@ -103,6 +106,7 @@ export const UpdateExamMutation = extendType({
 					score,
 					date,
 					note,
+					updatedBy: user.id,
 				};
 				return await prisma.exam.update({
 					where: { id },

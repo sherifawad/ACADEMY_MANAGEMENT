@@ -31,6 +31,18 @@ export async function createContext({
 				user = await prisma.user.findUnique({
 					where: { id: token.userId },
 				});
+
+				// prisma.$use(async (params, next) => {
+				// 	const before = Date.now();
+
+				// 	const result = await next(params);
+
+				// 	const after = Date.now();
+
+				// 	console.log(`Query: ${params.model}.${params.action} userId ${token.userId}`);
+
+				// 	return result;
+				// });
 			}
 		}
 	} catch (error) {

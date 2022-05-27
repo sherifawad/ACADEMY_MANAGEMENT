@@ -3,6 +3,7 @@
 
 
 type Attendance {
+  createdBy: String
   endAt: DateTime
   group: Group
   id: String
@@ -10,6 +11,7 @@ type Attendance {
   profile: Profile
   profileId: String
   startAt: DateTime
+  updatedBy: String
 }
 
 """Payload containing auth token"""
@@ -25,26 +27,31 @@ scalar DateTime
 
 type Exam {
   createdAt: DateTime
+  createdBy: String
   date: DateTime
   id: String
   note: String
   profile: Profile
   score: Float
   updatedAt: DateTime
+  updatedBy: String
 }
 
 type Grade {
   createdAt: DateTime
+  createdBy: String
   groups: [Group]
   id: String!
   name: String
   profiles: [Profile]
   updatedAt: DateTime
+  updatedBy: String
 }
 
 type Group {
   attendance: [Attendance]
   createdAt: DateTime
+  createdBy: String
   endAt: String
   grade: Grade
   id: String
@@ -52,6 +59,7 @@ type Group {
   profiles: [Profile]
   startAt: String
   updatedAt: DateTime
+  updatedBy: String
 }
 
 type Mutation {
@@ -79,10 +87,12 @@ type Profile {
   attendances: [Attendance]
   bio: String
   createdAt: DateTime
+  createdBy: String
   exams: [Exam]
   group: Group
   id: String
   updatedAt: DateTime
+  updatedBy: String
   users: [User]
 }
 

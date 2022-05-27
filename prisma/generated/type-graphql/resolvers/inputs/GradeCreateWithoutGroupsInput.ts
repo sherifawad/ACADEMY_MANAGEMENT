@@ -26,4 +26,14 @@ export class GradeCreateWithoutGroupsInput {
     nullable: true
   })
   updatedAt?: Date | undefined;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: false
+  })
+  createdBy!: string;
+
+  @TypeGraphQL.Field(_type => String, {
+    nullable: true
+  })
+  updatedBy?: string | undefined;
 }

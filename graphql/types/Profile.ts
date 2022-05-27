@@ -10,6 +10,8 @@ export const Profile = objectType({
 	definition(t) {
 		t.string("id");
 		t.string("bio");
+		t.string("createdBy");
+		t.string("updatedBy");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("exams", {
@@ -129,6 +131,7 @@ export const createProfileMutation = extendType({
 				const newProfile = {
 					id,
 					bio,
+					createdBy: user.id,
 				};
 				return await prisma.profile.create({
 					data: newProfile,
@@ -153,6 +156,7 @@ export const UpdateProfileMutation = extendType({
 
 				const updateProfile = {
 					bio,
+					updatedBy: user.id,
 				};
 				return await prisma.profile.update({
 					where: { id },
