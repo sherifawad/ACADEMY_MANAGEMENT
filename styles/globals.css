@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.account-input {
+	@apply flex after:content-[''] after:h-1 after:w-full  relative after:absolute after:bottom-0 after:left-0 after:border-b-2;
+}
