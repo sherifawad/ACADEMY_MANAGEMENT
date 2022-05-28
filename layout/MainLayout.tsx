@@ -15,7 +15,7 @@ const MainLayout = ({ children }) => {
 				</Suspense>
 				<Navbar />
 			</header>
-			<main>{children}</main>
+			<main className="h-screen grid items-center justify-center content-center">{children}</main>
 			<footer>
 				<Footer />
 			</footer>
