@@ -1,0 +1,51 @@
+.dialog_content {
+	background: #fffffff6;
+	box-shadow: 0 2rem 2rem #00000080;
+	min-height: 200px;
+	width: 100%;
+	max-width: 500px;
+	border-radius: 3px;
+	overflow: hidden;
+	padding: 20px;
+
+	.panel {
+		display: block;
+		.panel_title {
+			font-size: 1.5em;
+			font-weight: bold;
+		}
+		.playerContainer {
+			.playerTitle {
+				padding-block: 5px;
+				color: #0b5aa2;
+				font-weight: bold;
+				border-block-start: 1px solid var(--clr-neutral-200);
+			}
+			hr {
+				width: 20%;
+				border: 1px solid #ffcb00;
+			}
+			.sportsContainer {
+				color: #000;
+				display: grid;
+				grid-template-columns: 3fr 1fr 2fr;
+				gap: 1em;
+				align-items: center;
+				&:nth-of-type(2n) {
+					background-color: lightgray;
+				}
+			}
+
+			&:last-of-type {
+				border-block-end: 1px solid var(--clr-neutral-200);
+			}
+		}
+
+		.panel_buttons_container {
+			display: flex;
+			justify-content: center;
+			gap: 2em;
+			margin-block-start: 1em;
+		}
+	}
+}

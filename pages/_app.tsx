@@ -1,13 +1,15 @@
 import { ApolloProvider } from "@apollo/client";
 import { apolloClient } from "lib/apollo";
-import App from "next/app";
+import MainLayout from "../layout/MainLayout";
 import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }) {
 	return (
 		<ApolloProvider client={apolloClient}>
 			{" "}
-			<Component {...pageProps} />
+			<MainLayout>
+				<Component {...pageProps} />
+			</MainLayout>
 		</ApolloProvider>
 	);
 }

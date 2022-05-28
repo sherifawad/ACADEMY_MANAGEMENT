@@ -1,0 +1,110 @@
+// Inspired by https://dribbble.com/shots/10965108/attachments/2574271?mode=media
+
+$body-bg: #ffffff;
+$card-bg: #0a1032;
+$card-content: #8d90a0;
+$card-tag-bg: #393e5b;
+$card-tag-color: #e3e5e9;
+$card-cta-bg: #ea4c89;
+
+* {
+	box-sizing: border-box;
+	line-height: 1.5;
+}
+
+body {
+	height: 100vh;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	font-family: "Poppins", sans-serif;
+	background-color: $body-bg;
+	position: relative;
+}
+
+.grid {
+	width: 300px;
+	min-height: 300px;
+	padding: 15px 30px 15px 30px;
+
+	display: grid;
+	gap: 5px;
+	border-radius: 40px;
+	border-top-left-radius: 0px;
+	background-color: $card-bg;
+	grid-template-rows: 1fr 2fr 2fr 2fr;
+
+	.items {
+		border: 1px solid $card-bg;
+	}
+
+	.subscription-tag {
+		display: inline-block;
+
+		font-weight: bold;
+		font-size: 10px;
+
+		color: $card-tag-color;
+		background-color: $card-tag-bg;
+
+		padding: 7px 10px;
+		border-radius: 20px;
+		cursor: pointer;
+
+		&:hover {
+			background-color: darken($card-tag-bg, 5%);
+		}
+	}
+
+	.card-heading {
+		color: white;
+		display: flex;
+		align-items: center;
+		font-size: 18px;
+	}
+
+	.card-content {
+		color: $card-content;
+		font-size: 12px;
+	}
+
+	.card-cta-button {
+		display: inline-block;
+		font-size: 12px;
+		padding: 15px;
+		cursor: pointer;
+
+		border-radius: 0px 30px 30px 30px;
+		color: white;
+		background-color: $card-cta-bg;
+
+		&:hover {
+			background-color: darken($card-cta-bg, 5%);
+		}
+	}
+}
+
+.show {
+	.items {
+		border: 1px solid #dddddd;
+	}
+}
+
+.view-layout {
+	padding: 5px 10px;
+	font-size: 12px;
+	display: inline-block;
+	cursor: pointer;
+	border-radius: 30px;
+	background-color: $card-cta-bg;
+	color: white;
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	&:hover {
+		background-color: darken($card-cta-bg, 5%);
+	}
+	i {
+		margin-right: 5px;
+	}
+}

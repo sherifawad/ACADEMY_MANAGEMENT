@@ -1,0 +1,119 @@
+.wrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	.radio {
+		display: none;
+	}
+
+	.tabs {
+		.tab {
+			cursor: pointer;
+			padding: 10px 20px;
+			margin: 0px 2px;
+			background: #000;
+			display: inline-block;
+			color: #fff;
+			border-radius: 3px 3px 0px 0px;
+			box-shadow: 0 0.5rem 0.8rem #00000080;
+		}
+		.active {
+			background: #fffffff6;
+			color: #000;
+			border-top: 3px solid #000;
+		}
+	}
+
+	.panels {
+		background: #fffffff6;
+		box-shadow: 0 2rem 2rem #00000080;
+		min-height: 200px;
+		width: 100%;
+		max-width: 500px;
+		border-radius: 3px;
+		overflow: hidden;
+		// padding: 20px;
+		.panel {
+			display: none;
+			animation: fadein 0.8s;
+			padding: 20px;
+			.panel_title {
+				padding-inline: 20px;
+				font-size: 1.5em;
+				font-weight: bold;
+			}
+			.playerTitle {
+				padding-block: 5px;
+				color: #0b5aa2;
+				font-weight: bold;
+				border-block-start: 1px solid var(--clr-neutral-200);
+			}
+			.err {
+				text-align: center;
+				margin: 1em;
+				color: red;
+				text-transform: uppercase;
+			}
+			hr {
+				width: 20%;
+				border: 1px solid #ffcb00;
+			}
+			.sportsContainer {
+				color: #000;
+				display: grid;
+				grid-template-columns: 3fr 2fr 1fr;
+				align-items: center;
+				&:nth-of-type(2n) {
+					background-color: lightgray;
+				}
+			}
+			.panel_content {
+				display: grid;
+				place-items: center;
+				gap: 1em;
+				.panel_input_container {
+					display: flex;
+					align-items: center;
+					gap: 0.3em;
+					input {
+						max-width: 6ch;
+						padding: 0.1em;
+						text-align: center;
+					}
+					p {
+						font-weight: bold;
+					}
+				}
+			}
+			.panel_buttons_container {
+				display: flex;
+				justify-content: center;
+				gap: 2em;
+				margin-block-start: 1em;
+			}
+		}
+		.active {
+			display: block;
+		}
+		.qr {
+			padding: 0;
+			background-color: var(--clr-primary-100);
+			.panel_title {
+				padding: 20px;
+			}
+		}
+	}
+}
+
+// #one:checked ~ .panels #one-panel,
+// #two:checked ~ .panels #two-panel,
+// #three:checked ~ .panels #three-panel {
+// 	display: block;
+// }
+// #one:checked ~ .tabs #one-tab,
+// #two:checked ~ .tabs #two-tab,
+// #three:checked ~ .tabs #three-tab {
+// 	background: #fffffff6;
+// 	color: #000;
+// 	border-top: 3px solid #000;
+// }
