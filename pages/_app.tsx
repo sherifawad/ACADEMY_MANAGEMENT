@@ -1,6 +1,6 @@
 import { ApolloProvider } from "@apollo/client";
 import { apolloClient } from "lib/apollo";
-import MainLayout from "../layout/MainLayout";
+import MainLayout from "../components/layout/MainLayout";
 import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }) {

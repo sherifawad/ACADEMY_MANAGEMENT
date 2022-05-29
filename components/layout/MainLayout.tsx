@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import Navbar from "Components/Navbar";
-import Footer from "Components/Footer";
+import Navbar from "components/Navbar";
+import Footer from "components/Footer";
 
 const MainLayout = ({ children }) => {
-	const Errors = dynamic(() => import("../Components/Errors"), {
+	const Errors = dynamic(() => import("../Errors"), {
 		ssr: false,
 	});
 	return (
@@ -15,7 +15,7 @@ const MainLayout = ({ children }) => {
 				</Suspense>
 				<Navbar />
 			</header>
-			<main className="h-screen grid items-center justify-center content-center">{children}</main>
+			<main>{children}</main>
 			<footer>
 				<Footer />
 			</footer>
