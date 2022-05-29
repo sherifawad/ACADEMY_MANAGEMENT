@@ -1,5 +1,7 @@
+import Image from "next/image";
+
 const Navbar = () => {
-	return <div>Navbar</div>;
+	return <nav>NavBar</nav>;
 };
 
 export default Navbar;
