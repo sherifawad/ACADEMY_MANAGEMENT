@@ -26,7 +26,7 @@ function Login({ setLogin }) {
 	return (
 		<div
 			className="container py-4 flex flex-col overflow-hidden
-            mx-auto w-2/5 border rounded-2xl shadow-md shadow-slate-400"
+            mx-auto max-w-sm border rounded-2xl shadow-md shadow-slate-400"
 		>
 			<h1 className="font-bold text-2xl text-center pb-4">Login</h1>
 			<form onSubmit={submitContact} className="flex flex-col gap-4">
@@ -95,7 +95,7 @@ function Login({ setLogin }) {
 				<a className="text-end py-4 text-slate-500">Forget Password</a>
 			</Link>
 
-			<a onClick={() => setLogin(false)} className="text-center py-4 text-slate-500">
+			<a onClick={() => setLogin(false)} className="text-center py-4 text-slate-500 cursor-pointer">
 				SIGN UP
 			</a>
 			{loading && <h1>loading.......</h1>}
