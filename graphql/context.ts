@@ -5,7 +5,6 @@ import { JsonWebTokenError, JwtPayload, NotBeforeError, TokenExpiredError, verif
 import { assert } from "./utils/assert";
 import { AuthenticationError } from "apollo-server-micro";
 import { User } from "@prisma/client";
-import { getSession } from "next-auth/react";
 import { IncomingMessage, ServerResponse } from "http";
 import { MicroRequest } from "apollo-server-micro/dist/types";
 

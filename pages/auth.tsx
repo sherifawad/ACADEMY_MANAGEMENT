@@ -2,9 +2,10 @@ import Head from "next/head";
 import Register from "components/Register";
 import { useState } from "react";
 import Login from "components/Login";
+import { GetServerSideProps } from "next";
 
 export default function Auth() {
-	const [loginActive, setLoginActive] = useState(false);
+	const [loginActive, setLoginActive] = useState(true);
 	return (
 		<div className="container">
 			<Head>
@@ -17,3 +18,17 @@ export default function Auth() {
 		</div>
 	);
 }
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+	if (req.cookies.token) {
+		return {
+			redirect: {
+				permanent: false,
+				destination: "/",
+			},
+			props: {},
+		};
+	}
+
+	return { props: {} };
+};

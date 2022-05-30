@@ -1,20 +1,42 @@
-import Image from "next/image";
-
+import Link from "next/link";
+import { useState } from "react";
 const Navbar = () => {
+	const [menuOpen, setMenuOpen] = useState(false);
+	const openMenu = () => {
+		setMenuOpen(true);
+	};
+
+	const closeMenu = () => {
+		setMenuOpen(false);
+	};
+
 	return (
 		<nav className="grid grid-cols-3 md:grid-cols-[1fr_minmax(900px,_1fr)_1fr] grid-rows-[auto_1fr] py-2 mb-8 bg-white shadow-xl">
 			<div className="flex items-center columns-1 mx-8">
 				<h3 className="text-2xl font-medium text-blue-500">LOGO</h3>
 			</div>
-			<div className="items-start md:items-center md:justify-center justify-center content-center flex md:flex-row space-x-8 flex-col col-start-1 col-span-3 row-start-2 md:row-start-1 md:col-start-2 md:col-end-3 ">
-				<a className="md:mx-0 mx-8" href="">
+			<div
+				className={` ${
+					menuOpen ? "flex flex-col " : "hidden"
+				} md:flex md:flex-row md:items-center md:justify-center md:row-start-1 md:col-start-2 md:col-end-3  col-start-1 col-span-3 row-start-2 items-start justify-center content-center space-x-8`}
+			>
+				<a className="md:mx-0 mx-8 menu-line" href="">
 					Home
 				</a>
-				<a href="">About Us</a>
-				<a href="">Blogs</a>
-				<a href="">Our Team</a>
-				<a href="">Contact Us</a>
+				<a className="menu-line" href="">
+					About Us
+				</a>
+				<a className="menu-line" href="">
+					Blogs
+				</a>
+				<a className="menu-line" href="">
+					Our Team
+				</a>
+				<a className="menu-line" href="">
+					Contact Us
+				</a>
 			</div>
+
 			<div className="flex items-center space-x-2 md:col-start-3 md:row-start-1 col-start-2  mx-8">
 				<a href="#">
 					<svg
@@ -71,8 +93,15 @@ const Navbar = () => {
 					</svg>
 				</a>
 			</div>
-			<div className="hidden items-center  mx-8">
-				<button className="outline-none mobile-menu-button">
+			<Link href="/auth">
+				<a className="bg-green-400 w-20 rounded-full text-white text-center py-2">Log In</a>
+			</Link>
+			<div
+				className={`md:hidden items-center justify-center ${
+					menuOpen ? "hidden" : "flex"
+				} col-start-3`}
+			>
+				<button className="outline-none mobile-menu-button" onClick={openMenu}>
 					<svg
 						className=" w-6 h-6 text-gray-500 hover:text-green-500"
 						x-show="!showMenu"
@@ -87,8 +116,12 @@ const Navbar = () => {
 					</svg>
 				</button>
 			</div>
-
-			<div className=" md:hidden items-center justify-center flex col-start-3">
+			<div
+				className={`md:hidden items-center justify-center ${
+					menuOpen ? "flex" : "hidden"
+				}  col-start-3`}
+				onClick={closeMenu}
+			>
 				<button className="outline-none mobile-menu-button">
 					<svg
 						className=" w-6 h-6 text-gray-500 hover:text-green-500"
