@@ -2,18 +2,20 @@ import Image from "next/image";
 
 const Navbar = () => {
 	return (
-		<nav className="flex justify-around py-2 mb-8 bg-white shadow-xl">
-			<div className="flex items-center">
+		<nav className="grid grid-cols-3 md:grid-cols-[1fr_minmax(900px,_1fr)_1fr] grid-rows-[auto_1fr] py-2 mb-8 bg-white shadow-xl">
+			<div className="flex items-center columns-1 mx-8">
 				<h3 className="text-2xl font-medium text-blue-500">LOGO</h3>
 			</div>
-			<div className="items-center hidden space-x-8 md:flex">
-				<a href="">Home</a>
+			<div className="items-start md:items-center md:justify-center justify-center content-center flex md:flex-row space-x-8 flex-col col-start-1 col-span-3 row-start-2 md:row-start-1 md:col-start-2 md:col-end-3 ">
+				<a className="md:mx-0 mx-8" href="">
+					Home
+				</a>
 				<a href="">About Us</a>
 				<a href="">Blogs</a>
 				<a href="">Our Team</a>
 				<a href="">Contact Us</a>
 			</div>
-			<div className="flex items-center space-x-2">
+			<div className="flex items-center space-x-2 md:col-start-3 md:row-start-1 col-start-2  mx-8">
 				<a href="#">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -69,11 +71,10 @@ const Navbar = () => {
 					</svg>
 				</a>
 			</div>
-
-			<div className="md:hidden flex items-center">
+			<div className="hidden items-center  mx-8">
 				<button className="outline-none mobile-menu-button">
 					<svg
-						className=" w-6 h-6 text-gray-500 hover:text-green-500 "
+						className=" w-6 h-6 text-gray-500 hover:text-green-500"
 						x-show="!showMenu"
 						fill="none"
 						strokeLinecap="round"
@@ -83,6 +84,22 @@ const Navbar = () => {
 						stroke="currentColor"
 					>
 						<path d="M4 6h16M4 12h16M4 18h16"></path>
+					</svg>
+				</button>
+			</div>
+
+			<div className=" md:hidden items-center justify-center flex col-start-3">
+				<button className="outline-none mobile-menu-button">
+					<svg
+						className=" w-6 h-6 text-gray-500 hover:text-green-500"
+						viewBox="0 0 20 19.84"
+						x-show="!showMenu"
+						fill="none"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						stroke="currentColor"
+					>
+						<path d="M10.17,10l3.89-3.89a.37.37,0,1,0-.53-.53L9.64,9.43,5.75,5.54a.37.37,0,1,0-.53.53L9.11,10,5.22,13.85a.37.37,0,0,0,0,.53.34.34,0,0,0,.26.11.36.36,0,0,0,.27-.11l3.89-3.89,3.89,3.89a.34.34,0,0,0,.26.11.35.35,0,0,0,.27-.11.37.37,0,0,0,0-.53Z" />
 					</svg>
 				</button>
 			</div>

@@ -8,11 +8,11 @@ const MainLayout = ({ children }) => {
 		ssr: false,
 	});
 	return (
-		<div>
+		<div className="overflow-hidden">
 			<header>
-				<Suspense>
+				{/* <Suspense>
 					<Errors />
-				</Suspense>
+				</Suspense> */}
 				<Navbar />
 			</header>
 			<main>{children}</main>
