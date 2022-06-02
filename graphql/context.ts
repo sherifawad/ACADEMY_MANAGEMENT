@@ -7,6 +7,7 @@ import { AuthenticationError } from "apollo-server-micro";
 import { User } from "@prisma/client";
 import { IncomingMessage, ServerResponse } from "http";
 import { MicroRequest } from "apollo-server-micro/dist/types";
+import { decodeToken } from "core/jwt";
 
 export async function createContext({
 	req,
@@ -23,12 +24,14 @@ export async function createContext({
 		if (authorization.length > 0) {
 			assert(JWT_SECRET, "Missing JWT_SECRET environment variable");
 			const tokenString = authorization.replace("Bearer ", "");
-			let token: UserToken | null;
+			// let token: UserToken | null;
 
-			token = verify(tokenString, JWT_SECRET) as UserToken;
+			// token = verify(tokenString, JWT_SECRET) as UserToken;
+			const token = decodeToken(tokenString, JWT_SECRET);
+
 			if (token) {
 				user = await prisma.user.findUnique({
-					where: { id: token.userId },
+					where: { id: token.sub },
 				});
 
 				// prisma.$use(async (params, next) => {

@@ -7,6 +7,8 @@ import { FaRegUser } from "react-icons/fa";
 import { BiLock } from "react-icons/bi";
 import { GoMail } from "react-icons/go";
 import Register from "components/Register";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
 const SIGNUP_MUTATION = gql`
 	mutation Mutation($email: String!, $password: String!, $name: String, $avatar: String) {
 		userRegister(email: $email, password: $password, name: $name, avatar: $avatar) {
@@ -27,3 +29,29 @@ export default function Home() {
 		</div>
 	);
 }
+
+// export const getServerSideProps: GetServerSideProps = async (context) => {
+// 	try {
+// 		const session = await getSession(context);
+
+// 		if (!session) {
+// 			return {
+// 				redirect: {
+// 					destination: "/auth",
+// 					permanent: false,
+// 				},
+// 			};
+// 		}
+// 		return {
+// 			props: {
+// 				session,
+// 			},
+// 		};
+// 	} catch (error) {
+// 		return {
+// 			props: {
+// 				session: null,
+// 			},
+// 		};
+// 	}
+// };

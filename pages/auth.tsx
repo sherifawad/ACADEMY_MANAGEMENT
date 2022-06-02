@@ -1,11 +1,18 @@
 import Head from "next/head";
 import Register from "components/Register";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Login from "components/Login";
 import { GetServerSideProps } from "next";
+import { getCsrfToken, getSession, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export default function Auth() {
 	const [loginActive, setLoginActive] = useState(true);
+	const { data: session } = useSession();
+	const router = useRouter();
+	if (session) {
+		router.push("/");
+	}
 	return (
 		<div className="container">
 			<Head>
@@ -20,15 +27,16 @@ export default function Auth() {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-	if (req.cookies.token) {
+	const session = await getSession({ req });
+
+	if (session?.user) {
 		return {
 			redirect: {
 				permanent: false,
 				destination: "/",
 			},
-			props: {},
+			props: { user: session?.user },
 		};
 	}
-
 	return { props: {} };
 };

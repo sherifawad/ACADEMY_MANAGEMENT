@@ -21,6 +21,11 @@ export const Role = enumType({
 	description: "User Role",
 });
 
+export type LoginPageProps = {
+	csrfToken: string;
+	setLogin: Function;
+};
+
 export const DateTime = asNexusMethod(DateTimeResolver, "date");
 export const Time = asNexusMethod(TimeResolver, "date");
 

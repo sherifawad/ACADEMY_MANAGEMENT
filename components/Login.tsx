@@ -3,26 +3,53 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { BiLock } from "react-icons/bi";
 import { FaRegUser } from "react-icons/fa";
-
+import { getCsrfToken, getSession, signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import Paths from "core/paths";
 const LOGIN_MUTATION = gql`
 	mutation Mutation($email: String!, $password: String!) {
 		userLogin(email: $email, password: $password) {
 			token
+			user {
+				id
+				name
+				avatar
+				email
+				role
+				createdAt
+			}
 		}
 	}
 `;
 
 function Login({ setLogin }) {
+	const router = useRouter();
+
 	const [formState, setFormState] = useState({
 		email: "",
 		password: "",
 	});
 
-	const [login, { data, error, loading }] = useMutation(LOGIN_MUTATION);
+	const [loading, setLoading] = useState(false);
 	const submitContact = async (e) => {
 		e.preventDefault();
-		await login({ variables: { email: formState.email, password: formState.password } });
+		if (loading) return;
+		setLoading(true);
+		e.target.set;
+
+		const { error, ok } = await signIn("credentials", {
+			redirect: false,
+			email: formState.email,
+			password: formState.password,
+		});
+		if (ok) {
+			router.push(Paths.Home);
+		} else if (error) {
+			console.log("🚀 ~ file: Login.tsx ~ line 53 ~ submitContact ~ error", error);
+		}
+		setLoading(false);
 	};
+
 	return (
 		<div
 			className="container py-4 flex flex-col overflow-hidden
@@ -98,7 +125,6 @@ function Login({ setLogin }) {
 			<a onClick={() => setLogin(false)} className="text-center py-4 text-slate-500 cursor-pointer">
 				SIGN UP
 			</a>
-			{loading && <h1>loading.......</h1>}
 		</div>
 	);
 }
