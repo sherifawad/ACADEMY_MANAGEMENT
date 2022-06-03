@@ -2,7 +2,7 @@ import { serialize, parse } from "cookie";
 import { ServerResponse } from "http";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const TOKEN_NAME = "token";
+export const TOKEN_NAME = "token";
 
 export const MAX_AGE = 60 * 60 * 24 * 7 * 2; // 2 weeks
 

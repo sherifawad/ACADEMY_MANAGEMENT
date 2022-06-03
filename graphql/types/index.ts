@@ -3,6 +3,7 @@ import { MicroRequest } from "apollo-server-micro/dist/types";
 import { DateTimeResolver, TimeResolver } from "graphql-scalars";
 import { ServerResponse } from "http";
 import { NextApiRequest, NextApiResponse } from "next";
+import { JWT } from "next-auth/jwt";
 import { asNexusMethod, enumType } from "nexus";
 
 export * from "./User";
@@ -24,6 +25,10 @@ export const Role = enumType({
 export type LoginPageProps = {
 	csrfToken: string;
 	setLogin: Function;
+};
+
+export type nextAuthToken = JWT & {
+	user: User;
 };
 
 export const DateTime = asNexusMethod(DateTimeResolver, "date");

@@ -6,13 +6,13 @@ import "../styles/globals.css";
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
 	return (
-		<ApolloProvider client={apolloClient}>
-			<SessionProvider session={session}>
+		<SessionProvider session={session}>
+			<ApolloProvider client={apolloClient}>
 				<MainLayout>
 					<Component {...pageProps} />
 				</MainLayout>
-			</SessionProvider>
-		</ApolloProvider>
+			</ApolloProvider>
+		</SessionProvider>
 	);
 }
 

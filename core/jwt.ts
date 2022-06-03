@@ -1,3 +1,4 @@
+import { nextAuthToken } from "graphql/types";
 import jwt from "jsonwebtoken";
 import { User } from "next-auth";
 import { JWT } from "next-auth/jwt";
@@ -17,12 +18,19 @@ export const signUser = (user: User | JWT) => {
 	});
 };
 
-export const encodeUser = (user: JWT, secret: string | Buffer = JWT_SECRET) => {
+export const encodeUser = (user: nextAuthToken, secret: string | Buffer = JWT_SECRET) => {
 	const jwtClaims: JWT = {
 		name: user.name,
 		email: user.email,
 		id: user.id,
 		role: user.role,
+		user: {
+			name: user.name,
+			email: user.email,
+			id: user.id,
+			role: user.role,
+			avatar: user.avatar,
+		},
 		iat: Date.now() / 1000,
 		exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
 	};

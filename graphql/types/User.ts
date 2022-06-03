@@ -1,5 +1,5 @@
 import { PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
-import { hashPassword, verifyPassword } from "graphql/utils/crypto";
+import { hashPassword, verifyPassword } from "core/crypto";
 import { sign } from "jsonwebtoken";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, enumType } from "nexus";
 import { Context, UserToken } from ".";
@@ -9,8 +9,9 @@ import { assert } from "graphql/utils/assert";
 import LoginInvalidError from "graphql/utils/errors/loginInvalid";
 import { serialize } from "cookie";
 import { Role as userRole } from "@prisma/client";
-import { setTokenCookie } from "../utils/auth-cookies";
+import { setTokenCookie } from "../../core/auth-cookies";
 import { NextApiResponse } from "next";
+import { encodeUser } from "core/jwt";
 
 //generates User type at schema.graphql
 export const User = objectType({
@@ -112,18 +113,18 @@ export async function CreateRefreshTokenForUser(
 	});
 }
 
-export function CreateJWTForUser(user: prismaUser): string {
+export function CreateJWTForUser(user): string {
 	const { JWT_SECRET } = process.env;
 
 	assert(JWT_SECRET, "Missing JWT_SECRET environment variable");
+	return encodeUser(user, JWT_SECRET);
+	// const token: UserToken = {
+	// 	userId: user.id,
+	// };
 
-	const token: UserToken = {
-		userId: user.id,
-	};
-
-	return sign(token, JWT_SECRET, {
-		expiresIn: "10m",
-	});
+	// return sign(token, JWT_SECRET, {
+	// 	expiresIn: "10m",
+	// });
 }
 
 //get unique User
