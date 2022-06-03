@@ -22,6 +22,11 @@ export const Role = enumType({
 	description: "User Role",
 });
 
+export interface AccessTokenState {
+	valid: boolean;
+	needRefresh: boolean;
+}
+
 export type LoginPageProps = {
 	csrfToken: string;
 	setLogin: Function;

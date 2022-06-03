@@ -16,8 +16,10 @@ type Attendance {
 
 """Payload containing auth token"""
 type AuthPayload {
-  token: String!
+  refreshToken: String
+  token: String
   user: User
+  userId: String
 }
 
 """
@@ -73,6 +75,8 @@ type Mutation {
   deleteGrade(id: String!): Grade!
   deleteGroup(id: String!): Group!
   deleteProfile(id: String!): Profile!
+  refreshToken(token: String!, userId: String!): AuthPayload
+  revokeToken(token: String!, userId: String!): AuthPayload
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateExam(date: DateTime, id: String!, note: String, score: String): Exam!
   updateGrade(id: String!, name: String!): Grade!

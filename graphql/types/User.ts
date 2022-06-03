@@ -1,16 +1,13 @@
 import { PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
 import { hashPassword, verifyPassword } from "core/crypto";
-import { sign } from "jsonwebtoken";
-import { nonNull, objectType, stringArg, extendType, intArg, nullable, enumType } from "nexus";
-import { Context, UserToken } from ".";
+import { nonNull, objectType, stringArg, extendType } from "nexus";
+import { Context } from ".";
 import { GetUserPassword } from "./UserPassword";
 import srs from "secure-random-string";
 import { assert } from "graphql/utils/assert";
 import LoginInvalidError from "graphql/utils/errors/loginInvalid";
-import { serialize } from "cookie";
 import { Role as userRole } from "@prisma/client";
 import { setTokenCookie } from "../../core/auth-cookies";
-import { NextApiResponse } from "next";
 import { encodeUser } from "core/jwt";
 
 //generates User type at schema.graphql
@@ -217,13 +214,14 @@ export const userLogin = extendType({
 					throw new LoginInvalidError("Invalid username or password");
 				}
 
-				const refreshToken = await CreateRefreshTokenForUser(prisma, user);
+				const refreshToken: RefreshToken = await CreateRefreshTokenForUser(prisma, user);
 				const token = CreateJWTForUser(user);
-				setTokenCookie(res, token);
+				// setTokenCookie(res, token);
 
 				return {
 					token,
 					user,
+					refreshToken: refreshToken.hash,
 				};
 			},
 		});
