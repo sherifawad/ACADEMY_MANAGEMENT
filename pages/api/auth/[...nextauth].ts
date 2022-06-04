@@ -11,6 +11,7 @@ import { sign } from "jsonwebtoken";
 import { Role, User } from "@prisma/client";
 import { MAX_AGE, TOKEN_NAME } from "core/auth-cookies";
 import { setAuthToken } from "core/apollo-headers";
+import { REFRESH_TOKEN_MUTATION } from "graphql/mutations/authPayloadMutations";
 
 const LOGIN_MUTATION = gql`
 	mutation UserLogin($email: String!, $password: String!) {
@@ -25,14 +26,6 @@ const LOGIN_MUTATION = gql`
 				role
 				emailConfirmed
 			}
-		}
-	}
-`;
-
-const REFRESH_TOKEN_MUTATION = gql`
-	mutation UserLogin($userId: String!, $token: String!) {
-		refreshToken(userId: $userId, token: $token) {
-			token
 		}
 	}
 `;
@@ -82,6 +75,7 @@ export default NextAuth({
 						};
 					}
 				} catch (error) {
+					console.error("🚀 ~ file: [...nextauth].ts ~ line 85 ~ authorize ~ error", error);
 					throw new Error(error);
 				}
 				return null;
@@ -93,17 +87,20 @@ export default NextAuth({
 	},
 	callbacks: {
 		async jwt({ token, user }) {
-			if (!!user) {
-				console.debug("🚀 ~ file: [...nextauth].ts ~ line 98 ~ jwt ~ user", user);
-				const { accessToken, refreshToken, ...rest } = user;
-				token.user = rest;
-				token.accessToken = accessToken;
-				token.refreshToken = refreshToken;
-			}
+			try {
+				if (!!user) {
+					const { accessToken, refreshToken, ...rest } = user;
+					token.user = rest;
+					token.accessToken = accessToken;
+					token.refreshToken = refreshToken;
+				}
 
-			const tokenState = getTokenState(token?.accessToken as string | undefined | null);
-			console.debug("🚀 ~ file: [...nextauth].ts ~ line 105 ~ jwt ~ tokenState", tokenState);
-			if (tokenState?.needRefresh) {
+				const tokenState = getTokenState(token?.accessToken as string | undefined | null);
+				if (!tokenState?.needRefresh || tokenState?.valid) {
+					return token;
+				}
+
+				apolloClient.setLink(setAuthToken());
 				const result = await apolloClient.mutate({
 					mutation: REFRESH_TOKEN_MUTATION,
 					variables: {
@@ -111,53 +108,19 @@ export default NextAuth({
 						token: token.refreshToken,
 					},
 				});
-				console.debug("🚀 ~ file: [...nextauth].ts ~ line 115 ~ jwt ~ result", result);
+
+				if (result?.data?.refreshToken?.token) {
+					token.accessToken = result.data.refreshToken.token;
+				}
+			} catch (error) {
+				console.error("🚀 ~ file: [...nextauth].ts ~ line 118 ~ jwt ~ error", error);
 			}
-
-			return token;
 		},
-		// async jwt({ token, user }) {
-		// 	// console.log("user", user);
-		// 	// console.log("token", token);
-		// 	if (user) {
-		// 		const {
-		// 			accessToken,
-
-		// 			accessTokenExpiresAt,
-
-		// 			refreshToken,
-		// 		} = user;
-
-		// 		return {
-		// 			accessToken,
-
-		// 			accessTokenExpiresAt,
-
-		// 			refreshToken,
-		// 		};
-		// 	}
-
-		// 	if (Date.now() < new Date(token.accessTokenExpiresAt + "").getTime()) {
-		// 		// console.log("trueee")
-		// 		return token;
-		// 	}
-		// 	// else{
-
-		// 	//   console.log("false");
-		// 	//   console.log("date now", Date.now())
-		// 	//   console.log("date now", new Date(Date.now()))
-		// 	//   console.log("token date", token.accessTokenExpiresAt)
-		// 	//   console.log("token date type", typeof token.accessTokenExpiresAt)
-		// 	//   console.log("date now new", new Date(token.accessTokenExpiresAt))
-		// 	//   console.log("date now get", new Date(token.accessTokenExpiresAt + "").getTime())
-
-		// 	// }
-		// 	return await refreshAccessToken(token);
-		// },
 
 		async session({ session, token }) {
 			if (session) {
 				session.accessToken = token.accessToken;
+				session.refreshToken = token.refreshToken;
 				session.user = token.user;
 			}
 			return session;

@@ -22,7 +22,6 @@ const GET_USERS = gql`
 `;
 
 export default function Admin({ session, users }) {
-	console.log("🚀 ~ file: admin.tsx ~ line 23 ~ Admin ~ users", users);
 	return (
 		<div className="container">
 			<Head>
@@ -61,10 +60,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 			};
 		}
 	} catch (error) {
-		console.log(
-			"🚀 ~ file: admin.tsx ~ line 69 ~ constgetServerSideProps:GetServerSideProps= ~ error",
-			error
-		);
+		// console.error(
+		// 	"🚀 ~ file: admin.tsx ~ line 69 ~ constgetServerSideProps:GetServerSideProps= ~ error",
+		// 	error
+		// );
 		return {
 			props: {
 				session: null,

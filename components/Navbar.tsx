@@ -1,17 +1,35 @@
+import { useMutation } from "@apollo/client";
+import { User } from "@prisma/client";
 import Paths from "core/paths";
+import { REVOKE_TOKEN_MUTATION } from "graphql/mutations/authPayloadMutations";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import path from "path";
 import { useState } from "react";
+
 const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const { data: session } = useSession();
 	const router = useRouter();
+	const [Logout, { data, loading, error }] = useMutation(REVOKE_TOKEN_MUTATION);
 	const handleSignOut = async (e) => {
-		e.preventDefault();
-		const data = await signOut({ redirect: false, callbackUrl: `${Paths.Home}` });
-		router.push(data.url);
+		try {
+			e.preventDefault();
+			if (loading) return;
+			const revokeToken = await Logout({
+				variables: {
+					token: session.refreshToken,
+					userId: (session.user as User).id,
+				},
+			});
+			console.log("🚀 ~ file: Navbar.tsx ~ line 25 ~ handleSignOut ~ revokeToken", revokeToken);
+			if (revokeToken?.data) {
+				const result = await signOut({ redirect: false, callbackUrl: `${Paths.Home}` });
+				router.push(result?.url);
+			}
+		} catch (error) {
+			console.log("🚀 ~ file: Navbar.tsx ~ line 28 ~ handleSignOut ~ error", error);
+		}
 	};
 	const openMenu = () => {
 		setMenuOpen(true);
@@ -31,21 +49,13 @@ const Navbar = () => {
 					menuOpen ? "flex flex-col " : "hidden"
 				} md:flex md:flex-row md:items-center md:justify-center md:row-start-1 md:col-start-2 md:col-end-3  col-start-1 col-span-3 row-start-2 items-start justify-center content-center space-x-8`}
 			>
-				<a className="md:mx-0 mx-8 menu-line" href="">
-					Home
-				</a>
-				<a className="menu-line" href="">
-					About Us
-				</a>
-				<a className="menu-line" href="">
-					Blogs
-				</a>
-				<a className="menu-line" href="">
-					Our Team
-				</a>
-				<a className="menu-line" href="">
-					Contact Us
-				</a>
+				<Link href="/">
+					<a className="md:mx-0 mx-8 menu-line">Home</a>
+				</Link>
+
+				<Link href="/admin">
+					<a className="menu-line">Admin</a>
+				</Link>
 			</div>
 
 			{session && (
