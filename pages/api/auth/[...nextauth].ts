@@ -12,23 +12,7 @@ import { Role, User } from "@prisma/client";
 import { MAX_AGE, TOKEN_NAME } from "core/auth-cookies";
 import { setAuthToken } from "core/apollo-headers";
 import { REFRESH_TOKEN_MUTATION } from "graphql/mutations/authPayloadMutations";
-
-const LOGIN_MUTATION = gql`
-	mutation UserLogin($email: String!, $password: String!) {
-		userLogin(email: $email, password: $password) {
-			token
-			refreshToken
-			user {
-				id
-				name
-				avatar
-				email
-				role
-				emailConfirmed
-			}
-		}
-	}
-`;
+import { LOGIN_MUTATION } from "graphql/mutations/userMutations";
 
 export default NextAuth({
 	debug: process.env.NODE_ENV !== "production",

@@ -8,7 +8,7 @@ const MainLayout = ({ children }) => {
 		ssr: false,
 	});
 	return (
-		<div className="overflow-hidden">
+		<div className="overflow-x-hidden min-h-screen grid grid-rows-[auto_1fr_auto]">
 			<header>
 				{/* <Suspense>
 					<Errors />

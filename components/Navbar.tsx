@@ -3,12 +3,14 @@ import { User } from "@prisma/client";
 import Paths from "core/paths";
 import { REVOKE_TOKEN_MUTATION } from "graphql/mutations/authPayloadMutations";
 import { signOut, useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
 const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
+	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 	const { data: session } = useSession();
 	const router = useRouter();
 	const [Logout, { data, loading, error }] = useMutation(REVOKE_TOKEN_MUTATION);
@@ -22,13 +24,12 @@ const Navbar = () => {
 					userId: (session.user as User).id,
 				},
 			});
-			console.log("🚀 ~ file: Navbar.tsx ~ line 25 ~ handleSignOut ~ revokeToken", revokeToken);
 			if (revokeToken?.data) {
 				const result = await signOut({ redirect: false, callbackUrl: `${Paths.Home}` });
 				router.push(result?.url);
 			}
 		} catch (error) {
-			console.log("🚀 ~ file: Navbar.tsx ~ line 28 ~ handleSignOut ~ error", error);
+			console.error("🚀 ~ file: Navbar.tsx ~ line 28 ~ handleSignOut ~ error", error);
 		}
 	};
 	const openMenu = () => {
@@ -44,6 +45,9 @@ const Navbar = () => {
 			<div className="flex items-center columns-1 mx-8">
 				<h3 className="text-2xl font-medium text-blue-500">LOGO</h3>
 			</div>
+			{
+				//#region menu Items
+			}
 			<div
 				className={` ${
 					menuOpen ? "flex flex-col " : "hidden"
@@ -57,6 +61,9 @@ const Navbar = () => {
 					<a className="menu-line">Admin</a>
 				</Link>
 			</div>
+			{
+				//#endregion
+			}
 
 			{session && (
 				<div className="flex items-center space-x-2 md:col-start-3 md:row-start-1 col-start-2  mx-8">
@@ -98,30 +105,65 @@ const Navbar = () => {
 							/>
 						</svg>
 					</a>
-					<a href="#" className="p-2 rounded-full bg-blue-50">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							className="w-6 h-6 text-gray-200"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth="2"
-								d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+
+					<button
+						className="p-2 rounded-full bg-blue-50 relative flex justify-center"
+						onClick={() => {
+							setAccountMenuOpen(!accountMenuOpen);
+						}}
+					>
+						{!(session.user as User).avatar && (
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="w-6 h-6 text-gray-200"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="2"
+									d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+								/>
+							</svg>
+						)}
+						{(session.user as User).avatar && (
+							<Image
+								src={`/${(session.user as User).avatar}`}
+								alt="user account image"
+								width="40"
+								height="40"
 							/>
-						</svg>
-					</a>
-					<Link href="#">
-						<a
-							className="bg-red-400 w-20 rounded-full text-white text-center py-2"
-							onClick={handleSignOut}
+						)}
+						<div
+							className={`${
+								accountMenuOpen ? "flex" : "hidden"
+							}  z-10 absolute w-36 top-full  flex-col items-center justify-center`}
 						>
-							Sign Out
-						</a>
-					</Link>
+							<svg
+								className="w-6 h-8 ml-1 text-white"
+								fill="currentColor"
+								stroke="currentColor"
+								viewBox="0 0 20 20"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									fillRule="evenodd"
+									d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+									clipRule="evenodd"
+								></path>
+							</svg>
+							<Link href="#">
+								<a
+									className="bg-red-400 rounded-full text-white text-center p-2"
+									onClick={handleSignOut}
+								>
+									Sign Out
+								</a>
+							</Link>
+						</div>
+					</button>
 				</div>
 			)}
 			{!session && (
