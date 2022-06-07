@@ -1,4 +1,5 @@
 export { AttendanceRelationsResolver } from "./Attendance/AttendanceRelationsResolver";
+export { ContactRelationsResolver } from "./Contact/ContactRelationsResolver";
 export { ExamRelationsResolver } from "./Exam/ExamRelationsResolver";
 export { GradeRelationsResolver } from "./Grade/GradeRelationsResolver";
 export { GroupRelationsResolver } from "./Group/GroupRelationsResolver";

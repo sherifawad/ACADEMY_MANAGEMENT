@@ -1,19 +1,11 @@
 import { gql, useMutation } from "@apollo/client";
+import { SIGN_UP_MUTATION } from "graphql/mutations/userMutations";
 import Head from "next/head";
 import Link from "next/link";
 import React, { useState } from "react";
 import { BiLock } from "react-icons/bi";
 import { FaRegUser } from "react-icons/fa";
 import { GoMail } from "react-icons/go";
-
-const SIGNUP_MUTATION = gql`
-	mutation Mutation($email: String!, $password: String!, $name: String, $avatar: String) {
-		userRegister(email: $email, password: $password, name: $name, avatar: $avatar) {
-			id
-			name
-		}
-	}
-`;
 
 function Register({ setLogin }) {
 	const [formState, setFormState] = useState({
@@ -22,10 +14,13 @@ function Register({ setLogin }) {
 		name: "",
 		avatar: "",
 		confirmPassword: "",
+		phone: "",
+		parentsPhones: "",
+		address: "",
 		error: "",
 	});
 
-	const [signup, { data, error, loading }] = useMutation(SIGNUP_MUTATION);
+	const [signup, { data, error, loading }] = useMutation(SIGN_UP_MUTATION);
 	const submitContact = async (e) => {
 		e.preventDefault();
 		// if password not equal confirmPassword return
@@ -42,6 +37,9 @@ function Register({ setLogin }) {
 				password: formState.password,
 				name: formState.name,
 				avatar: formState.avatar,
+				phone: formState.phone,
+				address: formState.address,
+				parentsPhones: formState.parentsPhones,
 			},
 		});
 	};
@@ -105,6 +103,87 @@ function Register({ setLogin }) {
 						/>
 					</div>
 				</div>
+
+				<div className="flex flex-col px-4 gap-2">
+					<label htmlFor="phone" className="text-gray-700">
+						Phone
+					</label>
+					<div className="account-input">
+						<h3 className="plb-2 pli-4">
+							<GoMail />
+						</h3>
+						<input
+							id="phone"
+							name="phone"
+							className="flex-grow outline-none"
+							type="phone"
+							required
+							placeholder="Type your phone"
+							value={formState.phone}
+							onChange={(e) =>
+								setFormState({
+									...formState,
+									error: "",
+									phone: e.target.value,
+								})
+							}
+						/>
+					</div>
+				</div>
+				<div className="flex flex-col px-4 gap-2">
+					<label htmlFor="parentPhone" className="text-gray-700">
+						ParentPhone
+					</label>
+					<div className="account-input">
+						<h3 className="plb-2 pli-4">
+							<GoMail />
+						</h3>
+						<input
+							id="parentPhone"
+							name="parentPhone"
+							className="flex-grow outline-none"
+							type="phone"
+							required
+							placeholder="Type your parentPhone"
+							value={formState.parentsPhones}
+							onChange={(e) =>
+								setFormState({
+									...formState,
+									error: "",
+									parentsPhones: e.target.value,
+								})
+							}
+						/>
+					</div>
+				</div>
+
+				<div className="flex flex-col px-4 gap-2">
+					<label htmlFor="address" className="text-gray-700">
+						Address
+					</label>
+					<div className="account-input">
+						<h3 className="plb-2 pli-4">
+							<GoMail />
+						</h3>
+						<input
+							id="address"
+							name="address"
+							className="flex-grow outline-none"
+							type="text"
+							required
+							placeholder="Type your address"
+							value={formState.address}
+							onChange={(e) =>
+								setFormState({
+									...formState,
+									error: "",
+									address: e.target.value,
+								})
+							}
+						/>
+					</div>
+				</div>
+
 				<div className="flex flex-col px-4 gap-2">
 					<label htmlFor="password" className="text-gray-700">
 						Password

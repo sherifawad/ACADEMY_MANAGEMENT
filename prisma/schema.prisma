@@ -49,18 +49,31 @@ model RefreshToken {
     @@map("refresh_tokens")
 }
 
+model Contact {
+    id             String  @id
+    email          String? @unique
+    emailConfirmed Boolean @default(false)
+    phone          String @unique
+    parentsPhones  String?
+    address        String
+    note           String?
+
+    user User @relation(fields: [id], references: [id])
+    @@map("Contacts")
+}
+
 model User {
-    id             String         @id @default(uuid())
-    name           String
-    avatar         String?
-    email          String?        @unique
-    emailConfirmed Boolean        @default(false)
-    role           Role           @default(Student)
-    createdAt      DateTime       @default(now())
-    updatedAt      DateTime       @updatedAt
-    password       UserPassword?
-    profile        Profile?
-    tokens         RefreshToken[]
+    id        String         @id @default(uuid())
+    name      String
+    avatar    String?
+    contact   Contact?
+    isActive  Boolean        @default(true)
+    role      Role           @default(Student)
+    createdAt DateTime       @default(now())
+    updatedAt DateTime       @updatedAt
+    password  UserPassword?
+    profile   Profile?
+    tokens    RefreshToken[]
 
     @@map("users")
 }
@@ -88,6 +101,7 @@ model Profile {
 model Grade {
     id        String   @id @default(uuid())
     name      String
+    isActive  Boolean  @default(true)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     createdBy String
@@ -100,6 +114,7 @@ model Grade {
 model Group {
     id         String       @id @default(uuid())
     name       String
+    isActive   Boolean      @default(true)
     createdAt  DateTime     @default(now())
     updatedAt  DateTime     @updatedAt
     startAt    String?

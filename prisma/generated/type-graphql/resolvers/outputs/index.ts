@@ -1,5 +1,6 @@
 export { AffectedRowsOutput } from "./AffectedRowsOutput";
 export { AggregateAttendance } from "./AggregateAttendance";
+export { AggregateContact } from "./AggregateContact";
 export { AggregateExam } from "./AggregateExam";
 export { AggregateGrade } from "./AggregateGrade";
 export { AggregateGroup } from "./AggregateGroup";
@@ -11,6 +12,10 @@ export { AttendanceCountAggregate } from "./AttendanceCountAggregate";
 export { AttendanceGroupBy } from "./AttendanceGroupBy";
 export { AttendanceMaxAggregate } from "./AttendanceMaxAggregate";
 export { AttendanceMinAggregate } from "./AttendanceMinAggregate";
+export { ContactCountAggregate } from "./ContactCountAggregate";
+export { ContactGroupBy } from "./ContactGroupBy";
+export { ContactMaxAggregate } from "./ContactMaxAggregate";
+export { ContactMinAggregate } from "./ContactMinAggregate";
 export { ExamAvgAggregate } from "./ExamAvgAggregate";
 export { ExamCountAggregate } from "./ExamCountAggregate";
 export { ExamGroupBy } from "./ExamGroupBy";

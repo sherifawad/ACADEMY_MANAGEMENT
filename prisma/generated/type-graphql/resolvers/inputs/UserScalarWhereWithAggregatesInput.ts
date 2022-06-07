@@ -42,15 +42,10 @@ export class UserScalarWhereWithAggregatesInput {
   })
   avatar?: StringNullableWithAggregatesFilter | undefined;
 
-  @TypeGraphQL.Field(_type => StringNullableWithAggregatesFilter, {
-    nullable: true
-  })
-  email?: StringNullableWithAggregatesFilter | undefined;
-
   @TypeGraphQL.Field(_type => BoolWithAggregatesFilter, {
     nullable: true
   })
-  emailConfirmed?: BoolWithAggregatesFilter | undefined;
+  isActive?: BoolWithAggregatesFilter | undefined;
 
   @TypeGraphQL.Field(_type => EnumRoleWithAggregatesFilter, {
     nullable: true

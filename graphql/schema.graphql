@@ -22,6 +22,16 @@ type AuthPayload {
   userId: String
 }
 
+type Contact {
+  address: String
+  email: String
+  emailConfirmed: Boolean
+  id: String
+  note: String
+  parentsPhones: String
+  phone: String
+}
+
 """
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -44,6 +54,7 @@ type Grade {
   createdBy: String
   groups: [Group]
   id: String!
+  isActive: Boolean
   name: String
   profiles: [Profile]
   updatedAt: DateTime
@@ -57,6 +68,7 @@ type Group {
   endAt: String
   grade: Grade
   id: String
+  isActive: Boolean
   name: String
   profiles: [Profile]
   startAt: String
@@ -66,11 +78,13 @@ type Group {
 
 type Mutation {
   createAttendance(endAt: DateTime, note: String, profileId: String!, startAt: DateTime!): Attendance!
+  createContact(address: String!, email: String, note: String, parentsPhones: String, phone: String!): Contact!
   createExam(date: DateTime!, note: String, score: String!): Exam!
   createGrade(name: String!): Grade!
   createGroup(endAt: DateTime, name: String!, startAt: DateTime): Group!
   createProfile(bio: String, id: String!): Profile!
   deleteAttendance(id: String!): Attendance!
+  deleteContact(id: String!): Contact!
   deleteExam(id: String!): Exam!
   deleteGrade(id: String!): Grade!
   deleteGroup(id: String!): Group!
@@ -78,13 +92,14 @@ type Mutation {
   refreshToken(token: String!, userId: String!): AuthPayload
   revokeToken(token: String!, userId: String!): AuthPayload
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
+  updateContact(address: String, email: String, emailConfirmed: Boolean, id: String!, note: String, parentsPhones: String, phone: String): Contact!
   updateExam(date: DateTime, id: String!, note: String, score: String): Exam!
   updateGrade(id: String!, name: String!): Grade!
   updateGroup(endAt: DateTime, id: String!, name: String, startAt: DateTime): Group!
   updateProfile(bio: String, id: String!): Profile!
   updateUser(avatar: String, email: String, id: String!, name: String, password: String): User!
   userLogin(email: String!, password: String!): AuthPayload!
-  userRegister(avatar: String, email: String!, name: String, password: String!): User!
+  userRegister(address: String!, avatar: String, email: String!, name: String, parentsPhones: String, password: String!, phone: String!): User!
 }
 
 type Profile {
@@ -103,6 +118,7 @@ type Profile {
 type Query {
   AttendanceInDate(date: DateTime!, id: String!): Attendance!
   Attendances(id: String!): [Attendance]!
+  Contact(id: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
   Grade(id: String!): Grade!
@@ -129,10 +145,10 @@ scalar Time
 
 type User {
   avatar: String
+  contact: Contact
   createdAt: DateTime
-  email: String
-  emailConfirmed: Boolean
   id: String
+  isActive: Boolean
   name: String
   profile: Profile
   role: Role

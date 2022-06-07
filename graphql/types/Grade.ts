@@ -8,6 +8,7 @@ export const Grade = objectType({
 	name: "Grade",
 	definition(t) {
 		t.nonNull.string("id");
+		t.boolean("isActive");
 		t.string("name");
 		t.string("createdBy");
 		t.string("updatedBy");

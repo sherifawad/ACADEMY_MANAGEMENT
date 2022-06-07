@@ -1,4 +1,5 @@
 import * as TypeGraphQL from "type-graphql";
+import { Contact } from "../../../models/Contact";
 import { Profile } from "../../../models/Profile";
 import { RefreshToken } from "../../../models/RefreshToken";
 import { User } from "../../../models/User";
@@ -8,6 +9,17 @@ import { transformFields, getPrismaFromContext, transformCountFieldIntoSelectRel
 
 @TypeGraphQL.Resolver(_of => User)
 export class UserRelationsResolver {
+  @TypeGraphQL.FieldResolver(_type => Contact, {
+    nullable: true
+  })
+  async contact(@TypeGraphQL.Root() user: User, @TypeGraphQL.Ctx() ctx: any): Promise<Contact | null> {
+    return getPrismaFromContext(ctx).user.findUnique({
+      where: {
+        id: user.id,
+      },
+    }).contact({});
+  }
+
   @TypeGraphQL.FieldResolver(_type => UserPassword, {
     nullable: true
   })

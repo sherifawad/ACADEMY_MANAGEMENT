@@ -23,15 +23,10 @@ export class UserCreateManyInput {
   })
   avatar?: string | undefined;
 
-  @TypeGraphQL.Field(_type => String, {
-    nullable: true
-  })
-  email?: string | undefined;
-
   @TypeGraphQL.Field(_type => Boolean, {
     nullable: true
   })
-  emailConfirmed?: boolean | undefined;
+  isActive?: boolean | undefined;
 
   @TypeGraphQL.Field(_type => Role, {
     nullable: true

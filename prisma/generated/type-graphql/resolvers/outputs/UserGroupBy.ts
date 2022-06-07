@@ -26,15 +26,10 @@ export class UserGroupBy {
   })
   avatar!: string | null;
 
-  @TypeGraphQL.Field(_type => String, {
-    nullable: true
-  })
-  email!: string | null;
-
   @TypeGraphQL.Field(_type => Boolean, {
     nullable: false
   })
-  emailConfirmed!: boolean;
+  isActive!: boolean;
 
   @TypeGraphQL.Field(_type => Role, {
     nullable: false

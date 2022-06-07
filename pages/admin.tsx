@@ -9,6 +9,7 @@ import { gql, useQuery } from "@apollo/client";
 import { apolloClient } from "lib/apollo";
 import { getToken } from "next-auth/jwt";
 import { setAuthToken } from "core/apollo-headers";
+import UsersList from "components/UsersList";
 
 const GET_USERS = gql`
 	query Users {
@@ -32,6 +33,7 @@ export default function Admin({ session, users }) {
 			{users?.map((user, index) => (
 				<div key={index}>{user.name}</div>
 			))}
+			<UsersList />
 		</div>
 	);
 }

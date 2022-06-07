@@ -8,6 +8,7 @@ export const Group = objectType({
 	name: "Group",
 	definition(t) {
 		t.string("id");
+		t.boolean("isActive");
 		t.string("name");
 		t.string("createdBy");
 		t.string("updatedBy");

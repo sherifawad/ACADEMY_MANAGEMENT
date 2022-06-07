@@ -19,6 +19,11 @@ export class GroupCreateWithoutAttendanceInput {
   })
   name!: string;
 
+  @TypeGraphQL.Field(_type => Boolean, {
+    nullable: true
+  })
+  isActive?: boolean | undefined;
+
   @TypeGraphQL.Field(_type => Date, {
     nullable: true
   })

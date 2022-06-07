@@ -2,6 +2,7 @@ import * as TypeGraphQL from "type-graphql";
 import * as GraphQLScalars from "graphql-scalars";
 import { Prisma } from "@prisma/client";
 import { DecimalJSScalar } from "../../scalars";
+import { ContactOrderByWithRelationInput } from "../inputs/ContactOrderByWithRelationInput";
 import { ProfileOrderByWithRelationInput } from "../inputs/ProfileOrderByWithRelationInput";
 import { RefreshTokenOrderByRelationAggregateInput } from "../inputs/RefreshTokenOrderByRelationAggregateInput";
 import { UserPasswordOrderByWithRelationInput } from "../inputs/UserPasswordOrderByWithRelationInput";
@@ -26,15 +27,15 @@ export class UserOrderByWithRelationInput {
   })
   avatar?: "asc" | "desc" | undefined;
 
-  @TypeGraphQL.Field(_type => SortOrder, {
+  @TypeGraphQL.Field(_type => ContactOrderByWithRelationInput, {
     nullable: true
   })
-  email?: "asc" | "desc" | undefined;
+  contact?: ContactOrderByWithRelationInput | undefined;
 
   @TypeGraphQL.Field(_type => SortOrder, {
     nullable: true
   })
-  emailConfirmed?: "asc" | "desc" | undefined;
+  isActive?: "asc" | "desc" | undefined;
 
   @TypeGraphQL.Field(_type => SortOrder, {
     nullable: true

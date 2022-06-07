@@ -9,6 +9,7 @@ async function seed() {
 	await client.exam.deleteMany();
 	await client.attendance.deleteMany();
 	await client.profile.deleteMany();
+	await client.contact.deleteMany();
 	await client.user.deleteMany();
 	await client.group.deleteMany();
 	await client.grade.deleteMany();
@@ -18,7 +19,6 @@ async function seed() {
 
 	const user = await client.user.create({
 		data: {
-			email: "user@user.com",
 			name: "user",
 			role: Role.USER,
 			password: {
@@ -27,14 +27,21 @@ async function seed() {
 					forceChange: false,
 				},
 			},
+			contact: {
+				create: {
+					email: "user@user.com",
+					address: "user address",
+					phone: "012012012012012",
+				},
+			},
 		},
 		include: {
 			password: true,
+			contact: true,
 		},
 	});
 	const admin = await client.user.create({
 		data: {
-			email: "admin@admin.com",
 			name: "admin",
 			role: Role.ADMIN,
 			password: {
@@ -43,15 +50,22 @@ async function seed() {
 					forceChange: false,
 				},
 			},
+			contact: {
+				create: {
+					email: "admin@admin.com",
+					address: "admin address",
+					phone: "012012012012011",
+				},
+			},
 		},
 		include: {
 			password: true,
+			contact: true,
 		},
 	});
 
 	const student = await client.user.create({
 		data: {
-			email: "student@student.com",
 			name: "student",
 			role: Role.Student,
 			password: {
@@ -60,9 +74,17 @@ async function seed() {
 					forceChange: false,
 				},
 			},
+			contact: {
+				create: {
+					email: "student@student.com",
+					address: "admin address",
+					phone: "012012012012015",
+				},
+			},
 		},
 		include: {
 			password: true,
+			contact: true,
 		},
 	});
 

@@ -1,4 +1,4 @@
-import { PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
+import { Contact, PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
 import { hashPassword, verifyPassword } from "core/crypto";
 import { nonNull, objectType, stringArg, extendType } from "nexus";
 import { Context } from ".";
@@ -16,9 +16,8 @@ export const User = objectType({
 	definition(t) {
 		t.string("id");
 		t.string("name");
+		t.boolean("isActive");
 		t.string("avatar");
-		t.string("email");
-		t.boolean("emailConfirmed");
 		t.field("role", { type: "Role" });
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
@@ -30,6 +29,16 @@ export const User = objectType({
 						where: { id },
 					})
 					.profile();
+			},
+		});
+		t.nullable.field("contact", {
+			type: "Contact",
+			resolve: async ({ id }, _, { prisma }) => {
+				return await prisma.user
+					.findUnique({
+						where: { id },
+					})
+					.contact();
 			},
 		});
 	},
@@ -49,19 +58,23 @@ export const UsersQuery = extendType({
 	},
 });
 
-export type UserParam = Pick<prismaUser, "avatar" | "email" | "name">;
+export type UserParam = Pick<prismaUser, "avatar" | "name"> &
+	Pick<Contact, "email" | "parentsPhones" | "address" | "phone">;
 
-export async function GetUserByEmail(prisma: PrismaClient, email: string): Promise<prismaUser | null> {
-	return await prisma.user.findUnique({
+export async function GetUserByEmail(prisma: PrismaClient, email: string): Promise<Contact | null> {
+	return await prisma.contact.findUnique({
 		where: {
 			email,
+		},
+		include: {
+			user: true,
 		},
 	});
 }
 
 export async function ValidateUserCredentials(
 	prisma: PrismaClient,
-	user: prismaUser,
+	user: prismaUser | Contact,
 	password: string
 ): Promise<boolean> {
 	const userPassword = await GetUserPassword(prisma, user);
@@ -75,26 +88,33 @@ export async function ValidateUserCredentials(
 
 export async function CreateUser(ctx: Context, userParam: UserParam, password: string): Promise<prismaUser> {
 	const hashedPassword = await hashPassword(password);
-
+	const { name, avatar, ...rest } = userParam;
 	return await ctx.prisma.user.create({
 		data: {
-			...userParam,
+			name,
+			avatar,
 			password: {
 				create: {
 					password: hashedPassword,
 					forceChange: false,
 				},
 			},
+			contact: {
+				create: {
+					...rest,
+				},
+			},
 		},
 		include: {
 			password: true,
+			contact: true,
 		},
 	});
 }
 
 export async function CreateRefreshTokenForUser(
 	prisma: PrismaClient,
-	user: prismaUser
+	user: prismaUser | Contact
 ): Promise<RefreshToken> {
 	let hash = srs({ length: 100 });
 	var expiration = new Date();
@@ -110,18 +130,11 @@ export async function CreateRefreshTokenForUser(
 	});
 }
 
-export function CreateJWTForUser(user): string {
+export function CreateJWTForUser(user: prismaUser | Contact): string {
 	const { JWT_SECRET } = process.env;
 
 	assert(JWT_SECRET, "Missing JWT_SECRET environment variable");
 	return encodeUser(user, JWT_SECRET);
-	// const token: UserToken = {
-	// 	userId: user.id,
-	// };
-
-	// return sign(token, JWT_SECRET, {
-	// 	expiresIn: "10m",
-	// });
 }
 
 //get unique User
@@ -183,12 +196,22 @@ export const userRegister = extendType({
 				name: stringArg(),
 				email: nonNull(stringArg()),
 				password: nonNull(stringArg()),
+				address: nonNull(stringArg()),
+				parentsPhones: stringArg(),
 				avatar: stringArg(),
+				phone: nonNull(stringArg()),
 			},
-			resolve: async (_parent, { name, email, password, avatar }, ctx) => {
+			resolve: async (
+				_parent,
+				{ name, email, password, avatar, address, parentsPhones, phone },
+				ctx
+			) => {
 				const userParam: UserParam = {
 					avatar: avatar ?? null,
 					email,
+					address,
+					phone,
+					parentsPhones: parentsPhones ?? phone,
 					name: name ?? email,
 				};
 

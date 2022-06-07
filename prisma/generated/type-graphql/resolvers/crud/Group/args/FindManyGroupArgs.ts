@@ -35,5 +35,5 @@ export class FindManyGroupArgs {
   @TypeGraphQL.Field(_type => [GroupScalarFieldEnum], {
     nullable: true
   })
-  distinct?: Array<"id" | "name" | "createdAt" | "updatedAt" | "startAt" | "endAt" | "createdBy" | "updatedBy" | "gradeId"> | undefined;
+  distinct?: Array<"id" | "name" | "isActive" | "createdAt" | "updatedAt" | "startAt" | "endAt" | "createdBy" | "updatedBy" | "gradeId"> | undefined;
 }

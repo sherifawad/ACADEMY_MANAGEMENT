@@ -17,6 +17,11 @@ export class GroupMaxAggregate {
   })
   name!: string | null;
 
+  @TypeGraphQL.Field(_type => Boolean, {
+    nullable: true
+  })
+  isActive!: boolean | null;
+
   @TypeGraphQL.Field(_type => Date, {
     nullable: true
   })

@@ -1,15 +1,8 @@
 import NextAuth from "next-auth";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import prisma from "lib/prisma";
-import { GetUserByEmail, nextAuthToken, ValidateUserCredentials } from "graphql/types";
-import { decodeToken, encodeUser, getTokenState, JWT_SECRET, signUser } from "core/jwt";
+import { getTokenState, JWT_SECRET } from "core/jwt";
 import Paths from "core/paths";
-import { gql } from "@apollo/client";
 import { apolloClient } from "lib/apollo";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { sign } from "jsonwebtoken";
-import { Role, User } from "@prisma/client";
-import { MAX_AGE, TOKEN_NAME } from "core/auth-cookies";
 import { setAuthToken } from "core/apollo-headers";
 import { REFRESH_TOKEN_MUTATION } from "graphql/mutations/authPayloadMutations";
 import { LOGIN_MUTATION } from "graphql/mutations/userMutations";
@@ -51,7 +44,7 @@ export default NextAuth({
 					if (!result.data) throw new Error("Data not returned!");
 
 					if (result.data.userLogin) {
-						const { user, token, refreshToken, expire } = result.data.userLogin;
+						const { user, token, refreshToken } = result.data.userLogin;
 						return {
 							...user,
 							accessToken: token,

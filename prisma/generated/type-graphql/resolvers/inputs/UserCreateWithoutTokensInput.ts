@@ -2,6 +2,7 @@ import * as TypeGraphQL from "type-graphql";
 import * as GraphQLScalars from "graphql-scalars";
 import { Prisma } from "@prisma/client";
 import { DecimalJSScalar } from "../../scalars";
+import { ContactCreateNestedOneWithoutUserInput } from "../inputs/ContactCreateNestedOneWithoutUserInput";
 import { ProfileCreateNestedOneWithoutUserInput } from "../inputs/ProfileCreateNestedOneWithoutUserInput";
 import { UserPasswordCreateNestedOneWithoutUserInput } from "../inputs/UserPasswordCreateNestedOneWithoutUserInput";
 import { Role } from "../../enums/Role";
@@ -25,15 +26,15 @@ export class UserCreateWithoutTokensInput {
   })
   avatar?: string | undefined;
 
-  @TypeGraphQL.Field(_type => String, {
+  @TypeGraphQL.Field(_type => ContactCreateNestedOneWithoutUserInput, {
     nullable: true
   })
-  email?: string | undefined;
+  contact?: ContactCreateNestedOneWithoutUserInput | undefined;
 
   @TypeGraphQL.Field(_type => Boolean, {
     nullable: true
   })
-  emailConfirmed?: boolean | undefined;
+  isActive?: boolean | undefined;
 
   @TypeGraphQL.Field(_type => Role, {
     nullable: true

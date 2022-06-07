@@ -20,7 +20,7 @@ export class GroupByGroupArgs {
   @TypeGraphQL.Field(_type => [GroupScalarFieldEnum], {
     nullable: false
   })
-  by!: Array<"id" | "name" | "createdAt" | "updatedAt" | "startAt" | "endAt" | "createdBy" | "updatedBy" | "gradeId">;
+  by!: Array<"id" | "name" | "isActive" | "createdAt" | "updatedAt" | "startAt" | "endAt" | "createdBy" | "updatedBy" | "gradeId">;
 
   @TypeGraphQL.Field(_type => GroupScalarWhereWithAggregatesInput, {
     nullable: true

@@ -3,6 +3,7 @@ import * as GraphQLScalars from "graphql-scalars";
 import { Prisma } from "@prisma/client";
 import { DecimalJSScalar } from "../../scalars";
 import { BoolFilter } from "../inputs/BoolFilter";
+import { ContactRelationFilter } from "../inputs/ContactRelationFilter";
 import { DateTimeFilter } from "../inputs/DateTimeFilter";
 import { EnumRoleFilter } from "../inputs/EnumRoleFilter";
 import { ProfileRelationFilter } from "../inputs/ProfileRelationFilter";
@@ -45,15 +46,15 @@ export class UserWhereInput {
   })
   avatar?: StringNullableFilter | undefined;
 
-  @TypeGraphQL.Field(_type => StringNullableFilter, {
+  @TypeGraphQL.Field(_type => ContactRelationFilter, {
     nullable: true
   })
-  email?: StringNullableFilter | undefined;
+  contact?: ContactRelationFilter | undefined;
 
   @TypeGraphQL.Field(_type => BoolFilter, {
     nullable: true
   })
-  emailConfirmed?: BoolFilter | undefined;
+  isActive?: BoolFilter | undefined;
 
   @TypeGraphQL.Field(_type => EnumRoleFilter, {
     nullable: true

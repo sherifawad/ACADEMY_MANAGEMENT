@@ -20,6 +20,11 @@ export class GradeGroupBy {
   })
   name!: string;
 
+  @TypeGraphQL.Field(_type => Boolean, {
+    nullable: false
+  })
+  isActive!: boolean;
+
   @TypeGraphQL.Field(_type => Date, {
     nullable: false
   })

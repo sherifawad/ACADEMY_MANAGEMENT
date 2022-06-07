@@ -1,4 +1,5 @@
 export { AttendanceCrudResolver } from "./Attendance/AttendanceCrudResolver";
+export { ContactCrudResolver } from "./Contact/ContactCrudResolver";
 export { ExamCrudResolver } from "./Exam/ExamCrudResolver";
 export { GradeCrudResolver } from "./Grade/GradeCrudResolver";
 export { GroupCrudResolver } from "./Group/GroupCrudResolver";

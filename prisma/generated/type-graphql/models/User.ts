@@ -2,6 +2,7 @@ import * as TypeGraphQL from "type-graphql";
 import * as GraphQLScalars from "graphql-scalars";
 import { Prisma } from "@prisma/client";
 import { DecimalJSScalar } from "../scalars";
+import { Contact } from "../models/Contact";
 import { Profile } from "../models/Profile";
 import { RefreshToken } from "../models/RefreshToken";
 import { UserPassword } from "../models/UserPassword";
@@ -27,15 +28,12 @@ export class User {
   })
   avatar?: string | null;
 
-  @TypeGraphQL.Field(_type => String, {
-    nullable: true
-  })
-  email?: string | null;
+  contact?: Contact | null;
 
   @TypeGraphQL.Field(_type => Boolean, {
     nullable: false
   })
-  emailConfirmed!: boolean;
+  isActive!: boolean;
 
   @TypeGraphQL.Field(_type => Role, {
     nullable: false

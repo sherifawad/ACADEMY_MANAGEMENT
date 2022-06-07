@@ -1,4 +1,5 @@
 export * from "./Attendance/args";
+export * from "./Contact/args";
 export * from "./Exam/args";
 export * from "./Grade/args";
 export * from "./Group/args";

@@ -23,15 +23,10 @@ export class UserMinAggregate {
   })
   avatar!: string | null;
 
-  @TypeGraphQL.Field(_type => String, {
-    nullable: true
-  })
-  email!: string | null;
-
   @TypeGraphQL.Field(_type => Boolean, {
     nullable: true
   })
-  emailConfirmed!: boolean | null;
+  isActive!: boolean | null;
 
   @TypeGraphQL.Field(_type => Role, {
     nullable: true

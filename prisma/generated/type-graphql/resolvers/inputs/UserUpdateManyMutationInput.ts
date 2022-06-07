@@ -27,15 +27,10 @@ export class UserUpdateManyMutationInput {
   })
   avatar?: NullableStringFieldUpdateOperationsInput | undefined;
 
-  @TypeGraphQL.Field(_type => NullableStringFieldUpdateOperationsInput, {
-    nullable: true
-  })
-  email?: NullableStringFieldUpdateOperationsInput | undefined;
-
   @TypeGraphQL.Field(_type => BoolFieldUpdateOperationsInput, {
     nullable: true
   })
-  emailConfirmed?: BoolFieldUpdateOperationsInput | undefined;
+  isActive?: BoolFieldUpdateOperationsInput | undefined;
 
   @TypeGraphQL.Field(_type => EnumRoleFieldUpdateOperationsInput, {
     nullable: true
