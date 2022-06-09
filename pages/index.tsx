@@ -9,14 +9,6 @@ import { GoMail } from "react-icons/go";
 import Register from "components/Register";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-const SIGNUP_MUTATION = gql`
-	mutation Mutation($email: String!, $password: String!, $name: String, $avatar: String) {
-		userRegister(email: $email, password: $password, name: $name, avatar: $avatar) {
-			id
-			name
-		}
-	}
-`;
 
 export default function Home() {
 	return (
