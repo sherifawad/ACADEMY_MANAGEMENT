@@ -6,6 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { setAuthToken } from "core/apollo-headers";
 import { REFRESH_TOKEN_MUTATION } from "graphql/mutations/authPayloadMutations";
 import { LOGIN_MUTATION } from "graphql/mutations/userMutations";
+import { User } from "@prisma/client";
 
 export default NextAuth({
 	debug: process.env.NODE_ENV !== "production",
