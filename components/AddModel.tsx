@@ -13,7 +13,6 @@ function AddModel({ children, isOpened, onClose, title }) {
 		} else {
 			ref.current?.close();
 		}
-		console.log("🚀 ~ file: AddModel.tsx ~ line 12 ~ useEffect ~ isOpened", isOpened);
 	}, [isOpened]);
 
 	const preventAutoClose = (e: React.MouseEvent) => e.stopPropagation();
@@ -22,7 +21,7 @@ function AddModel({ children, isOpened, onClose, title }) {
 		<dialog
 			ref={ref}
 			aria-hidden="true"
-			className="modal fade grid w-max h-max outline-none overflow-x-hidden overflow-y-auto bg-transparent"
+			className="modal fade w-max h-max outline-none overflow-x-hidden overflow-y-auto bg-transparent"
 		>
 			<div
 				className="modal-dialog modal-dialog-centered relative w-auto pointer-events-none"

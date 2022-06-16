@@ -6,6 +6,7 @@ import { JWT } from "next-auth/jwt";
 export const JWT_ALGORITHM = "HS256";
 export const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN_LEGROOM = 10 * 60;
+const oneMinutes = 1000 * 60 * 1;
 
 export function getTokenState(token?: string | null): AccessTokenState {
 	if (!token) {
@@ -15,7 +16,7 @@ export function getTokenState(token?: string | null): AccessTokenState {
 	const decoded = decode(token) as JwtPayload;
 	if (!decoded) {
 		return { valid: false, needRefresh: true };
-	} else if (decoded.exp && Date.now() + 1 >= decoded.exp * 1000) {
+	} else if (new Date(decoded.exp).getTime() - new Date().getTime() < oneMinutes) {
 		return { valid: true, needRefresh: true };
 	} else {
 		return { valid: true, needRefresh: false };
@@ -37,7 +38,7 @@ export const signUser = (user: User | JWT) => {
 export const encodeUser = (
 	user: nextAuthToken | User,
 	secret: string | Buffer = JWT_SECRET,
-	exp: string = "30s"
+	exp: string = "90s"
 ) => {
 	const payload = {
 		name: user.name,

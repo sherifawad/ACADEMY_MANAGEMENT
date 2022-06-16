@@ -74,24 +74,25 @@ export default NextAuth({
 				}
 
 				const tokenState = getTokenState(token?.accessToken as string | undefined | null);
-				if (!tokenState?.needRefresh || tokenState?.valid) {
-					return token;
-				}
 
-				apolloClient.setLink(setAuthToken());
-				const result = await apolloClient.mutate({
-					mutation: REFRESH_TOKEN_MUTATION,
-					variables: {
-						userId: (token.user as User).id,
-						token: token.refreshToken,
-					},
-				});
+				if (tokenState?.needRefresh) {
+					apolloClient.setLink(setAuthToken());
+					const result = await apolloClient.mutate({
+						mutation: REFRESH_TOKEN_MUTATION,
+						variables: {
+							userId: (token.user as User).id,
+							token: token.refreshToken,
+						},
+					});
 
-				if (result?.data?.refreshToken?.token) {
-					token.accessToken = result.data.refreshToken.token;
+					if (result?.data?.refreshToken?.token) {
+						token.accessToken = result.data.refreshToken.token;
+					}
 				}
 			} catch (error) {
 				console.error("🚀 ~ file: [...nextauth].ts ~ line 118 ~ jwt ~ error", error);
+			} finally {
+				return token;
 			}
 		},
 

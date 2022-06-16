@@ -60,6 +60,10 @@ const Navbar = () => {
 				<Link href="/admin">
 					<a className="menu-line">Admin</a>
 				</Link>
+                
+				<Link href="/grade">
+					<a className="menu-line">Grade</a>
+				</Link>
 			</div>
 			{
 				//#endregion
