@@ -94,8 +94,8 @@ export const createGroupMutation = extendType({
 			type: "Group",
 			args: {
 				name: nonNull(stringArg()),
-				startAt: nullable(arg({ type: "DateTime" })),
-				endAt: nullable(arg({ type: "DateTime" })),
+				startAt: nullable(stringArg()),
+				endAt: nullable(stringArg()),
 			},
 			resolve: async (_parent, { name, startAt, endAt }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
@@ -123,8 +123,8 @@ export const UpdateGroupMutation = extendType({
 			args: {
 				id: nonNull(stringArg()),
 				name: stringArg(),
-				startAt: arg({ type: "DateTime" }),
-				endAt: arg({ type: "DateTime" }),
+				startAt: stringArg(),
+				endAt: stringArg(),
 			},
 			resolve: async (_parent, { id, name, startAt, endAt }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;

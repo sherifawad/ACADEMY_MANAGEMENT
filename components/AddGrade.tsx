@@ -1,10 +1,7 @@
 import { useMutation } from "@apollo/client";
-import { setAuthToken } from "core/apollo-headers";
 import { ADD_GRADE_MUTATION } from "graphql/mutations/gradeMutations";
-import { apolloClient } from "lib/apollo";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import GradeGroupSelect from "./GradeGroupSelect";
 
 function AddGrade({ onProceed, onClose }) {
 	const { data: session, status } = useSession();

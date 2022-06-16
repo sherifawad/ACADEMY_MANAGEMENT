@@ -60,9 +60,13 @@ const Navbar = () => {
 				<Link href="/admin">
 					<a className="menu-line">Admin</a>
 				</Link>
-                
+
 				<Link href="/grade">
 					<a className="menu-line">Grade</a>
+				</Link>
+
+				<Link href="/group">
+					<a className="menu-line">Group</a>
 				</Link>
 			</div>
 			{
