@@ -1,9 +1,14 @@
 import { useMutation } from "@apollo/client";
+import { arEG } from "date-fns/locale";
 import { ADD_GROUP_MUTATION } from "graphql/mutations/groupMutations";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { TimePicker } from "react-next-dates";
 
 function AddGroup({ onProceed, onClose }) {
+	const mainRef = useRef();
+	const [startDate, setStartDate] = useState(null);
+	const [endDate, setEndDate] = useState(null);
 	const { data: session, status } = useSession();
 	const [formState, setFormState] = useState({
 		name: "",
@@ -38,7 +43,7 @@ function AddGroup({ onProceed, onClose }) {
 
 	return (
 		<form method="dialog" className="space-y-6" action="#">
-			<div>
+			<div ref={mainRef}>
 				<label
 					htmlFor="name"
 					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
@@ -62,50 +67,72 @@ function AddGroup({ onProceed, onClose }) {
 				/>
 			</div>
 
-			<div>
-				<label
-					htmlFor="start"
-					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-				>
-					Start At
-				</label>
-				<input
-					type="time"
-					name="start"
-					id="start"
-					value={formState.startAt}
-					onChange={(e) =>
+			<div className="flex gap-4">
+				<TimePicker
+					locale={arEG}
+					precision={15}
+					date={startDate}
+					onChange={(d) => {
+						setStartDate(d);
 						setFormState({
 							...formState,
-							startAt: e.target.value?.toString(),
-						})
-					}
-					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-					required
-				/>
-			</div>
+							startAt: d?.toLocaleTimeString(),
+						});
+					}}
+					portalContainer={mainRef.current}
+				>
+					{({ inputProps }) => (
+						<div className="w-full">
+							<label
+								htmlFor="start"
+								className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+							>
+								Start At
+							</label>
+							<input
+								{...inputProps}
+								type="time"
+								name="start"
+								id="start"
+								className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+								required
+							/>
+						</div>
+					)}
+				</TimePicker>
 
-			<div>
-				<label
-					htmlFor="end"
-					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-				>
-					End At
-				</label>
-				<input
-					type="time"
-					name="end"
-					id="end"
-					value={formState.endAt}
-					onChange={(e) =>
+				<TimePicker
+					locale={arEG}
+					date={endDate}
+					portalContainer={mainRef.current}
+					precision={15}
+					onChange={(d) => {
+						setEndDate(d);
 						setFormState({
 							...formState,
-							endAt: e.target.value?.toString(),
-						})
-					}
-					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-					required
-				/>
+							endAt: d?.toLocaleTimeString(),
+						});
+					}}
+				>
+					{({ inputProps }) => (
+						<div className="w-full">
+							<label
+								htmlFor="end"
+								className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+							>
+								End At
+							</label>
+							<input
+								{...inputProps}
+								type="time"
+								name="end"
+								id="end"
+								className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+								required
+							/>
+						</div>
+					)}
+				</TimePicker>
 			</div>
 
 			<button

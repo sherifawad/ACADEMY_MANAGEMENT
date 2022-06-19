@@ -3,6 +3,7 @@ import { apolloClient } from "lib/apollo";
 import { SessionProvider } from "next-auth/react";
 import MainLayout from "../components/layout/MainLayout";
 import "../styles/globals.css";
+import "react-next-dates/dist/style.css";
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
 	return (
