@@ -1,14 +1,4 @@
 import Head from "next/head";
-import Login from "client/components/Login";
-import Link from "next/link";
-import { useState } from "react";
-import { gql, useMutation } from "@apollo/client";
-import { FaRegUser } from "react-icons/fa";
-import { BiLock } from "react-icons/bi";
-import { GoMail } from "react-icons/go";
-import Register from "client/components/Register";
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
 
 export default function Home() {
 	return (
@@ -21,29 +11,3 @@ export default function Home() {
 		</div>
 	);
 }
-
-// export const getServerSideProps: GetServerSideProps = async (context) => {
-// 	try {
-// 		const session = await getSession(context);
-
-// 		if (!session) {
-// 			return {
-// 				redirect: {
-// 					destination: "/auth",
-// 					permanent: false,
-// 				},
-// 			};
-// 		}
-// 		return {
-// 			props: {
-// 				session,
-// 			},
-// 		};
-// 	} catch (error) {
-// 		return {
-// 			props: {
-// 				session: null,
-// 			},
-// 		};
-// 	}
-// };

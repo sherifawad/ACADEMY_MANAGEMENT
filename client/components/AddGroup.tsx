@@ -40,9 +40,8 @@ function AddGroup({ onProceed, onClose }) {
 	);
 	const submitContact = async (e) => {
 		e.preventDefault();
-		console.log("🚀 ~ file: AddGroup.tsx ~ line 31 ~ AddGroup ~ formState", formState);
-
-		mutation.mutate();
+		if (mutation.isLoading) return;
+		await mutation.mutateAsync();
 	};
 
 	const proceedAndClose = async (e) => {

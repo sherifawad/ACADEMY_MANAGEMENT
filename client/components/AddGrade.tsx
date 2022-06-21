@@ -1,27 +1,27 @@
-import { useMutation } from "@apollo/client";
 import { ADD_GRADE_MUTATION } from "core/mutations/gradeMutations";
+import { createAxiosService } from "core/utils";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { useMutation } from "react-query";
 
 function AddGrade({ onProceed, onClose }) {
 	const { data: session, status } = useSession();
 	const [name, setName] = useState("");
 
-	const [addGrade, { data, error, loading }] = useMutation(ADD_GRADE_MUTATION, {
-		context: {
-			headers: {
-				authorization: session?.accessToken ? `Bearer ${session.accessToken as string}` : "",
+	const mutation = useMutation(
+		"AddGrade",
+		() => createAxiosService(ADD_GRADE_MUTATION, { name: name }).then((response) => response.data.data),
+		{
+			onSuccess: () => {
+				console.log("Grade Created Successfully");
 			},
-		},
-	});
-	const submitContact = async (e) => {
-		try {
-			if (loading) return;
-			e.preventDefault();
-			await addGrade({ variables: { name: name } });
-		} catch (error) {
-			console.error("🚀 ~ file: AddGrade.tsx ~ line 26 ~ submitContact ~ error", error);
 		}
+	);
+
+	const submitContact = async (e) => {
+		e.preventDefault();
+		if (mutation.isLoading) return;
+		await mutation.mutateAsync();
 	};
 
 	const proceedAndClose = async (e) => {

@@ -1,12 +1,9 @@
-import axios from "axios";
 import AddGrade from "components/AddGrade";
 import AddModel from "components/AddModel";
 import GradesList from "components/GradesList";
-import { setAuthToken } from "core/apollo-headers";
 import constants from "core/constants";
 import { GRADES_QUERY } from "core/queries/gradeQueries";
 import { createAxiosService } from "core/utils";
-import { apolloClient } from "lib/apollo";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import Head from "next/head";

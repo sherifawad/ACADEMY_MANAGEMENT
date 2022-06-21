@@ -1,5 +1,3 @@
-import { gql } from "@apollo/client";
-
 export const GRADES_QUERY = `
 	query Grades {
 		Grades {

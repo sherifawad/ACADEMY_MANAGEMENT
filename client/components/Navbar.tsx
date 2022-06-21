@@ -1,36 +1,38 @@
-import { useMutation } from "@apollo/client";
 import { REVOKE_TOKEN_MUTATION } from "core/mutations/authPayloadMutations";
 import Paths from "core/paths";
+import { createAxiosService } from "core/utils";
 import { User } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { useMutation } from "react-query";
 
 const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 	const { data: session } = useSession();
 	const router = useRouter();
-	const [Logout, { data, loading, error }] = useMutation(REVOKE_TOKEN_MUTATION);
-	const handleSignOut = async (e) => {
-		try {
-			e.preventDefault();
-			if (loading) return;
-			const revokeToken = await Logout({
-				variables: {
-					token: session.refreshToken,
-					userId: (session.user as User).id,
-				},
-			});
-			if (revokeToken?.data) {
-				const result = await signOut({ redirect: false, callbackUrl: `${Paths.Home}` });
-				router.push(result?.url);
-			}
-		} catch (error) {
-			console.error("🚀 ~ file: Navbar.tsx ~ line 28 ~ handleSignOut ~ error", error);
+
+	const mutation = useMutation(
+		"AddGrade",
+		() =>
+			createAxiosService(REVOKE_TOKEN_MUTATION, {
+				token: session.refreshToken,
+				userId: (session.user as User).id,
+			}).then((response) => response.data.data),
+		{
+			onSuccess: () => {
+				console.log("Grade Created Successfully");
+				router.push(Paths.Home);
+			},
 		}
+	);
+	const handleSignOut = async (e) => {
+		e.preventDefault();
+		if (mutation.isLoading) return;
+		await mutation.mutateAsync();
 	};
 	const openMenu = () => {
 		setMenuOpen(true);

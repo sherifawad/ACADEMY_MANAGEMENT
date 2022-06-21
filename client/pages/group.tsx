@@ -1,8 +1,6 @@
 import AddGroup from "components/AddGroup";
 import AddModel from "components/AddModel";
 import GroupsList from "components/GroupsList";
-import { setAuthToken } from "../core/apollo-headers";
-import { apolloClient } from "lib/apollo";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import Head from "next/head";
