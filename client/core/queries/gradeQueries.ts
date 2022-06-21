@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const GRADES_QUERY = gql`
+export const GRADES_QUERY = `
 	query Grades {
 		Grades {
 			isActive
@@ -9,7 +9,7 @@ export const GRADES_QUERY = gql`
 	}
 `;
 
-export const ACTIVE_GRADES_QUERY = gql`
+export const ACTIVE_GRADES_QUERY = `
 	query ActiveGrades {
 		ActiveGrades {
 			id

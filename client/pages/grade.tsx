@@ -1,8 +1,11 @@
+import axios from "axios";
 import AddGrade from "components/AddGrade";
 import AddModel from "components/AddModel";
 import GradesList from "components/GradesList";
 import { setAuthToken } from "core/apollo-headers";
+import constants from "core/constants";
 import { GRADES_QUERY } from "core/queries/gradeQueries";
+import { createAxiosService } from "core/utils";
 import { apolloClient } from "lib/apollo";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
@@ -66,22 +69,20 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 		// 	};
 		// }
 
-		// apolloClient.setLink(setAuthToken(session.accessToken as string));
-		apolloClient.setLink(setAuthToken());
-		const result = await apolloClient.query({ query: GRADES_QUERY });
-		if (result?.data) {
+		const result = await createAxiosService(GRADES_QUERY);
+		if (result?.data?.data) {
 			return {
 				props: {
 					// session,
-					grades: result.data.Grades,
+					grades: result.data.data.Grades,
 				},
 			};
 		}
 	} catch (error) {
-		// console.error(
-		// 	"🚀 ~ file: grade.tsx ~ line 73 ~ constgetServerSideProps:GetServerSideProps= ~ error",
-		// 	error
-		// );
+		console.error(
+			"🚀 ~ file: grade.tsx ~ line 73 ~ constgetServerSideProps:GetServerSideProps= ~ error",
+			error.message
+		);
 
 		return {
 			props: {

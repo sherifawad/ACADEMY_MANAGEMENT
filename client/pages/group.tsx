@@ -7,8 +7,11 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { GROUPS_QUERY } from "core/queries/groupQueries";
+import axios from "axios";
+import constants from "core/constants";
+import { createAxiosService } from "core/utils";
 
 function group({ groups }) {
 	// eslint-disable-next-line react-hooks/rules-of-hooks
@@ -36,9 +39,12 @@ function group({ groups }) {
 				<meta name="description" content="group page" />
 			</Head>
 
-			<AddModel isOpened={isOpened} onClose={onClose} title="Add Group">
-				<AddGroup onProceed={onProceed} onClose={onClose} />
-			</AddModel>
+			<Suspense>
+				<AddModel isOpened={isOpened} onClose={onClose} title="Add Group">
+					<AddGroup onProceed={onProceed} onClose={onClose} />
+				</AddModel>{" "}
+			</Suspense>
+
 			<div className="grid grid-row-[auto_1fr] gap-8">
 				<button
 					onClick={() => setIsOpened(true)}
@@ -66,12 +72,11 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 		// 	};
 		// }
 
-		apolloClient.setLink(setAuthToken());
-		const result = await apolloClient.query({ query: GROUPS_QUERY });
-		if (result?.data) {
+		const result = await createAxiosService(GROUPS_QUERY);
+		if (result?.data?.data) {
 			return {
 				props: {
-					groups: result.data.Groups,
+					groups: result.data?.data.Groups,
 				},
 			};
 		}

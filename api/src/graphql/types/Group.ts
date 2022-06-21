@@ -96,8 +96,9 @@ export const createGroupMutation = extendType({
 				name: nonNull(stringArg()),
 				startAt: nullable(stringArg()),
 				endAt: nullable(stringArg()),
+				gradeId: nullable(stringArg()),
 			},
-			resolve: async (_parent, { name, startAt, endAt }, { prisma, user }) => {
+			resolve: async (_parent, { name, startAt, endAt, gradeId }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const newGroup = {
@@ -105,7 +106,14 @@ export const createGroupMutation = extendType({
 					startAt,
 					endAt,
 					createdBy: user.id,
+
+					grade: {
+						connect: {
+							id: gradeId,
+						},
+					},
 				};
+				console.log("🚀 ~ file: Group.ts ~ line 104 ~ resolve: ~ newGroup", newGroup);
 				return await prisma.Group.create({
 					data: newGroup,
 				});
@@ -125,16 +133,29 @@ export const UpdateGroupMutation = extendType({
 				name: stringArg(),
 				startAt: stringArg(),
 				endAt: stringArg(),
+				gradeId: stringArg(),
 			},
-			resolve: async (_parent, { id, name, startAt, endAt }, { prisma, user }) => {
+			resolve: async (_parent, { id, name, startAt, endAt, gradeId }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
-				const updateGroup = {
+				let updateGroup: any = {
 					name,
 					startAt,
 					endAt,
 					updatedBy: user.id,
 				};
+
+				if (gradeId) {
+					updateGroup = {
+						...updateGroup,
+						grade: {
+							connect: {
+								id: gradeId,
+							},
+						},
+					};
+				}
+
 				return await prisma.Group.update({
 					where: { id },
 					data: { ...updateGroup },
