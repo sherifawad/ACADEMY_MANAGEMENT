@@ -4,8 +4,23 @@ import { getCsrfToken, getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { getToken } from "next-auth/jwt";
 import UsersList from "components/UsersList";
+import { useState } from "react";
+import AddModel from "components/AddModel";
+import AddStudent from "components/AddStudent";
+import { createAxiosService } from "core/utils";
+import { GET_USERS } from "core/queries/userQueries";
 
 export default function Admin({ session, users }) {
+	const [isOpened, setIsOpened] = useState(false);
+
+	const onProceed = () => {
+		console.log("Proceed clicked");
+	};
+
+	const onClose = () => {
+		setIsOpened(false);
+		console.log("close clicked");
+	};
 	return (
 		<div className="container">
 			<Head>
@@ -13,18 +28,26 @@ export default function Admin({ session, users }) {
 				<meta name="description" content="Authentication" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
-			{users?.map((user, index) => (
-				<div key={index}>{user.name}</div>
-			))}
-			<UsersList />
+			<div className="grid grid-row-[auto_1fr] gap-8">
+				<AddModel isOpened={isOpened} onClose={onClose} title="Add Student">
+					<AddStudent onProceed={onProceed} onClose={onClose} />
+				</AddModel>
+				<button
+					onClick={() => setIsOpened(true)}
+					className="justify-self-end block w-32 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+					type="button"
+				>
+					Add Student
+				</button>
+				<UsersList users={users} />
+			</div>
 		</div>
 	);
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 	try {
-		const session = await getSession({ req });
-
+		// const session = await getSession({ req });
 		// if (!session) {
 		// 	return {
 		// 		redirect: {
@@ -33,16 +56,17 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 		// 		},
 		// 	};
 		// }
-
 		// apolloClient.setLink(setAuthToken());
 		// const result = await apolloClient.query({ query: GET_USERS });
-		// if (result?.data) {
-		// 	return {
-		// 		props: {
-		// 			users: result.data.Users,
-		// 		},
-		// 	};
-		// }
+
+		const result = await createAxiosService(GET_USERS);
+		if (result?.data?.data) {
+			return {
+				props: {
+					users: result.data?.data.Users,
+				},
+			};
+		}
 	} catch (error) {
 		// console.error(
 		// 	"🚀 ~ file: admin.tsx ~ line 69 ~ constgetServerSideProps:GetServerSideProps= ~ error",

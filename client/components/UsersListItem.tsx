@@ -2,9 +2,9 @@ import Image from "next/image";
 
 function UsersListItem({ avatar, name, email, status, grade, group }) {
 	return (
-		<div className=" grid grid-cols-[auto_1fr_auto] gap-4 cursor-pointer md:flex md:flex-row md:justify-between">
+		<div className=" grid grid-cols-[1fr_1fr_1fr_1fr] gap-4 cursor-pointer p-4 border-t-2 ">
 			{!avatar && (
-				<div className="p-2 rounded-full bg-blue-50 relative flex justify-center">
+				<div className="p-2 rounded-full bg-blue-50 relative flex justify-center self-center place-self-center">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						className="w-8 h-8 text-gray-200"
@@ -23,7 +23,7 @@ function UsersListItem({ avatar, name, email, status, grade, group }) {
 			)}
 			{avatar && (
 				<Image
-					className="rounded-full"
+					className="rounded-full self-center place-self-center"
 					src={`/${avatar}`}
 					alt="user account image"
 					width="60"
@@ -39,7 +39,7 @@ function UsersListItem({ avatar, name, email, status, grade, group }) {
 				<p className="text-sky-500 font-bold tracking-wider">{grade}</p>
 				<p className="text-gray-400 font-thin tracking-tighter">{group}</p>
 			</div>
-			<button className="shadow-md shadow-sky-300 h-8 px-4 py-0 rounded-xl text-white bg-sky-500 text-center">
+			<button className="shadow-md w-32 self-center place-self-center shadow-sky-300 h-8 px-4 py-0 rounded-xl text-white bg-sky-500 text-center">
 				{status ? "Active" : "InActive"}
 			</button>
 		</div>

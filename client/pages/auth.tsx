@@ -8,11 +8,11 @@ import Login from "components/Login";
 
 export default function Auth() {
 	const [loginActive, setLoginActive] = useState(true);
-	const { data: session } = useSession();
+	// const { data: session } = useSession();
 	const router = useRouter();
-	if (session) {
-		router.push("/");
-	}
+	// if (session) {
+	// 	router.push("/");
+	// }
 	return (
 		<div className="container">
 			<Head>

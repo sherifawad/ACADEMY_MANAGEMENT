@@ -15,3 +15,14 @@ export const ACTIVE_GRADES_QUERY = `
 		}
 	}
 `;
+
+export const GRADE_GROUPS_QUERY = `
+    query Query($gradeId: String!) {
+        Grade(id: $gradeId) {
+            groups {
+                id
+                name
+            }
+        }
+    }
+`;
