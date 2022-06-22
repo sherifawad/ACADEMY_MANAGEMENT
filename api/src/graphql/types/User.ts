@@ -1,4 +1,4 @@
-import { Contact, PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
+import { Contact, Group, PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
 import { hashPassword, verifyPassword } from "../../core/crypto";
 import { nonNull, objectType, stringArg, extendType } from "nexus";
 import { Context } from ".";
@@ -62,6 +62,10 @@ export const UsersQuery = extendType({
 export type UserParam = Pick<prismaUser, "avatar" | "name"> &
 	Pick<Contact, "email" | "parentsPhones" | "address" | "phone">;
 
+export type StudentParam = Pick<prismaUser, "name"> &
+	Pick<Contact, "email" | "parentsPhones" | "address" | "phone"> &
+	Pick<Group, "id">;
+
 export async function GetUserByEmail(prisma: PrismaClient, email: string): Promise<Contact | null> {
 	return await prisma.contact.findUnique({
 		where: {
@@ -82,6 +86,42 @@ export async function ValidateUserCredentials(
 	}
 
 	return await verifyPassword(password, userPassword.password);
+}
+
+export async function CreateStudent(ctx: Context, studentParam: StudentParam, password: string) {
+	const hashedPassword = await hashPassword(password);
+	const { name, id, ...rest } = studentParam;
+	return await ctx.prisma.user.create({
+		data: {
+			name,
+			password: {
+				create: {
+					password: hashedPassword,
+					forceChange: false,
+				},
+			},
+			contact: {
+				create: {
+					...rest,
+				},
+			},
+			profile: {
+				create: {
+					createdBy: ctx.user?.id || "",
+					group: {
+						connect: {
+							id,
+						},
+					},
+				},
+			},
+		},
+		include: {
+			password: true,
+			contact: true,
+			profile: true,
+		},
+	});
 }
 
 export async function CreateUser(ctx: Context, userParam: UserParam, password: string): Promise<prismaUser> {
@@ -179,6 +219,41 @@ export const UpdateUserMutation = extendType({
 					where: { id },
 					data: { ...updateUser },
 				});
+			},
+		});
+	},
+});
+
+// When a user signs up proper (email + password)
+export const studentRegister = extendType({
+	type: "Mutation",
+	definition(t) {
+		t.nonNull.field("studentRegister", {
+			type: "User",
+			args: {
+				name: stringArg(),
+				email: nonNull(stringArg()),
+				password: nonNull(stringArg()),
+				address: nonNull(stringArg()),
+				parentsPhones: stringArg(),
+				phone: nonNull(stringArg()),
+				groupId: nonNull(stringArg()),
+			},
+			resolve: async (
+				_parent,
+				{ name, email, password, address, parentsPhones, phone, groupId },
+				ctx
+			) => {
+				const studentParam: StudentParam = {
+					email,
+					address,
+					phone,
+					parentsPhones: parentsPhones ?? phone,
+					name: name ?? email,
+					id: groupId,
+				};
+
+				return await CreateStudent(ctx, studentParam, password);
 			},
 		});
 	},

@@ -2,7 +2,6 @@ import { ADD_GROUP_MUTATION } from "core/mutations/groupMutations";
 import { ACTIVE_GRADES_QUERY } from "core/queries/gradeQueries";
 import { createAxiosService } from "core/utils";
 import { arEG } from "date-fns/locale";
-import { useSession } from "next-auth/react";
 import { useRef, useState } from "react";
 import { TimePicker } from "react-next-dates";
 import { useMutation, useQuery } from "react-query";
@@ -11,7 +10,6 @@ function AddGroup({ onProceed, onClose }) {
 	const mainRef = useRef();
 	const [startDate, setStartDate] = useState(null);
 	const [endDate, setEndDate] = useState(null);
-	const { data: session, status } = useSession();
 	const [formState, setFormState] = useState({
 		name: "",
 		startAt: "",
@@ -59,7 +57,6 @@ function AddGroup({ onProceed, onClose }) {
 				<select
 					value={formState.gradeId}
 					onChange={(e) => {
-						console.log("🚀 ~ file: AddGroup.tsx ~ line 65 ~ AddGroup ~ formState", formState);
 						setFormState({
 							...formState,
 							gradeId: e.target.value,
@@ -103,7 +100,7 @@ function AddGroup({ onProceed, onClose }) {
 				/>
 			</div>
 
-			<div className="flex gap-4">
+			<div className="flex">
 				<TimePicker
 					locale={arEG}
 					precision={15}

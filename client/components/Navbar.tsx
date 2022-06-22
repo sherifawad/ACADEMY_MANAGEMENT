@@ -2,7 +2,6 @@ import { REVOKE_TOKEN_MUTATION } from "core/mutations/authPayloadMutations";
 import Paths from "core/paths";
 import { createAxiosService } from "core/utils";
 import { User } from "next-auth";
-import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -12,7 +11,7 @@ import { useMutation } from "react-query";
 const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-	const { data: session } = useSession();
+	const session = { refreshToken: "", user: { id: "" } };
 	const router = useRouter();
 
 	const mutation = useMutation(

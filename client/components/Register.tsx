@@ -1,11 +1,9 @@
-import { gql, useMutation } from "@apollo/client";
 import { SIGN_UP_MUTATION } from "core/mutations/userMutations";
-import Head from "next/head";
-import Link from "next/link";
 import React, { useState } from "react";
 import { BiLock } from "react-icons/bi";
 import { FaRegUser } from "react-icons/fa";
 import { GoMail } from "react-icons/go";
+import { useMutation } from "react-query";
 
 function Register({ setLogin }) {
 	const [formState, setFormState] = useState({
@@ -20,7 +18,7 @@ function Register({ setLogin }) {
 		error: "",
 	});
 
-	const [signup, { data, error, loading }] = useMutation(SIGN_UP_MUTATION);
+	const { data, error } = useMutation(SIGN_UP_MUTATION);
 	const submitContact = async (e) => {
 		e.preventDefault();
 		// if password not equal confirmPassword return
@@ -31,17 +29,17 @@ function Register({ setLogin }) {
 			});
 			return;
 		}
-		await signup({
-			variables: {
-				email: formState.email,
-				password: formState.password,
-				name: formState.name,
-				avatar: formState.avatar,
-				phone: formState.phone,
-				address: formState.address,
-				parentsPhones: formState.parentsPhones,
-			},
-		});
+		// await signup({
+		// 	variables: {
+		// 		email: formState.email,
+		// 		password: formState.password,
+		// 		name: formState.name,
+		// 		avatar: formState.avatar,
+		// 		phone: formState.phone,
+		// 		address: formState.address,
+		// 		parentsPhones: formState.parentsPhones,
+		// 	},
+		// });
 	};
 	return (
 		<div
@@ -256,7 +254,7 @@ function Register({ setLogin }) {
 			<a onClick={() => setLogin(true)} className="text-center py-4 text-slate-500 cursor-pointer">
 				LOGIN
 			</a>
-			{loading && <h1>loading.......</h1>}
+			{/* {loading && <h1>loading.......</h1>} */}
 		</div>
 	);
 }

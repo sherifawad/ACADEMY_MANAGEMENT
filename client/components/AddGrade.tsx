@@ -1,11 +1,9 @@
 import { ADD_GRADE_MUTATION } from "core/mutations/gradeMutations";
 import { createAxiosService } from "core/utils";
-import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useMutation } from "react-query";
 
 function AddGrade({ onProceed, onClose }) {
-	const { data: session, status } = useSession();
 	const [name, setName] = useState("");
 
 	const mutation = useMutation(

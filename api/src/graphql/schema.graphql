@@ -81,7 +81,7 @@ type Mutation {
   createContact(address: String!, email: String, note: String, parentsPhones: String, phone: String!): Contact!
   createExam(date: DateTime!, note: String, score: String!): Exam!
   createGrade(name: String!): Grade!
-  createGroup(endAt: String, name: String!, startAt: String): Group!
+  createGroup(endAt: String, gradeId: String, name: String!, startAt: String): Group!
   createProfile(bio: String, id: String!): Profile!
   deleteAttendance(id: String!): Attendance!
   deleteContact(id: String!): Contact!
@@ -91,11 +91,12 @@ type Mutation {
   deleteProfile(id: String!): Profile!
   refreshToken(token: String!, userId: String!): AuthPayload
   revokeToken(token: String!, userId: String!): AuthPayload
+  studentRegister(address: String!, email: String!, groupId: String!, name: String, parentsPhones: String, password: String!, phone: String!): User!
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateContact(address: String, email: String, emailConfirmed: Boolean, id: String!, note: String, parentsPhones: String, phone: String): Contact!
   updateExam(date: DateTime, id: String!, note: String, score: String): Exam!
   updateGrade(id: String!, name: String!): Grade!
-  updateGroup(endAt: String, id: String!, name: String, startAt: String): Group!
+  updateGroup(endAt: String, gradeId: String, id: String!, name: String, startAt: String): Group!
   updateProfile(bio: String, id: String!): Profile!
   updateUser(avatar: String, email: String, id: String!, name: String, password: String): User!
   userLogin(email: String!, password: String!): AuthPayload!
@@ -116,6 +117,7 @@ type Profile {
 }
 
 type Query {
+  ActiveGrades: [Grade]!
   AttendanceInDate(date: DateTime!, id: String!): Attendance!
   Attendances(id: String!): [Attendance]!
   Contact(id: String!): Contact!

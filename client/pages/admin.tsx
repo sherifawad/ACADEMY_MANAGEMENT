@@ -1,8 +1,5 @@
 import Head from "next/head";
 import { GetServerSideProps } from "next";
-import { getCsrfToken, getSession, useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { getToken } from "next-auth/jwt";
 import UsersList from "components/UsersList";
 import { useState } from "react";
 import AddModel from "components/AddModel";
@@ -10,7 +7,7 @@ import AddStudent from "components/AddStudent";
 import { createAxiosService } from "core/utils";
 import { GET_USERS } from "core/queries/userQueries";
 
-export default function Admin({ session, users }) {
+export default function Admin({ users }) {
 	const [isOpened, setIsOpened] = useState(false);
 
 	const onProceed = () => {
@@ -72,11 +69,11 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 		// 	"🚀 ~ file: admin.tsx ~ line 69 ~ constgetServerSideProps:GetServerSideProps= ~ error",
 		// 	error
 		// );
-		return {
-			props: {
-				session: null,
-			},
-		};
+		// return {
+		// 	props: {
+		// 		session: null,
+		// 	},
+		// };
 	}
 	return {
 		props: {},

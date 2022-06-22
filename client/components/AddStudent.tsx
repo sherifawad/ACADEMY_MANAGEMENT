@@ -1,11 +1,50 @@
-import React from "react";
+import { STUDENT_REGISTER_MUTATION } from "core/mutations/userMutations";
+import { createAxiosService } from "core/utils";
+import React, { useState } from "react";
+import { useMutation } from "react-query";
 import GradeGroupSelect from "./GradeGroupSelect";
 
 function AddStudent({ onProceed, onClose }) {
-	const proceedAndClose = () => {
-		onProceed();
-		onClose();
+	const [groupId, setGroupId] = useState("");
+
+	const [formState, setFormState] = useState({
+		email: "",
+		password: "",
+		name: "",
+		phone: "",
+		parentsPhones: "",
+		address: "",
+		error: "",
+	});
+
+	const mutation = useMutation(
+		"AddStudent",
+		() =>
+			createAxiosService(STUDENT_REGISTER_MUTATION, { ...formState, groupId }).then(
+				(response) => response.data.data
+			),
+		{
+			onSuccess: () => {
+				console.log("Student Created Successfully");
+				onProceed();
+				onClose();
+			},
+		}
+	);
+
+	const submitContact = async (e) => {
+		e.preventDefault();
+		console.log("🚀 ~ file: AddStudent.tsx ~ line 19 ~ AddStudent ~ formState", formState);
+		console.log("🚀 ~ file: AddStudent.tsx ~ line 24 ~ AddStudent ~ groupId", groupId);
+		return;
+		if (mutation.isLoading) return;
+		await mutation.mutateAsync();
 	};
+
+	const proceedAndClose = async (e) => {
+		await submitContact(e);
+	};
+
 	return (
 		<form method="dialog" className="space-y-6" action="#">
 			<div>
@@ -21,6 +60,14 @@ function AddStudent({ onProceed, onClose }) {
 					id="email"
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
 					placeholder="name@company.com"
+					value={formState.email}
+					onChange={(e) =>
+						setFormState({
+							...formState,
+							error: "",
+							email: e.target.value,
+						})
+					}
 				/>
 			</div>
 
@@ -38,6 +85,14 @@ function AddStudent({ onProceed, onClose }) {
 					placeholder="Sherif Mohammed"
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
 					required
+					value={formState.name}
+					onChange={(e) =>
+						setFormState({
+							...formState,
+							error: "",
+							name: e.target.value,
+						})
+					}
 				/>
 			</div>
 
@@ -55,6 +110,39 @@ function AddStudent({ onProceed, onClose }) {
 					placeholder="012xxxxxxxx"
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
 					required
+					value={formState.phone}
+					onChange={(e) =>
+						setFormState({
+							...formState,
+							error: "",
+							phone: e.target.value,
+						})
+					}
+				/>
+			</div>
+
+			<div>
+				<label
+					htmlFor="parentPhone"
+					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+				>
+					Your parentPhone
+				</label>
+				<input
+					type="text"
+					name="parentPhone"
+					id="parentPhone"
+					placeholder="012xxxxxxxx"
+					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+					required
+					value={formState.parentsPhones}
+					onChange={(e) =>
+						setFormState({
+							...formState,
+							error: "",
+							parentsPhones: e.target.value,
+						})
+					}
 				/>
 			</div>
 
@@ -72,6 +160,14 @@ function AddStudent({ onProceed, onClose }) {
 					placeholder="40 Nady Street"
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
 					required
+					value={formState.address}
+					onChange={(e) =>
+						setFormState({
+							...formState,
+							error: "",
+							address: e.target.value,
+						})
+					}
 				/>
 			</div>
 
@@ -89,10 +185,20 @@ function AddStudent({ onProceed, onClose }) {
 					placeholder="••••••••"
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
 					required
+					value={formState.password}
+					onChange={(e) =>
+						setFormState({
+							...formState,
+							error: "",
+							password: e.target.value,
+						})
+					}
 				/>
 			</div>
 
-			<GradeGroupSelect />
+			<GradeGroupSelect setGroupId={setGroupId} />
+			{formState.error?.length > 0 && <p className="text-red-600">{formState.error}</p>}
+
 			<button
 				onClick={proceedAndClose}
 				type="submit"
