@@ -49,7 +49,7 @@ export const UsersFilterInputType = inputObjectType({
 	name: "UsersFilterInputType",
 
 	definition(t) {
-		t.field("role", { type: "Role" });
+		t.nullable.field("role", { type: "Role" });
 		t.nullable.boolean("isActive");
 	},
 });

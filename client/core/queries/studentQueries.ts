@@ -20,14 +20,6 @@ export const GET_USERS = `
     }
 `;
 
-export const GET_USERS_IDS = `
-    query FilteredUsers($data: UsersFilterInputType) {
-        FilteredUsers(data: $data) {
-            id
-        }
-    }
-`;
-
 export const GET_STUDENT_DETAILS = `
     query Query($userId: String!) {
         User(id: $userId) {

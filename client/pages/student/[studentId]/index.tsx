@@ -6,10 +6,14 @@ function Student({ user }) {
 }
 
 export async function getStaticPaths() {
-	const result = await createAxiosService(GET_USERS_IDS);
+	const result = await createAxiosService(GET_USERS_IDS, {
+		data: {
+			role: "Student",
+		},
+	});
 
 	if (result?.data?.data) {
-		const paths = result.data?.data.Users.map((user) => ({
+		const paths = result.data?.data?.FilteredUsers?.map((user) => ({
 			params: { studentId: user.id },
 		}));
 		return { paths, fallback: false };
