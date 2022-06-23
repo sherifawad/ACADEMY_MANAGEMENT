@@ -3,9 +3,10 @@ import UsersListItem from "./UsersListItem";
 function UsersList({ users = [] }) {
 	return (
 		<div>
-			{users.map((x, i) => (
+			{users.map((x) => (
 				<UsersListItem
-					key={i}
+					key={x.id}
+					id={x.id}
 					name={x.name}
 					avatar={x.avatar}
 					email={x.contact.email}

@@ -1,6 +1,6 @@
 import { Contact, Group, PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
 import { hashPassword, verifyPassword } from "../../core/crypto";
-import { nonNull, objectType, stringArg, extendType } from "nexus";
+import { nonNull, objectType, stringArg, extendType, inputObjectType } from "nexus";
 import { Context } from ".";
 import { GetUserPassword } from "./UserPassword";
 import { Role as userRole } from "@prisma/client";
@@ -45,6 +45,15 @@ export const User = objectType({
 	},
 });
 
+export const UsersFilterInputType = inputObjectType({
+	name: "UsersFilterInputType",
+
+	definition(t) {
+		t.field("role", { type: "Role" });
+		t.nullable.boolean("isActive");
+	},
+});
+
 //get all Users
 export const UsersQuery = extendType({
 	type: "Query",
@@ -54,6 +63,25 @@ export const UsersQuery = extendType({
 			resolve: async (_parent, _args, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 				return await prisma.user.findMany();
+			},
+		});
+	},
+});
+
+export const FilteredUsersQuery = extendType({
+	type: "Query",
+	definition(t) {
+		t.list.field("FilteredUsers", {
+			type: "User",
+			args: { data: UsersFilterInputType },
+			resolve: async (_parent, args, { prisma, user }) => {
+				if (!user || user.role !== Role.ADMIN) return null;
+				return await prisma.user.findMany({
+					where: {
+						role: args.data?.role,
+						isActive: args.data?.isActive,
+					},
+				});
 			},
 		});
 	},

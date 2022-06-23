@@ -34,9 +34,6 @@ function AddStudent({ onProceed, onClose }) {
 
 	const submitContact = async (e) => {
 		e.preventDefault();
-		console.log("🚀 ~ file: AddStudent.tsx ~ line 19 ~ AddStudent ~ formState", formState);
-		console.log("🚀 ~ file: AddStudent.tsx ~ line 24 ~ AddStudent ~ groupId", groupId);
-		return;
 		if (mutation.isLoading) return;
 		await mutation.mutateAsync();
 	};
