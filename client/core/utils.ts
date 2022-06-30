@@ -26,3 +26,7 @@ export const createAxiosService = async (
 		data: graphqlQuery,
 	});
 };
+
+export const getDayNames = (date: String, firstThreeLetter: boolean = false): string => {
+	return new Date(date).toLocaleDateString("en-US", { weekday: `${firstThreeLetter ? "short" : "long"}` });
+};

@@ -53,7 +53,7 @@ model Contact {
     id             String  @id
     email          String? @unique
     emailConfirmed Boolean @default(false)
-    phone          String @unique
+    phone          String  @unique
     parentsPhones  String?
     address        String
     note           String?
@@ -149,7 +149,7 @@ model Exam {
 
 model Attendance {
     id        String    @id @default(uuid())
-    startAt   DateTime
+    startAt   DateTime  @default(now())
     endAt     DateTime?
     note      String?
     createdBy String

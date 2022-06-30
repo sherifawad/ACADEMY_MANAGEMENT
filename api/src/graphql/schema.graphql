@@ -44,6 +44,7 @@ type Exam {
   id: String
   note: String
   profile: Profile
+  profileId: String
   score: Float
   updatedAt: DateTime
   updatedBy: String
@@ -131,6 +132,7 @@ type Query {
   Profile(id: String!): Profile!
   Profiles: [Profile]!
   User(id: String!): User!
+  UserExams(studentId: String!): [Exam]!
   Users: [User]
 }
 

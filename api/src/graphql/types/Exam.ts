@@ -6,6 +6,7 @@ export const Exam = objectType({
 	name: "Exam",
 	definition(t) {
 		t.string("id");
+		t.string("profileId");
 		t.string("note");
 		t.float("score");
 		t.string("createdBy");
@@ -20,7 +21,7 @@ export const Exam = objectType({
 					.findUnique({
 						where: { id },
 					})
-					.profile();
+					.Profile();
 			},
 		});
 	},
@@ -36,6 +37,27 @@ export const ExamsQuery = extendType({
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				return await prisma.exam.findMany();
+			},
+		});
+	},
+});
+
+//get unique Exam
+export const ExamsByUserIdQuery = extendType({
+	type: "Query",
+	definition(t) {
+		t.nonNull.list.field("UserExams", {
+			type: "Exam",
+			args: { studentId: nonNull(stringArg()) },
+			resolve: async (_parent, { studentId }, { prisma, user }) => {
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
+					return null;
+
+				return await prisma.exam.findMany({
+					where: {
+						Profile: { id: studentId },
+					},
+				});
 			},
 		});
 	},
