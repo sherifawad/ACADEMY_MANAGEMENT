@@ -7,12 +7,12 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 function Student({ user }) {
-	const router = useRouter();
+	// const router = useRouter();
 
-	useEffect(() => {
-		// Always do navigations after the first render
-		router.replace(`/student/${user?.name}`, undefined, { shallow: true });
-	}, []);
+	// useEffect(() => {
+	// 	// Always do navigations after the first render
+	// 	router.replace(`/student/${user?.name}`, undefined, { shallow: true });
+	// }, []);
 
 	return (
 		<div className="container">
