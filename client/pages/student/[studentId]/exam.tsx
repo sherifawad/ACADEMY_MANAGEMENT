@@ -2,7 +2,8 @@ import { GET_STUDENT_EXAMS } from "core/queries/examsQueries";
 import { GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService } from "core/utils";
 import { useMemo } from "react";
-import { useSortBy, useTable } from "react-table";
+import { usePagination, useSortBy, useTable } from "react-table";
+import { format } from "date-fns";
 
 function studentExams({ exams = [] }) {
 	const columns = useMemo(
@@ -29,6 +30,13 @@ function studentExams({ exams = [] }) {
 				? Object.keys(exams[0])
 						.filter((key) => key !== "id")
 						.map((key) => {
+							if (key === "date") {
+								return {
+									Header: key,
+									accessor: key,
+									Cell: ({ value }) => format(new Date(value), "dd/MM/yyyy"),
+								};
+							}
 							return { Header: key, accessor: key };
 						})
 				: [],
@@ -48,63 +56,127 @@ function studentExams({ exams = [] }) {
 		]);
 	};
 
-	const tableInstance = useTable({ columns: examsColumns, data }, tableHooks, useSortBy);
+	const tableInstance = useTable(
+		{ columns: examsColumns, data, initialState: { pageIndex: 0 } },
+		tableHooks,
+		useSortBy,
+		usePagination
+	);
 
-	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
+	const {
+		getTableProps,
+		getTableBodyProps,
+		headerGroups,
+		prepareRow,
+		page, // Instead of using 'rows', we'll use page,
+		// which has only the rows for the active page
+
+		// The rest of these things are super handy, too ;)
+		canPreviousPage,
+		canNextPage,
+		pageOptions,
+		pageCount,
+		gotoPage,
+		nextPage,
+		previousPage,
+		setPageSize,
+		state: { pageIndex, pageSize },
+	} = tableInstance;
 
 	return (
-		<table {...getTableProps()} style={{ border: "solid 1px blue" }}>
-			<thead>
-				{headerGroups.map((headerGroup) => (
-					<tr {...headerGroup.getHeaderGroupProps()}>
-						{headerGroup.headers.map((column) => (
-							<th
-								{...column.getHeaderProps(column.getSortByToggleProps())}
-								style={{
-									borderBottom: "solid 3px red",
+		<div className="container">
+			<div className="w-full mb-8 overflow-hidden rounded-lg shadow-lg">
+				<div className="w-full overflow-x-auto">
+					<table {...getTableProps()} className="w-full">
+						<thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:text-gray-400">
+							{headerGroups.map((headerGroup) => (
+								<tr
+									{...headerGroup.getHeaderGroupProps()}
+									className="text-md font-semibold tracking-wide text-left text-gray-900 bg-gray-100 uppercase border-b border-gray-600"
+								>
+									{headerGroup.headers.map((column) => (
+										<th
+											{...column.getHeaderProps(column.getSortByToggleProps())}
+											className="px-4 py-3"
+										>
+											{column.render("Header")}
+											<span>
+												{column.isSorted ? (column.isSortedDesc ? " ▼" : " ▲") : ""}
+											</span>
+										</th>
+									))}
+								</tr>
+							))}
+						</thead>
 
-									background: "aliceblue",
+						<tbody {...getTableBodyProps()} className="bg-white">
+							{page.map((row) => {
+								prepareRow(row);
 
-									color: "black",
-
-									fontWeight: "bold",
-								}}
-							>
-								{column.render("Header")}
-								<span>{column.isSorted ? (column.isSortedDesc ? " ▼" : " ▲") : ""}</span>
-							</th>
-						))}
-					</tr>
-				))}
-			</thead>
-
-			<tbody {...getTableBodyProps()}>
-				{rows.map((row) => {
-					prepareRow(row);
-
-					return (
-						<tr {...row.getRowProps()}>
-							{row.cells.map((cell) => {
 								return (
-									<td
-										{...cell.getCellProps()}
-										style={{
-											padding: "10px",
-
-											border: "solid 1px gray",
-
-											background: "papayawhip",
-										}}
-									>
-										{cell.render("Cell")}
-									</td>
+									<tr {...row.getRowProps()} className="text-gray-700">
+										{row.cells.map((cell) => {
+											return (
+												<td
+													{...cell.getCellProps()}
+													className="px-4 py-3 border"
+												>
+													{cell.render("Cell")}
+												</td>
+											);
+										})}
+									</tr>
 								);
 							})}
-						</tr>
-					);
-				})}
-			</tbody>
-		</table>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div className="flex items-center justify-center py-8 whitespace-nowrap">
+				<button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+					{"<<"}
+				</button>{" "}
+				<button onClick={() => previousPage()} disabled={!canPreviousPage}>
+					{"<"}
+				</button>{" "}
+				<button onClick={() => nextPage()} disabled={!canNextPage}>
+					{">"}
+				</button>{" "}
+				<button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+					{">>"}
+				</button>{" "}
+				<span>
+					Page{" "}
+					<strong>
+						{pageIndex + 1} of {pageOptions.length}
+					</strong>{" "}
+				</span>
+				<span>
+					| Go to page:{" "}
+					<input
+						type="number"
+						defaultValue={pageIndex + 1}
+						onChange={(e) => {
+							const page = e.target.value ? Number(e.target.value) - 1 : 0;
+							gotoPage(page);
+						}}
+						style={{ width: "100px" }}
+					/>
+				</span>{" "}
+				<select
+					value={pageSize}
+					onChange={(e) => {
+						setPageSize(Number(e.target.value));
+					}}
+				>
+					{[1, 2, 30, 40, 50].map((pageSize) => (
+						<option key={pageSize} value={pageSize}>
+							Show {pageSize}
+						</option>
+					))}
+				</select>
+			</div>
+		</div>
 	);
 }
 
