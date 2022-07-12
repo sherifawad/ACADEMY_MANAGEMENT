@@ -80,7 +80,7 @@ type Group {
 type Mutation {
   createAttendance(endAt: DateTime, note: String, profileId: String!, startAt: DateTime!): Attendance!
   createContact(address: String!, email: String, note: String, parentsPhones: String, phone: String!): Contact!
-  createExam(date: DateTime!, note: String, score: String!): Exam!
+  createExam(date: DateTime!, note: String, profileId: String!, score: Float!): Exam!
   createGrade(name: String!): Grade!
   createGroup(endAt: String, gradeId: String, name: String!, startAt: String): Group!
   createProfile(bio: String, id: String!): Profile!

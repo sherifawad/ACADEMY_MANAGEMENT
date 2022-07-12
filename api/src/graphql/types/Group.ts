@@ -113,7 +113,6 @@ export const createGroupMutation = extendType({
 						},
 					},
 				};
-				console.log("🚀 ~ file: Group.ts ~ line 104 ~ resolve: ~ newGroup", newGroup);
 				return await prisma.Group.create({
 					data: newGroup,
 				});

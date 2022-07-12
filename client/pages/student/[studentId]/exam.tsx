@@ -1,11 +1,32 @@
 import { GET_STUDENT_EXAMS } from "core/queries/examsQueries";
 import { GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService } from "core/utils";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { usePagination, useSortBy, useTable } from "react-table";
 import { format } from "date-fns";
+import AddModel from "components/AddModel";
+import AddExam from "components/AddExam";
+import { useRouter } from "next/router";
 
-function studentExams({ exams = [] }) {
+function studentExams({ exams = [], profileId }) {
+	// eslint-disable-next-line react-hooks/rules-of-hooks
+	const [isOpened, setIsOpened] = useState(false);
+
+	// eslint-disable-next-line react-hooks/rules-of-hooks
+	const router = useRouter();
+	// Call this function whenever you want to
+	// refresh props!
+
+	const onProceed = () => {
+		router.replace(router.asPath);
+		console.log("Proceed clicked");
+	};
+
+	const onClose = () => {
+		setIsOpened(false);
+		console.log("close clicked");
+	};
+
 	const columns = useMemo(
 		() => [
 			{
@@ -85,11 +106,16 @@ function studentExams({ exams = [] }) {
 
 	return (
 		<div className="container grid">
+			<AddModel isOpened={isOpened} onClose={onClose} title="Add Exam">
+				<AddExam onProceed={onProceed} onClose={onClose} profileId={profileId} />
+			</AddModel>
+
 			<div
 				className="text-md px-6 py-2 w-32 text-center rounded-md bg-green-500 text-indigo-50 font-semibold cursor-pointer justify-self-end"
 				text-indigo-50
 				font-semibold
 				cursor-pointer
+				onClick={() => setIsOpened(true)}
 			>
 				Add
 			</div>
@@ -234,7 +260,7 @@ export async function getStaticProps({ params }) {
 	const result = await createAxiosService(GET_STUDENT_EXAMS, { studentId: params.studentId });
 
 	if (result?.data?.data) {
-		return { props: { exams: result?.data?.data.UserExams } };
+		return { props: { exams: result?.data?.data.UserExams, profileId: params.studentId } };
 	}
 
 	// Pass post data to the page via props

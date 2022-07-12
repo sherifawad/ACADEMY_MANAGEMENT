@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg } from "nexus";
+import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, floatArg } from "nexus";
 
 //generates Exam type at schema.graphql
 export const Exam = objectType({
@@ -88,11 +88,12 @@ export const createExamMutation = extendType({
 		t.nonNull.field("createExam", {
 			type: "Exam",
 			args: {
-				score: nonNull(stringArg()),
+				profileId: nonNull(stringArg()),
+				score: nonNull(floatArg()),
 				date: nonNull(arg({ type: "DateTime" })),
 				note: nullable(stringArg()),
 			},
-			resolve: async (_parent, { score, date, note }, { prisma, user }) => {
+			resolve: async (_parent, { score, date, note, profileId }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const newExam = {
@@ -100,7 +101,13 @@ export const createExamMutation = extendType({
 					date,
 					note,
 					createdBy: user.id,
+					Profile: {
+						connect: {
+							id: profileId,
+						},
+					},
 				};
+				console.log("🚀 ~ file: Exam.ts ~ line 100 ~ resolve: ~ newExam", newExam);
 				return await prisma.exam.create({
 					data: newExam,
 				});
