@@ -84,8 +84,16 @@ function studentExams({ exams = [] }) {
 	} = tableInstance;
 
 	return (
-		<div className="container">
-			<div className="w-full mb-8 overflow-hidden rounded-lg shadow-lg">
+		<div className="container grid">
+			<div
+				className="text-md px-6 py-2 w-32 text-center rounded-md bg-green-500 text-indigo-50 font-semibold cursor-pointer justify-self-end"
+				text-indigo-50
+				font-semibold
+				cursor-pointer
+			>
+				Add
+			</div>
+			<div className="w-full mb-8 overflow-hidden rounded-lg shadow-lg pt-4">
 				<div className="w-full overflow-x-auto">
 					<table {...getTableProps()} className="w-full">
 						<thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:text-gray-400">
@@ -117,10 +125,7 @@ function studentExams({ exams = [] }) {
 									<tr {...row.getRowProps()} className="text-gray-700">
 										{row.cells.map((cell) => {
 											return (
-												<td
-													{...cell.getCellProps()}
-													className="px-4 py-3 border"
-												>
+												<td {...cell.getCellProps()} className="px-4 py-3 border">
 													{cell.render("Cell")}
 												</td>
 											);
@@ -132,49 +137,77 @@ function studentExams({ exams = [] }) {
 					</table>
 				</div>
 			</div>
-			<div className="flex items-center justify-center py-8 whitespace-nowrap">
-				<button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-					{"<<"}
-				</button>{" "}
-				<button onClick={() => previousPage()} disabled={!canPreviousPage}>
-					{"<"}
-				</button>{" "}
-				<button onClick={() => nextPage()} disabled={!canNextPage}>
-					{">"}
-				</button>{" "}
-				<button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-					{">>"}
-				</button>{" "}
-				<span>
-					Page{" "}
-					<strong>
-						{pageIndex + 1} of {pageOptions.length}
-					</strong>{" "}
-				</span>
-				<span>
-					| Go to page:{" "}
-					<input
-						type="number"
-						defaultValue={pageIndex + 1}
-						onChange={(e) => {
-							const page = e.target.value ? Number(e.target.value) - 1 : 0;
-							gotoPage(page);
-						}}
-						style={{ width: "100px" }}
-					/>
-				</span>{" "}
-				<select
-					value={pageSize}
-					onChange={(e) => {
-						setPageSize(Number(e.target.value));
-					}}
-				>
-					{[1, 2, 30, 40, 50].map((pageSize) => (
-						<option key={pageSize} value={pageSize}>
-							Show {pageSize}
-						</option>
-					))}
-				</select>
+			<div className="flex items-center justify-center">
+				<div className="flex flex-col items-center mb-8 px-4 mx-auto mt-8">
+					<div className="font-sans flex justify-end items-center space-x-1 select-none whitespace-nowrap">
+						<a
+							href="#"
+							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
+								canPreviousPage ? "hover:bg-teal-400 hover:text-white" : ""
+							}`}
+							style={{ transition: "all 0.2s ease" }}
+							onClick={() => gotoPage(0)}
+						>
+							First
+						</a>
+						<a
+							href="#"
+							className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-teal-400 hover:text-white"
+							style={{ transition: "all 0.2s ease" }}
+							onClick={() => previousPage()}
+						>
+							Prev
+						</a>
+						<a
+							href="#"
+							className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-teal-400 hover:text-white"
+							style={{ transition: "all 0.2s ease" }}
+							onClick={() => nextPage()}
+						>
+							Next
+						</a>
+						<a
+							href="#"
+							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
+								canNextPage ? "hover:bg-teal-400 hover:text-white" : ""
+							}`}
+							style={{ transition: "all 0.2s ease" }}
+							onClick={() => gotoPage(pageCount - 1)}
+						>
+							Last
+						</a>
+						<span>
+							Page{" "}
+							<strong>
+								{pageIndex + 1} of {pageOptions.length}
+							</strong>{" "}
+						</span>
+						<span>
+							| Go to page:{" "}
+							<input
+								type="number"
+								defaultValue={pageIndex + 1}
+								onChange={(e) => {
+									const page = e.target.value ? Number(e.target.value) - 1 : 0;
+									gotoPage(page);
+								}}
+								style={{ width: "100px" }}
+							/>
+						</span>{" "}
+						<select
+							value={pageSize}
+							onChange={(e) => {
+								setPageSize(Number(e.target.value));
+							}}
+						>
+							{[1, 2, 30, 40, 50].map((pageSize) => (
+								<option key={pageSize} value={pageSize}>
+									Show {pageSize}
+								</option>
+							))}
+						</select>
+					</div>
+				</div>
 			</div>
 		</div>
 	);
