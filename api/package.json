@@ -31,6 +31,7 @@
 		"jsonwebtoken": "^8.5.1",
 		"ms": "^2.1.3",
 		"nexus": "^1.3.0",
+		"prisma-offset-pagination": "^0.0.4",
 		"secure-random-string": "^1.1.3"
 	},
 	"devDependencies": {

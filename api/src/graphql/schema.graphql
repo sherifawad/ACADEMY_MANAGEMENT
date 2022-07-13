@@ -14,6 +14,12 @@ type Attendance {
   updatedBy: String
 }
 
+type AttendanceResponse {
+  pageCursors: pageCursors
+  pageEdges: [pageEdges]
+  totalCount: Int
+}
+
 """Payload containing auth token"""
 type AuthPayload {
   refreshToken: String
@@ -104,6 +110,12 @@ type Mutation {
   userRegister(address: String!, avatar: String, email: String!, name: String, parentsPhones: String, password: String!, phone: String!): User!
 }
 
+type PageCursor {
+  cursor: String
+  isCurrent: Boolean
+  page: Int
+}
+
 type Profile {
   attendances: [Attendance]
   bio: String
@@ -120,7 +132,7 @@ type Profile {
 type Query {
   ActiveGrades: [Grade]!
   AttendanceInDate(date: DateTime!, id: String!): Attendance!
-  Attendances(id: String!): [Attendance]!
+  Attendances(buttonNum: Int, cursor: String, orderBy: String, orderDirection: String, size: Int, studentId: String!): AttendanceResponse
   Contact(id: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
@@ -163,4 +175,17 @@ type User {
 input UsersFilterInputType {
   isActive: Boolean
   role: Role
+}
+
+type pageCursors {
+  around: [PageCursor]
+  first: PageCursor
+  last: PageCursor
+  next: PageCursor
+  previous: PageCursor
+}
+
+type pageEdges {
+  cursor: String
+  node: Attendance
 }

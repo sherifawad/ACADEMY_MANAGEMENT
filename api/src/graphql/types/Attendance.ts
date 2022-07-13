@@ -1,5 +1,7 @@
 import { Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core } from "nexus";
+// @ts-ignore
+import { prismaOffsetPagination } from "prisma-offset-pagination";
 
 //generates Exam type at schema.graphql
 export const Attendance = objectType({
@@ -35,6 +37,57 @@ export const Attendance = objectType({
 	},
 });
 
+export const pageEdges = objectType({
+	name: "pageEdges",
+	definition(t) {
+		t.string("cursor");
+		t.field("node", {
+			type: Attendance,
+		});
+	},
+});
+
+export const PageCursor = objectType({
+	name: "PageCursor",
+	definition(t) {
+		t.string("cursor");
+		t.int("page");
+		t.boolean("isCurrent");
+	},
+});
+
+export const pageCursors = objectType({
+	name: "pageCursors",
+	definition(t) {
+		t.field("first", {
+			type: PageCursor,
+		});
+		t.field("previous", {
+			type: PageCursor,
+		});
+		t.list.field("around", {
+			type: PageCursor,
+		});
+		t.field("next", {
+			type: PageCursor,
+		});
+		t.field("last", {
+			type: PageCursor,
+		});
+	},
+});
+
+export const AttendanceResponse = objectType({
+	name: "AttendanceResponse",
+	definition(t) {
+		t.list.field("pageEdges", {
+			type: pageEdges,
+		});
+		t.field("pageCursors", { type: pageCursors });
+		t.int("totalCount");
+	},
+});
+
 // const dateTimeArg = (opts: core.NexusArgConfig<"DateTime">) => arg({ ...opts, type: "DateTime" });
 
 //get unique Attendance by date
@@ -52,6 +105,47 @@ export const AttendanceByUserDateQuery = extendType({
 
 				return await prisma.attendance.findMany({
 					where: { profileId: id, startAt: { gte: date } },
+				});
+			},
+		});
+	},
+});
+
+export const AttendanceByUserIdQuery = extendType({
+	type: "Query",
+	definition(t) {
+		t.field("Attendances", {
+			type: "AttendanceResponse",
+			args: {
+				studentId: nonNull(stringArg()),
+				cursor: nullable(stringArg()),
+				orderBy: nullable(stringArg()),
+				orderDirection: nullable(stringArg()),
+				size: nullable(intArg()),
+				buttonNum: nullable(intArg()),
+			},
+			resolve: async (
+				_parent,
+				{ studentId, size, buttonNum, cursor, orderBy, orderDirection },
+				{ prisma, user }
+			) => {
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
+					return null;
+
+				// return await prisma.attendance.findMany({
+				// 	where: {
+				// 		Profile: { id: studentId },
+				// 	},
+				// });
+
+				return await prismaOffsetPagination({
+					cursor,
+					size: Number(size),
+					buttonNum: Number(buttonNum),
+					orderBy,
+					orderDirection,
+					model: Attendance,
+					prisma: prisma,
 				});
 			},
 		});

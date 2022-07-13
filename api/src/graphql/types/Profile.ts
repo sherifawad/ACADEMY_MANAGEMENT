@@ -100,14 +100,14 @@ export const ProfileAttendancesQuery = extendType({
 	definition(t) {
 		t.nonNull.list.field("Attendances", {
 			type: "Attendance",
-			args: { id: nonNull(stringArg()) },
+			args: { studentId: nonNull(stringArg()) },
 
-			resolve: async (_parent, { id }, { prisma, user }) => {
+			resolve: async (_parent, { studentId }, { prisma, user }) => {
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				return await prisma.attendance
 					.findMany({
-						where: { profileId: id },
+						where: { profileId: studentId },
 					})
 					.attendances();
 			},
