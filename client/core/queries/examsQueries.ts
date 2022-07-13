@@ -4,6 +4,7 @@ export const GET_STUDENT_EXAMS = `
             id
             score
             date
+            note
         }
     }
 `;

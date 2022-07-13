@@ -12,6 +12,12 @@ function studentExams({ exams = [], profileId }) {
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [isOpened, setIsOpened] = useState(false);
 
+	const [examState, setExamState] = useState({
+		score: "",
+		date: "",
+		note: "",
+	});
+
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const router = useRouter();
 	// Call this function whenever you want to
@@ -24,6 +30,11 @@ function studentExams({ exams = [], profileId }) {
 
 	const onClose = () => {
 		setIsOpened(false);
+		setExamState({
+			score: "",
+			date: "",
+			note: "",
+		});
 		console.log("close clicked");
 	};
 
@@ -72,13 +83,29 @@ function studentExams({ exams = [], profileId }) {
 			{
 				id: "Edit",
 				Header: "Edit",
-				Cell: ({ row }) => <button onClick={() => alert("Score: " + row.values.score)}>Edit</button>,
+				Cell: ({ row }) => {
+					return (
+						<button
+							onClick={() => {
+								setExamState({
+									score: row.values.score,
+									date: row.values.date,
+									note: row.values.note,
+								});
+								setIsOpened(true);
+								// alert("Note: " + row.values.note);
+							}}
+						>
+							Edit
+						</button>
+					);
+				},
 			},
 		]);
 	};
 
 	const tableInstance = useTable(
-		{ columns: examsColumns, data, initialState: { pageIndex: 0 } },
+		{ columns: examsColumns, data, initialState: { pageIndex: 0, hiddenColumns: ["note"] } },
 		tableHooks,
 		useSortBy,
 		usePagination
@@ -107,14 +134,18 @@ function studentExams({ exams = [], profileId }) {
 	return (
 		<div className="container grid">
 			<AddModel isOpened={isOpened} onClose={onClose} title="Add Exam">
-				<AddExam onProceed={onProceed} onClose={onClose} profileId={profileId} />
+				<AddExam
+					onProceed={onProceed}
+					onClose={onClose}
+					profileId={profileId}
+					score={examState.score}
+					date={examState.date}
+					note={examState.note}
+				/>
 			</AddModel>
 
 			<div
 				className="text-md px-6 py-2 w-32 text-center rounded-md bg-green-500 text-indigo-50 font-semibold cursor-pointer justify-self-end"
-				text-indigo-50
-				font-semibold
-				cursor-pointer
 				onClick={() => setIsOpened(true)}
 			>
 				Add

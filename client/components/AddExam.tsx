@@ -1,17 +1,27 @@
 import { CREATE_EXAM_MUTATION } from "core/mutations/examMutations";
 import { createAxiosService } from "core/utils";
+import { format } from "date-fns";
 import { arEG } from "date-fns/locale";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DatePicker } from "react-next-dates";
 import { useMutation } from "react-query";
 
-function AddExam({ onProceed, onClose, profileId }) {
+function AddExam({ onProceed, onClose, profileId, score, date, note }) {
 	const [examState, setExamState] = useState({
 		score: "",
 		date: "",
 		note: "",
 		error: "",
 	});
+
+	useEffect(() => {
+		setExamState({
+			...examState,
+			score: score || "",
+			date: date ? date.substring(0, 10) : "",
+			note: note || "",
+		});
+	}, [score, date, note]);
 
 	const mutation = useMutation(
 		"AddExam",
