@@ -16,14 +16,15 @@ export const Profile = objectType({
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("exams", {
 			type: Exam,
-			async resolve(_parent, _args, ctx) {
+			args: { take: nullable(intArg()) },
+			async resolve(_parent, { take }, ctx) {
 				return await ctx.prisma.profile
 					.findUnique({
 						where: {
 							id: _parent.id,
 						},
 					})
-					.exams();
+					.exams({ take });
 			},
 		});
 		t.list.field("users", {
@@ -40,14 +41,15 @@ export const Profile = objectType({
 		});
 		t.list.field("attendances", {
 			type: Attendance,
-			async resolve(_parent, _args, ctx) {
+			args: { take: nullable(intArg()) },
+			async resolve(_parent, { take }, ctx) {
 				return await ctx.prisma.profile
 					.findUnique({
 						where: {
 							id: _parent.id,
 						},
 					})
-					.attendances();
+					.attendances({ take });
 			},
 		});
 		t.field("group", {

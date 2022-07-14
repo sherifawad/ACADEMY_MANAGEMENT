@@ -114,7 +114,7 @@ export const AttendanceByUserDateQuery = extendType({
 export const AttendanceByUserIdQuery = extendType({
 	type: "Query",
 	definition(t) {
-		t.field("Attendances", {
+		t.field("PaginatedAttendances", {
 			type: "AttendanceResponse",
 			args: {
 				studentId: nonNull(stringArg()),
@@ -132,12 +132,6 @@ export const AttendanceByUserIdQuery = extendType({
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
 					return null;
 
-				// return await prisma.attendance.findMany({
-				// 	where: {
-				// 		Profile: { id: studentId },
-				// 	},
-				// });
-
 				return await prismaOffsetPagination({
 					cursor,
 					size: Number(size),
@@ -146,6 +140,35 @@ export const AttendanceByUserIdQuery = extendType({
 					orderDirection,
 					model: Attendance,
 					prisma: prisma,
+					where: {
+						Profile: { id: studentId },
+					},
+				});
+			},
+		});
+	},
+});
+
+export const AttendanceByUserQuery = extendType({
+	type: "Query",
+	definition(t) {
+		t.list.field("Attendances", {
+			type: "Attendance",
+			args: {
+				studentId: nonNull(stringArg()),
+				skip: nullable(intArg()),
+				take: nullable(intArg()),
+			},
+			resolve: async (_parent, { studentId, take, skip = 1 }, { prisma, user }) => {
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
+					return null;
+
+				return await prisma.attendance.findMany({
+					skip,
+					take,
+					where: {
+						Profile: { id: studentId },
+					},
 				});
 			},
 		});

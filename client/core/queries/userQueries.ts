@@ -29,43 +29,43 @@ export const GET_USERS_IDS = `
 `;
 
 export const GET_STUDENT_DETAILS = `
-    query Query($userId: String!) {
-        User(id: $userId) {
-        id
-        name
-        isActive
-        avatar
-        contact {
-            note
-            phone
-            parentsPhones
-            address
-            email
-            emailConfirmed
-        }
-        profile {
-            bio
-            group {
-                name
-                isActive
-                startAt
-                endAt
-                grade {
-                    isActive
+    query Query($userId: String!, $take: Int) {
+        User(id: $userId, take: $take) {
+            id
+            name
+            isActive
+            avatar
+            contact {
+                note
+                phone
+                parentsPhones
+                address
+                email
+                emailConfirmed
+            }
+            profile {
+                bio
+                group {
                     name
+                    isActive
+                    startAt
+                    endAt
+                    grade {
+                        isActive
+                        name
+                    }
+                }
+                exams(take: $take) {
+                    note
+                    score
+                    date
+                }
+                attendances(take: $take) {
+                    note
+                    startAt
+                    endAt
                 }
             }
-            exams {
-                note
-                score
-                date
-            }
-            attendances {
-                note
-                startAt
-                endAt
-            }
-        }
         }
     }
 `;

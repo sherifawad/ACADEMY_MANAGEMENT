@@ -7,13 +7,6 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 function Student({ user }) {
-	// const router = useRouter();
-
-	// useEffect(() => {
-	// 	// Always do navigations after the first render
-	// 	router.replace(`/student/${user?.name}`, undefined, { shallow: true });
-	// }, []);
-
 	return (
 		<div className="container">
 			<div className="flex flex-col md:flex-row gap-4">
@@ -129,7 +122,7 @@ export async function getStaticPaths() {
 
 // This also gets called at build time
 export async function getStaticProps({ params }) {
-	const result = await createAxiosService(GET_STUDENT_DETAILS, { userId: params.studentId });
+	const result = await createAxiosService(GET_STUDENT_DETAILS, { userId: params.studentId, take: 2 });
 
 	if (result?.data?.data) {
 		return { props: { user: result?.data?.data.User } };

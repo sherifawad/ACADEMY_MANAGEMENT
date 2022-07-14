@@ -1,6 +1,6 @@
 import { Contact, Group, PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
 import { hashPassword, verifyPassword } from "../../core/crypto";
-import { nonNull, objectType, stringArg, extendType, inputObjectType } from "nexus";
+import { nonNull, objectType, stringArg, extendType, inputObjectType, intArg, nullable } from "nexus";
 import { Context } from ".";
 import { GetUserPassword } from "./UserPassword";
 import { Role as userRole } from "@prisma/client";
@@ -209,7 +209,7 @@ export const UserByIdQuery = extendType({
 	definition(t) {
 		t.nonNull.field("User", {
 			type: "User",
-			args: { id: nonNull(stringArg()) },
+			args: { id: nonNull(stringArg()), take: nullable(intArg()) },
 			resolve: async (_parent, { id }, { user, prisma }) => {
 				if (!user || user.role !== userRole.ADMIN) return null;
 				return await prisma.user.findUnique({
