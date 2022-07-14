@@ -41,13 +41,17 @@ function Student({ user }) {
 				<div className="flex flex-col justify-between md:w-3/5 gap-4">
 					<CardContainer>
 						<div>
-							<h3 className="font-bold underline-offset-4 underline">Attendance</h3>
+							<Link href={`/student/${user.id}/attendance`}>
+								<a>
+									<h3 className="font-bold underline-offset-4 underline">Attendance</h3>
+								</a>
+							</Link>
 							<div className="divide-y">
 								{user?.profile?.attendances?.map((attendance) => (
 									<div key={attendance.id} className="py-4 grid grid-cols-4 gap-2">
-										<div className="flex items-center gap-2">
+										<div className="grid grid-cols-[auto_1fr] gap-2 place-items-center">
 											<div
-												className={`w-6 h-6 ${
+												className={`w-3 h-3 ${
 													attendance?.endAt ? "bg-green-600" : "bg-red-600"
 												} rounded-full`}
 											></div>

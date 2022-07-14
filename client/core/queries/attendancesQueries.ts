@@ -1,10 +1,43 @@
 export const GET_PAGINATED_STUDENT_ATTENDANCES = `
-    query Query($studentId: String!) {
-        Attendances(studentId: $studentId) {
-            id
-            note
-            startAt
-            endAt
+    query Attendances($studentId: String!, $cursor: String, $orderBy: String, $orderDirection: String, $size: Int, $buttonNum: Int) {
+        PaginatedAttendances(studentId: $studentId, cursor: $cursor, orderBy: $orderBy, orderDirection: $orderDirection, size: $size, buttonNum: $buttonNum) {
+        pageEdges {
+            cursor
+            node {
+                note
+                id
+                startAt
+                endAt
+            }
+        }
+        pageCursors {
+            first {
+                cursor
+                page
+                isCurrent
+            }
+            previous {
+                cursor
+                page
+                isCurrent
+            }
+            around {
+                cursor
+                page
+                isCurrent
+            }
+            next {
+                cursor
+                page
+                isCurrent
+            }
+            last {
+                cursor
+                page
+                isCurrent
+            }
+        }
+            totalCount
         }
     }
 `;
