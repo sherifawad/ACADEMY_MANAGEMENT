@@ -15,9 +15,14 @@ type Attendance {
 }
 
 type AttendanceResponse {
-  pageCursors: pageCursors
-  pageEdges: [pageEdges]
-  totalCount: Int
+  list: [Attendance]
+  nextCursor: String
+  prevCursor: String
+  totalCount: AttendancesCount
+}
+
+type AttendancesCount {
+  _count: Int
 }
 
 """Payload containing auth token"""
@@ -133,6 +138,7 @@ type Query {
   ActiveGrades: [Grade]!
   AttendanceInDate(date: DateTime!, id: String!): Attendance!
   Attendances(skip: Int, studentId: String!, take: Int): [Attendance]
+  AttendancesCount(studentId: String!): AttendancesCount
   Contact(id: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
@@ -141,7 +147,7 @@ type Query {
   Grades: [Grade]!
   Group(id: String!): Group!
   Groups: [Group]!
-  PaginatedAttendances(buttonNum: Int, cursor: String, orderBy: String, orderDirection: String, size: Int, studentId: String!): AttendanceResponse
+  PaginatedAttendances(myCursor: String, orderByKey: String, orderDirection: String, size: Int, studentId: String!): AttendanceResponse
   Profile(id: String!): Profile!
   Profiles: [Profile]!
   User(id: String!, take: Int): User!

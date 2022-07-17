@@ -6,20 +6,24 @@ import { useEffect, useMemo, useState } from "react";
 import { useTable } from "react-table";
 
 function Attendance({ PaginatedAttendances, profileId }) {
-	const [attendances, setAttendances] = useState([]);
+	// console.log(
+	// 	"🚀 ~ file: attendance.tsx ~ line 9 ~ Attendance ~ PaginatedAttendances",
+	// 	JSON.stringify(PaginatedAttendances, null, 4)
+	// );
 
-	useEffect(() => {
-		var result = PaginatedAttendances.pageEdges.reduce(function (acc, pageEdge) {
+	let attendanceList = [];
+	const [PagAttendances, setPagAttendances] = useState(PaginatedAttendances);
+
+	const data = useMemo(() => {
+		return PagAttendances.pageEdges.reduce(function (acc, pageEdge) {
 			return acc.concat({ ...pageEdge.node });
 		}, []);
-		console.log("🚀 ~ file: attendance.tsx ~ line 15 ~ result ~ result", result);
-		setAttendances(result);
-	}, [PaginatedAttendances]);
+	}, [PagAttendances]);
 
 	const attendancesColumns = useMemo(
 		() =>
-			attendances[0]
-				? Object.keys(attendances[0])
+			data[0]
+				? Object.keys(data[0])
 						.filter((key) => key !== "id")
 						.map((key) => {
 							if (key === "startAt" || key === "endAt") {
@@ -27,7 +31,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 									Header: key,
 									accessor: key,
 									Cell: ({ value }) =>
-										value === null ? "-" : format(new Date(value), "hh:mm a"),
+										value === null ? "_" : format(new Date(value), "hh:mm a"),
 								};
 							}
 							return { Header: key, accessor: key };
@@ -36,11 +40,35 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		[PaginatedAttendances]
 	);
 
-	const tableInstance = useTable({
-		columns: attendancesColumns,
-		data: attendances,
-		initialState: { hiddenColumns: ["note"] },
-	});
+	const tableHooks = (hooks) => {
+		hooks.visibleColumns.push((columns) => [
+			...columns,
+			{
+				id: "Edit",
+				Header: "Edit",
+				Cell: ({ row }) => {
+					return (
+						<button
+							onClick={() => {
+								alert("Note: " + row.values.note);
+							}}
+						>
+							Edit
+						</button>
+					);
+				},
+			},
+		]);
+	};
+
+	const tableInstance = useTable(
+		{
+			columns: attendancesColumns,
+			data,
+			initialState: { hiddenColumns: ["note"] },
+		},
+		tableHooks
+	);
 
 	const {
 		getTableProps,
@@ -49,6 +77,24 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		prepareRow,
 		rows, // Instead of using 'rows', we'll use page,
 	} = tableInstance;
+
+	const gotoPage = async (cursor) => {
+		console.log("🚀 ~ file: attendance.tsx ~ line 79 ~ gotoPage ~ cursor", cursor);
+		const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, {
+			studentId: profileId,
+			cursor,
+			orderBy: "startAt",
+			orderDirection: "desc",
+			size: 3,
+			buttonNum: 4,
+		});
+		if (result?.data?.data.PaginatedAttendances)
+			setPagAttendances(result?.data?.data.PaginatedAttendances);
+		console.log(
+			"🚀 ~ file: attendance.tsx ~ line 88 ~ gotoPage ~ PaginatedAttendances",
+			result?.data?.data.PaginatedAttendances
+		);
+	};
 
 	return (
 		<div className="container grid">
@@ -90,6 +136,94 @@ function Attendance({ PaginatedAttendances, profileId }) {
 					</table>
 				</div>
 			</div>
+			<div className="flex items-center justify-center">
+				<div className="flex flex-col items-center mb-8 px-4 mx-auto mt-8">
+					<div className="font-sans flex justify-end items-center space-x-1 select-none whitespace-nowrap">
+						<a
+							href="#"
+							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
+								PaginatedAttendances.pageCursors.first
+									? "hover:bg-teal-400 hover:text-white"
+									: ""
+							}`}
+							style={{ transition: "all 0.2s ease" }}
+							onClick={() => {
+								if (!PaginatedAttendances.pageCursors.first) return;
+								gotoPage(PaginatedAttendances.pageCursors.first.cursor);
+							}}
+						>
+							First
+						</a>
+						<a
+							href="#"
+							className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-teal-400 hover:text-white"
+							style={{ transition: "all 0.2s ease" }}
+							onClick={() => {
+								if (!PaginatedAttendances.pageCursors.previous) return;
+								gotoPage(PaginatedAttendances.pageCursors.previous.cursor);
+							}}
+						>
+							Prev
+						</a>
+						<a
+							href="#"
+							className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-teal-400 hover:text-white"
+							style={{ transition: "all 0.2s ease" }}
+							onClick={() => {
+								if (!PaginatedAttendances.pageCursors.next) return;
+								gotoPage(PaginatedAttendances.pageCursors.next.cursor);
+							}}
+						>
+							Next
+						</a>
+						<a
+							href="#"
+							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
+								PaginatedAttendances.pageCursors.last
+									? "hover:bg-teal-400 hover:text-white"
+									: ""
+							}`}
+							style={{ transition: "all 0.2s ease" }}
+							onClick={() => {
+								if (!PaginatedAttendances.pageCursors.last) return;
+								gotoPage(PaginatedAttendances.pageCursors.last.cursor);
+							}}
+						>
+							Last
+						</a>
+						{/* <span>
+							Page{" "}
+							<strong>
+								{pageIndex + 1} of {PaginatedAttendances.totalCount.length}
+							</strong>{" "}
+						</span>
+						<span>
+							| Go to page:{" "}
+							<input
+								type="number"
+								defaultValue={pageIndex + 1}
+								onChange={(e) => {
+									const page = e.target.value ? Number(e.target.value) - 1 : 0;
+									gotoPage(page);
+								}}
+								style={{ width: "100px" }}
+							/>
+						</span>{" "}
+						<select
+							value={pageSize}
+							onChange={(e) => {
+								setPageSize(Number(e.target.value));
+							}}
+						>
+							{[1, 2, 30, 40, 50].map((pageSize) => (
+								<option key={pageSize} value={pageSize}>
+									Show {pageSize}
+								</option>
+							))}
+						</select> */}
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 }
@@ -117,7 +251,7 @@ export async function getStaticProps({ params }) {
 		cursor: null,
 		orderBy: "startAt",
 		orderDirection: "desc",
-		size: 10,
+		size: 3,
 		buttonNum: 4,
 	});
 

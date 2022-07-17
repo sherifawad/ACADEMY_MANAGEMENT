@@ -3,6 +3,30 @@ import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core
 // @ts-ignore
 import { prismaOffsetPagination } from "prisma-offset-pagination";
 
+export interface prismaCursorPagination {
+	take: number;
+	skip?: number; // Skip the cursor
+	cursor?: {
+		id: string;
+	};
+	where: {
+		Profile: { id: string };
+	};
+	orderBy?: { [x: string]: string };
+}
+
+export interface attendance {
+	id: string;
+	note?: string; // Skip the cursor
+	profileId: string; // Skip the cursor
+	createdBy?: string; // Skip the cursor
+	updatedBy?: string; // Skip the cursor
+	startAt: Date; // Skip the cursor
+	endAt?: Date; // Skip the cursor
+	profile?: any; // Skip the cursor
+	group?: any; // Skip the cursor
+}
+
 //generates Exam type at schema.graphql
 export const Attendance = objectType({
 	name: "Attendance",
@@ -77,14 +101,33 @@ export const pageCursors = objectType({
 	},
 });
 
+// export const AttendanceResponse = objectType({
+// 	name: "AttendanceResponse",
+// 	definition(t) {
+// 		t.list.field("pageEdges", {
+// 			type: pageEdges,
+// 		});
+// 		t.field("pageCursors", { type: pageCursors });
+// 		t.int("totalCount");
+// 	},
+// });
+
+export const AttendancesCount = objectType({
+	name: "AttendancesCount",
+	definition(t) {
+		t.int("_count");
+	},
+});
+
 export const AttendanceResponse = objectType({
 	name: "AttendanceResponse",
 	definition(t) {
-		t.list.field("pageEdges", {
-			type: pageEdges,
+		t.list.field("list", {
+			type: Attendance,
 		});
-		t.field("pageCursors", { type: pageCursors });
-		t.int("totalCount");
+		t.string("prevCursor");
+		t.string("nextCursor");
+		t.field("totalCount", { type: AttendancesCount });
 	},
 });
 
@@ -111,6 +154,44 @@ export const AttendanceByUserDateQuery = extendType({
 	},
 });
 
+// export const AttendanceByUserIdQuery = extendType({
+// 	type: "Query",
+// 	definition(t) {
+// 		t.field("PaginatedAttendances", {
+// 			type: "AttendanceResponse",
+// 			args: {
+// 				studentId: nonNull(stringArg()),
+// 				myCursor: nullable(stringArg()),
+// 				orderByKey: nullable(stringArg()),
+// 				orderDirection: nullable(stringArg()),
+// 				size: nullable(intArg()),
+// 				buttonNum: nullable(intArg()),
+// 			},
+// 			resolve: async (
+// 				_parent,
+// 				{ studentId, size, buttonNum, myCursor, orderByKey, orderDirection },
+// 				{ prisma, user }
+// 			) => {
+// 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
+// 					return null;
+
+// 				return await prismaOffsetPagination({
+// 					cursor: cursor,
+// 					size: Number(size),
+// 					buttonNum: Number(buttonNum),
+// 					orderBy,
+// 					orderDirection,
+// 					model: Attendance,
+// 					prisma: prisma,
+// 					where: {
+// 						Profile: { id: studentId },
+// 					},
+// 				});
+// 			},
+// 		});
+// 	},
+// });
+
 export const AttendanceByUserIdQuery = extendType({
 	type: "Query",
 	definition(t) {
@@ -118,31 +199,82 @@ export const AttendanceByUserIdQuery = extendType({
 			type: "AttendanceResponse",
 			args: {
 				studentId: nonNull(stringArg()),
-				cursor: nullable(stringArg()),
-				orderBy: nullable(stringArg()),
+				myCursor: nullable(stringArg()),
+				orderByKey: nullable(stringArg()),
 				orderDirection: nullable(stringArg()),
 				size: nullable(intArg()),
-				buttonNum: nullable(intArg()),
 			},
 			resolve: async (
 				_parent,
-				{ studentId, size, buttonNum, cursor, orderBy, orderDirection },
+				{ studentId, size, myCursor, orderByKey, orderDirection },
 				{ prisma, user }
 			) => {
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
 					return null;
 
-				return await prismaOffsetPagination({
-					cursor,
-					size: Number(size),
-					buttonNum: Number(buttonNum),
-					orderBy,
-					orderDirection,
-					model: Attendance,
-					prisma: prisma,
+				let data: prismaCursorPagination = {
+					take: Number(size),
 					where: {
 						Profile: { id: studentId },
 					},
+				};
+
+				if (myCursor) {
+					data = {
+						...data,
+						skip: 1, // Skip the cursor
+						cursor: {
+							id: myCursor,
+						},
+					};
+				}
+
+				if (orderByKey && orderDirection) {
+					data = { ...data, orderBy: { [orderByKey]: orderDirection } };
+				}
+
+				const result: attendance[] = await prisma.attendance.findMany(data);
+				let totalCount: { _count: number } | undefined | null;
+				let prevCursor: string | undefined | null;
+				const nextCursor: string | undefined | null = result[result?.length - 1]?.id;
+
+				if (!myCursor) {
+					totalCount = await prisma.attendance.aggregate({
+						where: {
+							Profile: { id: studentId },
+						},
+						_count: true,
+					});
+				} else {
+					prevCursor = myCursor;
+				}
+				return {
+					list: result,
+					prevCursor,
+					nextCursor,
+					totalCount,
+				};
+			},
+		});
+	},
+});
+
+export const UserAttendancesCount = extendType({
+	type: "Query",
+	definition(t) {
+		t.field("AttendancesCount", {
+			type: "AttendancesCount",
+			args: {
+				studentId: nonNull(stringArg()),
+			},
+			resolve: async (_parent, { studentId }, { prisma, user }) => {
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
+					return null;
+				return await prisma.attendance.aggregate({
+					where: {
+						Profile: { id: studentId },
+					},
+					_count: true,
 				});
 			},
 		});
