@@ -223,7 +223,7 @@ export const AttendanceByUserIdQuery = extendType({
 				if (myCursor) {
 					data = {
 						...data,
-						skip: Number(size) > 0 ? 1 : 0, // Skip the cursor
+						skip: 1, // Skip the cursor
 						cursor: {
 							id: myCursor,
 						},
@@ -240,10 +240,11 @@ export const AttendanceByUserIdQuery = extendType({
 				if (orderByKey && orderDirection) {
 					data = { ...data, orderBy: { [orderByKey]: orderDirection } };
 				}
+				console.log("🚀 ~ file: Attendance.ts ~ line 242 ~ definition ~ data", data);
 
 				const result: attendance[] = await prisma.attendance.findMany(data);
 				let totalCount: { _count: number } | undefined | null;
-				let prevCursor: string | undefined | null;
+				let prevCursor: string | undefined | null = result[0]?.id;
 				const nextCursor: string | undefined | null = result[result?.length - 1]?.id;
 
 				if (!myCursor) {
@@ -254,10 +255,7 @@ export const AttendanceByUserIdQuery = extendType({
 						_count: true,
 					});
 
-					prevCursor = null;
-				} else {
-					prevCursor = myCursor;
-				}
+				} 
 				return {
 					list: result,
 					prevCursor,
