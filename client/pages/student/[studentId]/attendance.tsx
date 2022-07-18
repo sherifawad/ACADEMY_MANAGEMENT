@@ -13,8 +13,15 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		totalCount: { _count },
 	} = PaginatedAttendances;
 
-	const [firstResultId, setFirstResultId] = useState(list[0]?.id);
+	const ORDER = {
+		desc: "desc",
+		asc: "asc",
+	};
+
 	const [pageSize, setPageSize] = useState(2);
+	const [currentOrder, setCurrentOrder] = useState(ORDER.desc);
+	const [isAscending, setIsAscending] = useState(false);
+	const [currentSortProperty, setCurrentSortProperty] = useState("id");
 	const [isLastPage, setIsLastPage] = useState(false);
 	const [isFirstPage, setIsFirstPage] = useState(true);
 	const [canGoNext, setCanGoNext] = useState(true);
@@ -23,11 +30,12 @@ function Attendance({ PaginatedAttendances, profileId }) {
 	const [paginationOption, setPaginationOption] = useState({
 		studentId: profileId,
 		myCursor: nextCursor,
-		orderByKey: "note",
-		orderDirection: "desc",
+		orderByKey: currentSortProperty,
+		orderDirection: currentOrder,
 		size: pageSize,
 		skip: null,
 	});
+
 	const [paginationResult, setPaginationResult] = useState({
 		list,
 		prevCursor,
@@ -36,9 +44,17 @@ function Attendance({ PaginatedAttendances, profileId }) {
 
 	useEffect(() => {
 		setPaginationOption({ ...paginationOption, size: pageSize });
-
 		gotoFirst(true);
 	}, [pageSize]);
+
+	useEffect(() => {
+		if (isAscending) {
+			setCurrentOrder(ORDER.asc);
+		} else {
+			setCurrentOrder(ORDER.desc);
+		}
+		sortColumn(currentSortProperty, isAscending);
+	}, [isAscending, currentSortProperty]);
 
 	const data = useMemo(() => {
 		return paginationResult.list;
@@ -130,14 +146,24 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		}
 	};
 
-	const gotoFirst = async (force: boolean = false) => {
+	const gotoFirst = async (
+		force: boolean = false,
+		currentSortProperty: string = null,
+		currentOrder: string = null
+	) => {
 		if (!force && isFirstPage) return;
-		const options = {
+		let options = {
 			...paginationOption,
 			myCursor: null,
 			size: pageSize,
 			skip: null,
 		};
+		if (currentSortProperty) {
+			options = { ...options, orderByKey: currentSortProperty };
+		}
+		if (currentOrder) {
+			options = { ...options, orderDirection: currentOrder };
+		}
 
 		const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, options);
 		const { list, prevCursor, nextCursor } = result?.data?.data?.PaginatedAttendances;
@@ -150,6 +176,8 @@ function Attendance({ PaginatedAttendances, profileId }) {
 			setPaginationOption({
 				...paginationOption,
 				myCursor: nextCursor,
+				orderDirection: options.orderDirection,
+				orderByKey: options.orderByKey,
 			});
 			setIsFirstPage(true);
 			setCanGoNext(true);
@@ -282,6 +310,17 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		}
 	};
 
+	const sortColumn = (sortProperty: string, isAsc: boolean = false) => {
+		const sortDirection = isAsc ? "asc" : "desc";
+		gotoFirst(true, sortProperty, sortDirection);
+	};
+
+	const headerClickHandler = (headerName: string) => {
+		if (headerName.toLowerCase() === "edit") return;
+		setCurrentSortProperty(headerName);
+		setIsAscending(!isAscending);
+	};
+
 	return (
 		<div className="container grid">
 			<div className="w-full mb-8 overflow-hidden rounded-lg shadow-lg pt-4">
@@ -295,7 +334,18 @@ function Attendance({ PaginatedAttendances, profileId }) {
 								>
 									{headerGroup.headers.map((column) => (
 										<th {...column.getHeaderProps()} className="px-4 py-3">
-											{column.render("Header")}
+											<a href="#" onClick={() => headerClickHandler(column.id)}>
+												{column.render("Header")}
+												{column.id !== "Edit" && (
+													<span>
+														{column.id === currentSortProperty
+															? isAscending
+																? " ▲"
+																: " ▼"
+															: ""}
+													</span>
+												)}
+											</a>
 										</th>
 									))}
 								</tr>
@@ -390,7 +440,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 								setPageSize(Number(e.target.value));
 							}}
 						>
-							{[1, 2, 10, 40, 50].map((pageSize) => (
+							{[1, 2, 5, 10, 15].map((pageSize) => (
 								<option key={pageSize} value={pageSize}>
 									Show {pageSize}
 								</option>
