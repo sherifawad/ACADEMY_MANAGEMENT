@@ -6,19 +6,33 @@ import { useEffect, useMemo, useState } from "react";
 import { useTable } from "react-table";
 
 function Attendance({ PaginatedAttendances, profileId }) {
-	// console.log(
-	// 	"🚀 ~ file: attendance.tsx ~ line 9 ~ Attendance ~ PaginatedAttendances",
-	// 	JSON.stringify(PaginatedAttendances, null, 4)
-	// );
+	const {
+		list,
+		prevCursor,
+		nextCursor,
+		totalCount: { _count },
+	} = PaginatedAttendances;
 
-	let attendanceList = [];
-	const [PagAttendances, setPagAttendances] = useState(PaginatedAttendances);
+	const [firstResultId, setFirstResultId] = useState(list[0]?.id);
+	const [isLastPage, setIsLastPage] = useState(false);
+	const [currentPageNumber, setCurrentPageNumber] = useState(1);
+	const [paginationOption, setPaginationOption] = useState({
+		studentId: profileId,
+		myCursor: nextCursor,
+		orderByKey: "note",
+		orderDirection: "desc",
+		size: 2,
+		skip: null,
+	});
+	const [paginationResult, setPaginationResult] = useState({
+		list,
+		prevCursor,
+		nextCursor,
+	});
 
 	const data = useMemo(() => {
-		return PagAttendances.pageEdges.reduce(function (acc, pageEdge) {
-			return acc.concat({ ...pageEdge.node });
-		}, []);
-	}, [PagAttendances]);
+		return paginationResult.list;
+	}, [paginationResult.list]);
 
 	const attendancesColumns = useMemo(
 		() =>
@@ -37,7 +51,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 							return { Header: key, accessor: key };
 						})
 				: [],
-		[PaginatedAttendances]
+		[list]
 	);
 
 	const tableHooks = (hooks) => {
@@ -65,7 +79,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		{
 			columns: attendancesColumns,
 			data,
-			initialState: { hiddenColumns: ["note"] },
+			// initialState: { hiddenColumns: ["note"] },
 		},
 		tableHooks
 	);
@@ -78,22 +92,64 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		rows, // Instead of using 'rows', we'll use page,
 	} = tableInstance;
 
-	const gotoPage = async (cursor) => {
-		console.log("🚀 ~ file: attendance.tsx ~ line 79 ~ gotoPage ~ cursor", cursor);
-		const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, {
-			studentId: profileId,
-			cursor,
-			orderBy: "startAt",
-			orderDirection: "desc",
-			size: 3,
-			buttonNum: 4,
-		});
-		if (result?.data?.data.PaginatedAttendances)
-			setPagAttendances(result?.data?.data.PaginatedAttendances);
-		console.log(
-			"🚀 ~ file: attendance.tsx ~ line 88 ~ gotoPage ~ PaginatedAttendances",
-			result?.data?.data.PaginatedAttendances
-		);
+	const gotoPage = async (cursor: string | null, previous: boolean = false) => {
+		let options = {
+			...paginationOption,
+			myCursor: cursor,
+			size: previous ? -paginationOption.size : paginationOption.size,
+		};
+		if (!cursor && previous && isLastPage) {
+			options = {
+				...options,
+				size: -paginationOption.size * 2,
+				skip: paginationOption.size,
+			};
+		}
+		setPaginationOption(options);
+		const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, options);
+		const { list, prevCursor, nextCursor } = result?.data?.data?.PaginatedAttendances;
+		if (!list || list.length <= 0) {
+			setPaginationResult({
+				...paginationResult,
+				nextCursor: null,
+				prevCursor,
+			});
+			setPaginationOption({
+				...paginationOption,
+				myCursor: null,
+			});
+		} else {
+			setPaginationResult({
+				list,
+				prevCursor,
+				nextCursor,
+			});
+			setPaginationOption({
+				...paginationOption,
+				myCursor: nextCursor,
+			});
+		}
+
+		let PageNumber: number = currentPageNumber;
+
+		if (!cursor && previous && !isLastPage) {
+			PageNumber = Math.abs(Math.ceil(_count / paginationOption.size));
+			setIsLastPage(true);
+		} else if (!cursor) {
+			PageNumber = 1;
+		} else if (previous) {
+			PageNumber = Math.abs(PageNumber === 1 ? PageNumber : PageNumber - 1);
+		} else if (!list || list.length <= 0) {
+		} else {
+			PageNumber = Math.abs(PageNumber + 1);
+		}
+		setCurrentPageNumber(Math.abs(PageNumber));
+
+		if (PageNumber === Math.abs(Math.ceil(_count / paginationOption.size))) {
+			setIsLastPage(true);
+		} else {
+			setIsLastPage(false);
+		}
 	};
 
 	return (
@@ -136,42 +192,45 @@ function Attendance({ PaginatedAttendances, profileId }) {
 					</table>
 				</div>
 			</div>
+
 			<div className="flex items-center justify-center">
 				<div className="flex flex-col items-center mb-8 px-4 mx-auto mt-8">
 					<div className="font-sans flex justify-end items-center space-x-1 select-none whitespace-nowrap">
 						<a
 							href="#"
 							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
-								PaginatedAttendances.pageCursors.first
-									? "hover:bg-teal-400 hover:text-white"
-									: ""
+								currentPageNumber !== 1 ? "hover:bg-teal-400 hover:text-white" : ""
 							}`}
 							style={{ transition: "all 0.2s ease" }}
 							onClick={() => {
-								if (!PaginatedAttendances.pageCursors.first) return;
-								gotoPage(PaginatedAttendances.pageCursors.first.cursor);
+								if (currentPageNumber === 1) return;
+								gotoPage(null);
 							}}
 						>
 							First
 						</a>
 						<a
 							href="#"
-							className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-teal-400 hover:text-white"
+							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
+								currentPageNumber !== 1 ? "hover:bg-teal-400 hover:text-white" : ""
+							}`}
 							style={{ transition: "all 0.2s ease" }}
 							onClick={() => {
-								if (!PaginatedAttendances.pageCursors.previous) return;
-								gotoPage(PaginatedAttendances.pageCursors.previous.cursor);
+								if (currentPageNumber === 1) return;
+								gotoPage(paginationResult.prevCursor, true);
 							}}
 						>
 							Prev
 						</a>
 						<a
 							href="#"
-							className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-teal-400 hover:text-white"
+							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
+								!isLastPage ? "hover:bg-teal-400 hover:text-white" : ""
+							}`}
 							style={{ transition: "all 0.2s ease" }}
 							onClick={() => {
-								if (!PaginatedAttendances.pageCursors.next) return;
-								gotoPage(PaginatedAttendances.pageCursors.next.cursor);
+								if (isLastPage) return;
+								gotoPage(paginationResult.nextCursor);
 							}}
 						>
 							Next
@@ -179,25 +238,24 @@ function Attendance({ PaginatedAttendances, profileId }) {
 						<a
 							href="#"
 							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
-								PaginatedAttendances.pageCursors.last
-									? "hover:bg-teal-400 hover:text-white"
-									: ""
+								!isLastPage ? "hover:bg-teal-400 hover:text-white" : ""
 							}`}
 							style={{ transition: "all 0.2s ease" }}
 							onClick={() => {
-								if (!PaginatedAttendances.pageCursors.last) return;
-								gotoPage(PaginatedAttendances.pageCursors.last.cursor);
+								if (isLastPage) return;
+								gotoPage(null, true);
 							}}
 						>
 							Last
 						</a>
-						{/* <span>
+						<span>
 							Page{" "}
 							<strong>
-								{pageIndex + 1} of {PaginatedAttendances.totalCount.length}
+								{Math.abs(currentPageNumber)} of{" "}
+								{Math.abs(Math.ceil(_count / paginationOption.size))}
 							</strong>{" "}
 						</span>
-						<span>
+						{/*<span>
 							| Go to page:{" "}
 							<input
 								type="number"
@@ -248,11 +306,10 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
 	const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, {
 		studentId: params.studentId,
-		cursor: null,
-		orderBy: "startAt",
+		myCursor: null,
+		orderByKey: "note",
 		orderDirection: "desc",
-		size: 3,
-		buttonNum: 4,
+		size: 2,
 	});
 
 	if (result?.data?.data) {

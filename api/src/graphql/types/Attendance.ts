@@ -203,10 +203,11 @@ export const AttendanceByUserIdQuery = extendType({
 				orderByKey: nullable(stringArg()),
 				orderDirection: nullable(stringArg()),
 				size: nullable(intArg()),
+				skip: nullable(intArg()),
 			},
 			resolve: async (
 				_parent,
-				{ studentId, size, myCursor, orderByKey, orderDirection },
+				{ studentId, size, myCursor, orderByKey, orderDirection, skip },
 				{ prisma, user }
 			) => {
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
@@ -222,10 +223,17 @@ export const AttendanceByUserIdQuery = extendType({
 				if (myCursor) {
 					data = {
 						...data,
-						skip: 1, // Skip the cursor
+						skip: Number(size) > 0 ? 1 : 0, // Skip the cursor
 						cursor: {
 							id: myCursor,
 						},
+					};
+				}
+
+				if (skip) {
+					data = {
+						...data,
+						skip,
 					};
 				}
 
@@ -245,6 +253,8 @@ export const AttendanceByUserIdQuery = extendType({
 						},
 						_count: true,
 					});
+
+					prevCursor = null;
 				} else {
 					prevCursor = myCursor;
 				}
