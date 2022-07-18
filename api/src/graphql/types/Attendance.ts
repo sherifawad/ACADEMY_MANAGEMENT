@@ -240,8 +240,6 @@ export const AttendanceByUserIdQuery = extendType({
 				if (orderByKey && orderDirection) {
 					data = { ...data, orderBy: { [orderByKey]: orderDirection } };
 				}
-				console.log("🚀 ~ file: Attendance.ts ~ line 242 ~ definition ~ data", data);
-
 				const result: attendance[] = await prisma.attendance.findMany(data);
 				let totalCount: { _count: number } | undefined | null;
 				let prevCursor: string | undefined | null = result[0]?.id;
@@ -254,8 +252,7 @@ export const AttendanceByUserIdQuery = extendType({
 						},
 						_count: true,
 					});
-
-				} 
+				}
 				return {
 					list: result,
 					prevCursor,

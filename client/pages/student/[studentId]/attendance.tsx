@@ -14,6 +14,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 	} = PaginatedAttendances;
 
 	const [firstResultId, setFirstResultId] = useState(list[0]?.id);
+	const [pageSize, setPageSize] = useState(2);
 	const [isLastPage, setIsLastPage] = useState(false);
 	const [isFirstPage, setIsFirstPage] = useState(true);
 	const [canGoNext, setCanGoNext] = useState(true);
@@ -24,7 +25,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		myCursor: nextCursor,
 		orderByKey: "note",
 		orderDirection: "desc",
-		size: 2,
+		size: pageSize,
 		skip: null,
 	});
 	const [paginationResult, setPaginationResult] = useState({
@@ -32,6 +33,12 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		prevCursor,
 		nextCursor,
 	});
+
+	useEffect(() => {
+		setPaginationOption({ ...paginationOption, size: pageSize });
+
+		gotoFirst(true);
+	}, [pageSize]);
 
 	const data = useMemo(() => {
 		return paginationResult.list;
@@ -100,7 +107,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		const options = {
 			...paginationOption,
 			myCursor: null,
-			size: -paginationOption.size,
+			size: -pageSize,
 			skip: null,
 		};
 		const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, options);
@@ -119,18 +126,19 @@ function Attendance({ PaginatedAttendances, profileId }) {
 			setIsFirstPage(false);
 			setCanGoNext(false);
 			setCanPrevious(true);
-			setCurrentPageNumber(Math.abs(Math.ceil(_count / paginationOption.size)));
+			setCurrentPageNumber(Math.abs(Math.ceil(_count / pageSize)));
 		}
 	};
 
-	const gotoFirst = async () => {
-		if (isFirstPage) return;
+	const gotoFirst = async (force: boolean = false) => {
+		if (!force && isFirstPage) return;
 		const options = {
 			...paginationOption,
 			myCursor: null,
-			size: paginationOption.size,
+			size: pageSize,
 			skip: null,
 		};
+
 		const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, options);
 		const { list, prevCursor, nextCursor } = result?.data?.data?.PaginatedAttendances;
 		if (list && list.length > 0) {
@@ -148,12 +156,22 @@ function Attendance({ PaginatedAttendances, profileId }) {
 			setIsLastPage(false);
 			setCanPrevious(false);
 			setCurrentPageNumber(1);
+			if (pageSize >= _count) {
+				setIsFirstPage(true);
+				setIsLastPage(true);
+				setCanGoNext(false);
+				setCanPrevious(false);
+			}
 		}
 	};
 
 	const gotoNext = async () => {
 		if (!canGoNext) return;
-		const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, paginationOption);
+		const options = {
+			...paginationOption,
+			size: pageSize,
+		};
+		const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, options);
 		const { list, prevCursor, nextCursor } = result?.data?.data?.PaginatedAttendances;
 		if (list && list.length > 0) {
 			setPaginationResult({
@@ -165,7 +183,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 				...paginationOption,
 				myCursor: nextCursor,
 			});
-			if (currentPageNumber + 1 === Math.abs(Math.ceil(_count / paginationOption.size))) {
+			if (currentPageNumber + 1 === Math.abs(Math.ceil(_count / pageSize))) {
 				setCanGoNext(false);
 				setIsLastPage(true);
 			}
@@ -180,7 +198,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		let options = {
 			...paginationOption,
 			myCursor: paginationResult.prevCursor,
-			size: -paginationOption.size,
+			size: -pageSize,
 		};
 		const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, options);
 		const { list, prevCursor, nextCursor } = result?.data?.data?.PaginatedAttendances;
@@ -351,8 +369,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 						<span>
 							Page{" "}
 							<strong>
-								{Math.abs(currentPageNumber)} of{" "}
-								{Math.abs(Math.ceil(_count / paginationOption.size))}
+								{Math.abs(currentPageNumber)} of {Math.abs(Math.ceil(_count / pageSize))}
 							</strong>{" "}
 						</span>
 						{/*<span>
@@ -366,19 +383,19 @@ function Attendance({ PaginatedAttendances, profileId }) {
 								}}
 								style={{ width: "100px" }}
 							/>
-						</span>{" "}
+						</span>*/}
 						<select
 							value={pageSize}
 							onChange={(e) => {
 								setPageSize(Number(e.target.value));
 							}}
 						>
-							{[1, 2, 30, 40, 50].map((pageSize) => (
+							{[1, 2, 10, 40, 50].map((pageSize) => (
 								<option key={pageSize} value={pageSize}>
 									Show {pageSize}
 								</option>
 							))}
-						</select> */}
+						</select>
 					</div>
 				</div>
 			</div>
