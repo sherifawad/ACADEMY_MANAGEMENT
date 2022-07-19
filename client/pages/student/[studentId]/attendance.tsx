@@ -1,7 +1,10 @@
+import AddAttendance from "components/AddAttendance";
+import AddModel from "components/AddModel";
 import { GET_PAGINATED_STUDENT_ATTENDANCES } from "core/queries/attendancesQueries";
 import { GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService } from "core/utils";
 import { format } from "date-fns";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { useTable } from "react-table";
 
@@ -16,6 +19,34 @@ function Attendance({ PaginatedAttendances, profileId }) {
 	const ORDER = {
 		desc: "desc",
 		asc: "asc",
+	};
+
+	const [isOpened, setIsOpened] = useState(false);
+
+	const [attendanceState, setAttendanceState] = useState({
+		startAt: null,
+		endAt: null,
+		note: null,
+	});
+
+	// eslint-disable-next-line react-hooks/rules-of-hooks
+	const router = useRouter();
+	// Call this function whenever you want to
+	// refresh props!
+
+	const onProceed = () => {
+		router.replace(router.asPath);
+		console.log("Proceed clicked");
+	};
+
+	const onClose = () => {
+		setIsOpened(false);
+		setAttendanceState({
+			startAt: null,
+			endAt: null,
+			note: null,
+		});
+		console.log("close clicked");
 	};
 
 	const [pageSize, setPageSize] = useState(2);
@@ -90,7 +121,13 @@ function Attendance({ PaginatedAttendances, profileId }) {
 					return (
 						<button
 							onClick={() => {
-								alert("Note: " + row.values.note);
+								setAttendanceState({
+									startAt: row.values.startAt,
+									endAt: row.values.endAt,
+									note: row.values.note,
+								});
+								setIsOpened(true);
+								// alert("Note: " + row.values.note);
 							}}
 						>
 							Edit
@@ -105,7 +142,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		{
 			columns: attendancesColumns,
 			data,
-			// initialState: { hiddenColumns: ["note"] },
+			initialState: { hiddenColumns: ["note"] },
 		},
 		tableHooks
 	);
@@ -323,6 +360,25 @@ function Attendance({ PaginatedAttendances, profileId }) {
 
 	return (
 		<div className="container grid">
+			<AddModel isOpened={isOpened} onClose={onClose} title="Add Attendance">
+				<AddAttendance
+					onProceed={onProceed}
+					onClose={onClose}
+					initialAttendance={{
+						profileId,
+						startAt: attendanceState.startAt,
+						endAt: attendanceState.endAt,
+						note: attendanceState.note,
+					}}
+				/>
+			</AddModel>
+
+			<div
+				className="text-md px-6 py-2 w-32 text-center rounded-md bg-green-500 text-indigo-50 font-semibold cursor-pointer justify-self-end"
+				onClick={() => setIsOpened(true)}
+			>
+				Add
+			</div>
 			<div className="w-full mb-8 overflow-hidden rounded-lg shadow-lg pt-4">
 				<div className="w-full overflow-x-auto">
 					<table {...getTableProps()} className="w-full">

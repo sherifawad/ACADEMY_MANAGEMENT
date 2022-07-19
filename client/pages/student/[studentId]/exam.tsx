@@ -38,24 +38,6 @@ function studentExams({ exams = [], profileId }) {
 		console.log("close clicked");
 	};
 
-	const columns = useMemo(
-		() => [
-			{
-				Header: "Date",
-
-				accessor: "date", // accessor is the "key" in the data
-			},
-
-			{
-				Header: "Score",
-
-				accessor: "score",
-			},
-		],
-
-		[]
-	);
-
 	const examsColumns = useMemo(
 		() =>
 			exams[0]

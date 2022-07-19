@@ -83,7 +83,7 @@ function AddExam({ onProceed, onClose, profileId, score, date, note }) {
 					htmlFor="date"
 					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
 				>
-					Score
+					Date
 				</label>
 				<input
 					type="date"
