@@ -28,5 +28,11 @@ export const createAxiosService = async (
 };
 
 export const getDayNames = (date: String, firstThreeLetter: boolean = false): string => {
-	return new Date(date).toLocaleDateString("en-US", { weekday: `${firstThreeLetter ? "short" : "long"}` });
+	return date
+		? new Date(date as string)
+				.toLocaleDateString("en-US", {
+					weekday: `${firstThreeLetter ? "short" : "long"}`,
+				})
+				.substring(0, 3)
+		: "";
 };

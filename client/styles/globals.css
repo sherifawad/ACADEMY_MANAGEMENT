@@ -2,10 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-
 .account-input {
 	@apply flex after:content-[''] after:h-1 after:w-full  relative after:absolute after:bottom-0 after:left-0 after:border-b-2;
 }
 .menu-line {
 	@apply after:content-[''] after:h-[2px] after:w-full after:scale-x-0  relative after:origin-bottom-right after:absolute after:bottom-0 after:left-0 hover:after:bg-green-400 hover:after:scale-x-100 hover:after:origin-bottom-left hover:after:transition-transform;
+}
+
+@layer utilities {
+	@variants responsive {
+		.image-container {
+			width: 100%;
+		}
+		.image-container span {
+			position: unset !important;
+		}
+		.image-container .image {
+			object-fit: contain;
+			width: 100% !important;
+			position: relative !important;
+			height: unset !important;
+		}
+	}
 }
