@@ -22,10 +22,7 @@ function GroupsListItem({ id, isActive, name, startAt, endAt, grade, setGroupIte
 	const EditItem = () => {
 		setGroupItemData({ id, isActive, name, startAt, endAt, grade });
 	};
-	return (
-        <MiniCard name={name} isActive={isActive} cardDetailLink={`/group/${id}`} EditItem={EditItem} />
-
-	);
+	return <MiniCard name={name} isActive={isActive} cardDetailLink={`/group/${id}`} EditItem={EditItem} />;
 }
 
 export default GroupsListItem;

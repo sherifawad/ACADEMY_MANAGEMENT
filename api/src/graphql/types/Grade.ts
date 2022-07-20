@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { nonNull, objectType, stringArg, extendType, intArg, nullable } from "nexus";
+import { nonNull, objectType, stringArg, extendType, intArg, nullable, booleanArg } from "nexus";
 import { Group } from "./Group";
 import { Profile } from "./Profile";
 
@@ -97,12 +97,14 @@ export const createGradeMutation = extendType({
 			type: "Grade",
 			args: {
 				name: nonNull(stringArg()),
+				isActive: nonNull(booleanArg()),
 			},
-			resolve: async (_parent, { name }, { prisma, user }) => {
+			resolve: async (_parent, { name, isActive }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const newGrade = {
 					name,
+					isActive,
 					createdBy: user.id,
 				};
 				return await prisma.Grade.create({
@@ -122,12 +124,14 @@ export const UpdateGradeMutation = extendType({
 			args: {
 				id: nonNull(stringArg()),
 				name: nonNull(stringArg()),
+				isActive: nonNull(booleanArg()),
 			},
-			resolve: async (_parent, { id, name }, { prisma, user }) => {
+			resolve: async (_parent, { id, name, isActive }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const updateGrade = {
 					name,
+					isActive,
 					updatedBy: user.id,
 				};
 				return await prisma.Grade.update({

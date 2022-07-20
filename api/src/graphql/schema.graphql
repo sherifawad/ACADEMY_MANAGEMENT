@@ -92,7 +92,7 @@ type Mutation {
   createAttendance(endAt: DateTime, note: String, profileId: String!, startAt: DateTime!): Attendance!
   createContact(address: String!, email: String, note: String, parentsPhones: String, phone: String!): Contact!
   createExam(date: DateTime!, note: String, profileId: String!, score: Float!): Exam!
-  createGrade(name: String!): Grade!
+  createGrade(isActive: Boolean!, name: String!): Grade!
   createGroup(endAt: DateTime, gradeId: String, isActive: Boolean, name: String!, startAt: DateTime): Group!
   createProfile(bio: String, id: String!): Profile!
   deleteAttendance(id: String!): Attendance!
@@ -107,7 +107,7 @@ type Mutation {
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateContact(address: String, email: String, emailConfirmed: Boolean, id: String!, note: String, parentsPhones: String, phone: String): Contact!
   updateExam(date: DateTime, id: String!, note: String, score: String): Exam!
-  updateGrade(id: String!, name: String!): Grade!
+  updateGrade(id: String!, isActive: Boolean!, name: String!): Grade!
   updateGroup(endAt: DateTime, gradeId: String, id: String!, isActive: Boolean, name: String, startAt: DateTime): Group!
   updateProfile(bio: String, id: String!): Profile!
   updateUser(avatar: String, email: String, id: String!, name: String, password: String): User!
