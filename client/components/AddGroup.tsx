@@ -1,27 +1,38 @@
-import { ADD_GROUP_MUTATION } from "core/mutations/groupMutations";
+import { ADD_GROUP_MUTATION, UPDATE_GROUP_MUTATION } from "core/mutations/groupMutations";
 import { ACTIVE_GRADES_QUERY } from "core/queries/gradeQueries";
 import { createAxiosService } from "core/utils";
 import { arEG } from "date-fns/locale";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TimePicker } from "react-next-dates";
 import { useMutation, useQuery } from "react-query";
+import { Group } from "./GroupsListItem";
+import { parse } from "date-fns";
 
-function AddGroup({ onProceed, onClose }) {
+export interface GroupInitials extends Group {
+	onProceed: Function;
+	onClose: Function;
+}
+function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grade }: GroupInitials) {
 	const mainRef = useRef();
-	const [startDate, setStartDate] = useState(null);
-	const [endDate, setEndDate] = useState(null);
+
 	const [formState, setFormState] = useState({
-		name: "",
-		startAt: "",
-		endAt: "",
-		gradeId: "",
+		id,
+		startAt,
+		endAt,
+		name,
+		isActive,
+		gradeId: grade?.id || "",
 	});
+
+	useEffect(() => {
+		setFormState({ id, startAt, endAt, name, isActive, gradeId: grade?.id || "" });
+	}, [id, startAt, endAt, name, isActive, grade]);
 
 	const { data } = useQuery("ActiveGrades", () =>
 		createAxiosService(ACTIVE_GRADES_QUERY).then((response) => response.data.data)
 	);
 
-	const mutation = useMutation(
+	const createMutation = useMutation(
 		"AddGroup",
 		() =>
 			createAxiosService(ADD_GROUP_MUTATION, {
@@ -29,17 +40,38 @@ function AddGroup({ onProceed, onClose }) {
 				startAt: formState.startAt,
 				endAt: formState.endAt,
 				gradeId: formState.gradeId,
+				isActive: formState.isActive,
 			}).then((response) => response.data.data),
 		{
 			onSuccess: () => {
-				console.log("Success");
+				console.log("Creation is a Success");
 			},
 		}
 	);
+	const updateMutation = useMutation(
+		"UpdateGroup",
+		() =>
+			createAxiosService(UPDATE_GROUP_MUTATION, {
+				updateGroupId: formState.id,
+				name: formState.name,
+				startAt: formState.startAt,
+				endAt: formState.endAt,
+				gradeId: formState.gradeId,
+				isActive: formState.isActive,
+			}).then((response) => response.data.data),
+		{
+			onSuccess: () => {
+				console.log("Update is a Success");
+			},
+		}
+	);
+
 	const submitContact = async (e) => {
 		e.preventDefault();
-		if (mutation.isLoading) return;
-		await mutation.mutateAsync();
+
+		if (createMutation.isLoading) return;
+		if (updateMutation.isLoading) return;
+		id ? await updateMutation.mutateAsync() : await createMutation.mutateAsync();
 	};
 
 	const proceedAndClose = async (e) => {
@@ -55,7 +87,7 @@ function AddGroup({ onProceed, onClose }) {
 					Grade
 				</label>
 				<select
-					value={formState.gradeId}
+					value={formState.gradeId as string}
 					onChange={(e) => {
 						setFormState({
 							...formState,
@@ -104,12 +136,11 @@ function AddGroup({ onProceed, onClose }) {
 				<TimePicker
 					locale={arEG}
 					precision={15}
-					date={startDate}
+					date={formState.startAt ? new Date(formState.startAt) : null}
 					onChange={(d) => {
-						setStartDate(d);
 						setFormState({
 							...formState,
-							startAt: d?.toLocaleTimeString(),
+							startAt: d,
 						});
 					}}
 					portalContainer={mainRef.current}
@@ -122,6 +153,7 @@ function AddGroup({ onProceed, onClose }) {
 							>
 								Start At
 							</label>
+
 							<input
 								{...inputProps}
 								type="time"
@@ -136,14 +168,13 @@ function AddGroup({ onProceed, onClose }) {
 
 				<TimePicker
 					locale={arEG}
-					date={endDate}
+					date={formState.endAt ? new Date(formState.endAt as Date) : null}
 					portalContainer={mainRef.current}
 					precision={15}
 					onChange={(d) => {
-						setEndDate(d);
 						setFormState({
 							...formState,
-							endAt: d?.toLocaleTimeString(),
+							endAt: d,
 						});
 					}}
 				>
@@ -168,12 +199,29 @@ function AddGroup({ onProceed, onClose }) {
 				</TimePicker>
 			</div>
 
+			<div className="flex justify-start gap-2 items-center">
+				<input
+					type="checkbox"
+					id="topping"
+					name="topping"
+					value="isActive"
+					checked={formState.isActive}
+					onChange={() =>
+						setFormState({
+							...formState,
+							isActive: !formState.isActive,
+						})
+					}
+				/>
+				<p className="block text-sm font-medium text-gray-900 dark:text-gray-300">Active</p>
+			</div>
+
 			<button
 				onClick={proceedAndClose}
 				type="submit"
 				className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
 			>
-				Add
+				{id ? "Edit" : "Add"}
 			</button>
 		</form>
 	);

@@ -24,11 +24,10 @@ export async function createContext(request: ExpressContext): Promise<Partial<Co
 	// 	context.user = user;
 	// }
 
-	const user = await prisma.contact.findUnique({
+	const user = await prisma.contact.findUniqueOrThrow({
 		where: {
-			email: "admin@admin.com",
+			email: "seededadmin@admin.com",
 		},
-		rejectOnNotFound: true,
 
 		include: { user: true },
 	});

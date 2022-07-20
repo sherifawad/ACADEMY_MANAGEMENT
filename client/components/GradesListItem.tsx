@@ -1,5 +1,8 @@
-import Image from "next/image";
-
+export interface Grade {
+	id: String;
+	name: String;
+	isActive: boolean;
+}
 function GradesListItem({ name, active }) {
 	return (
 		<div className="flex flex-row justify-around items-center bg-gray-100 border-2 border-gray-300 rounded-xl p-2">

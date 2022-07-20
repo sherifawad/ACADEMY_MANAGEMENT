@@ -19,7 +19,7 @@ async function seed() {
 
 	const user = await client.user.create({
 		data: {
-			name: "user",
+			name: "seeded user",
 			role: Role.USER,
 			password: {
 				create: {
@@ -29,8 +29,8 @@ async function seed() {
 			},
 			contact: {
 				create: {
-					email: "user@user.com",
-					address: "user address",
+					email: "seededuser@user.com",
+					address: "seeded user address",
 					phone: "012012012012012",
 				},
 			},
@@ -42,7 +42,7 @@ async function seed() {
 	});
 	const admin = await client.user.create({
 		data: {
-			name: "admin",
+			name: "seeded admin",
 			role: Role.ADMIN,
 			password: {
 				create: {
@@ -52,8 +52,8 @@ async function seed() {
 			},
 			contact: {
 				create: {
-					email: "admin@admin.com",
-					address: "admin address",
+					email: "seededadmin@admin.com",
+					address: "seeded admin address",
 					phone: "012012012012011",
 				},
 			},
@@ -66,7 +66,7 @@ async function seed() {
 
 	const student = await client.user.create({
 		data: {
-			name: "student",
+			name: "seeded student",
 			role: Role.Student,
 			password: {
 				create: {
@@ -76,8 +76,8 @@ async function seed() {
 			},
 			contact: {
 				create: {
-					email: "student@student.com",
-					address: "admin address",
+					email: "seededstudent@student.com",
+					address: "seeded student address",
 					phone: "012012012012015",
 				},
 			},
@@ -90,16 +90,16 @@ async function seed() {
 
 	const grade = await client.grade.create({
 		data: {
-			name: "prepSchool",
+			name: "seeded Grade",
 			createdBy: admin.id,
 		},
 	});
 
 	const group = await client.group.create({
 		data: {
-			name: "SMW",
-			startAt: "13:00",
-			endAt: "14:00",
+			name: "seeded Group",
+			startAt: new Date(),
+			endAt: new Date(new Date().setHours(new Date().getHours() + 2)),
 			gradeId: grade.id,
 			createdBy: admin.id,
 		},
@@ -107,7 +107,7 @@ async function seed() {
 	const profile = await client.profile.create({
 		data: {
 			id: student.id,
-			bio: "student Bio",
+			bio: "seeded student Bio",
 			groupId: group.id,
 			createdBy: admin.id,
 		},
@@ -127,7 +127,7 @@ async function seed() {
 			groupId: group.id,
 			startAt: new Date(),
 			endAt: new Date(new Date().setHours(new Date().getHours() + 2)),
-			note: "seeded",
+			note: "seeded attendance",
 			createdBy: admin.id,
 		},
 	});

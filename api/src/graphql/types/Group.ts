@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg } from "nexus";
+import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, booleanArg } from "nexus";
 import { Attendance } from "./Attendance";
 import { Profile } from "./Profile";
 
@@ -14,8 +14,8 @@ export const Group = objectType({
 		t.string("updatedBy");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
-		t.string("startAt");
-		t.string("endAt");
+		t.field("startAt", { type: "DateTime" });
+		t.field("endAt", { type: "DateTime" });
 		t.list.field("profiles", {
 			type: Profile,
 			async resolve(_parent, _args, ctx) {
@@ -94,11 +94,16 @@ export const createGroupMutation = extendType({
 			type: "Group",
 			args: {
 				name: nonNull(stringArg()),
-				startAt: nullable(stringArg()),
-				endAt: nullable(stringArg()),
+				startAt: nullable(arg({ type: "DateTime" })),
+				endAt: nullable(arg({ type: "DateTime" })),
+				isActive: nullable(booleanArg()),
 				gradeId: nullable(stringArg()),
 			},
-			resolve: async (_parent, { name, startAt, endAt, gradeId }, { prisma, user }) => {
+			resolve: async (
+				_parent,
+				{ name, startAt, endAt, gradeId, isActive = true },
+				{ prisma, user }
+			) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				const newGroup = {
@@ -106,6 +111,7 @@ export const createGroupMutation = extendType({
 					startAt,
 					endAt,
 					createdBy: user.id,
+					isActive,
 
 					grade: {
 						connect: {
@@ -130,17 +136,19 @@ export const UpdateGroupMutation = extendType({
 			args: {
 				id: nonNull(stringArg()),
 				name: stringArg(),
-				startAt: stringArg(),
-				endAt: stringArg(),
+				startAt: arg({ type: "DateTime" }),
+				endAt: arg({ type: "DateTime" }),
+				isActive: booleanArg(),
 				gradeId: stringArg(),
 			},
-			resolve: async (_parent, { id, name, startAt, endAt, gradeId }, { prisma, user }) => {
+			resolve: async (_parent, { id, name, startAt, endAt, gradeId, isActive }, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
 				let updateGroup: any = {
 					name,
 					startAt,
 					endAt,
+					isActive,
 					updatedBy: user.id,
 				};
 
