@@ -1,11 +1,9 @@
-import CardContainer from "components/CardContainer";
+import CardContainer from "components/layout/CardContainer";
 import { GET_STUDENT_DETAILS, GET_USERS, GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService, getDayNames } from "core/utils";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
 
 function Student({ user }) {
 	return (
