@@ -7,10 +7,9 @@ import { GROUPS_QUERY } from "core/queries/groupQueries";
 
 import { createAxiosService } from "core/utils";
 import useModel from "components/useModel";
+import GroupContents from "components/pageContents/GroupContents";
 
 function group({ groups = [] }) {
-	const { Model, modelProps, itemData, setItemData } = useModel();
-
 	return (
 		<div className="container">
 			<Head>
@@ -18,10 +17,7 @@ function group({ groups = [] }) {
 				<meta name="description" content="group page" />
 			</Head>
 
-			<Model title="Add Group">
-				<AddGroup onProceed={modelProps.onProceed} onClose={modelProps.onClose} {...itemData} />
-			</Model>
-			<GroupsList groupsItems={groups} setGroupItemData={setItemData} />
+			<GroupContents groups={groups} />
 		</div>
 	);
 }

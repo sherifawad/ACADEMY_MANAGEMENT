@@ -7,6 +7,13 @@ export const GRADES_QUERY = `
         }
     }
 `;
+export const GRADES_IDS = `
+    query Query {
+        Grades {
+            id
+        }
+    }
+`;
 
 export const ACTIVE_GRADES_QUERY = `
 	query ActiveGrades {
@@ -18,11 +25,18 @@ export const ACTIVE_GRADES_QUERY = `
 `;
 
 export const GRADE_GROUPS_QUERY = `
-    query Query($gradeId: String!) {
+    query Grade($gradeId: String!) {
         Grade(id: $gradeId) {
+            name
             groups {
                 id
+                isActive
                 name
+                startAt
+                endAt
+                grade {
+                    id
+                }
             }
         }
     }

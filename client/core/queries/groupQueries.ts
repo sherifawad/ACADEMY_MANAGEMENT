@@ -13,14 +13,3 @@ export const GROUPS_QUERY = `
 		}
 	}
 `;
-export const GRADE_GROUPS_QUERY = `
-    query Grade($gradeId: String!) {
-        Grade(id: $gradeId) {
-            groups {
-                id
-                isActive
-                name
-            }
-        }
-    }
-`;
