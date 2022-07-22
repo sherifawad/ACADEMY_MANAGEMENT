@@ -30,6 +30,7 @@ export interface CursorPagination {
 export interface UserFilter {
 	role?: Role | null;
 	isActive?: boolean | null;
+	groupId?: string | null;
 }
 export interface UserFilterPagination extends CursorPagination {
 	where?: UserFilter;
@@ -93,6 +94,7 @@ export const UsersFilterInputType = inputObjectType({
 		});
 		t.nullable.field("role", { type: "Role" });
 		t.nullable.boolean("isActive");
+		t.nullable.string("groupId");
 	},
 });
 
@@ -111,7 +113,7 @@ export const UsersQuery = extendType({
 });
 
 export const queryArgs = (args: UserFilterPaginationInput): UserFilterPagination => {
-	const { role, isActive } = args;
+	const { role, isActive, groupId } = args;
 	const { take, skip, myCursor, orderByKey, orderDirection } = args.PaginationInputType || {};
 
 	let data = {};
@@ -147,11 +149,20 @@ export const queryArgs = (args: UserFilterPaginationInput): UserFilterPagination
 	if (isActive) {
 		where = { ...where, isActive };
 	}
+	if (groupId) {
+		where = {
+			...where,
+			profile: {
+				group: {
+					id: groupId,
+				},
+			},
+		};
+	}
 
 	if (where) {
 		data = { ...data, where };
 	}
-	console.log("🚀 ~ file: User.ts ~ line 155 ~ data", data);
 	return data;
 };
 
@@ -159,6 +170,31 @@ export const FilteredUsersQuery = extendType({
 	type: "Query",
 	definition(t) {
 		t.list.field("FilteredUsers", {
+			type: "User",
+			args: { data: UsersFilterInputType },
+			resolve: async (_parent, args, { prisma, user }) => {
+				if (!user || user.role !== Role.ADMIN) return null;
+				// return await prisma.user.findMany({
+				// 	where: {
+				// 		role: args.data?.role,
+				// 		isActive: args.data?.isActive,
+				// 	},
+				// });
+				const { data } = args;
+				if (data) {
+					return await prisma.user.findMany(queryArgs(data));
+				}
+
+				return await prisma.user.findMany();
+			},
+		});
+	},
+});
+
+export const GroupStudentsQuery = extendType({
+	type: "Query",
+	definition(t) {
+		t.list.field("Students", {
 			type: "User",
 			args: { data: UsersFilterInputType },
 			resolve: async (_parent, args, { prisma, user }) => {

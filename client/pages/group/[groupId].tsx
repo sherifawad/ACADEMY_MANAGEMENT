@@ -1,5 +1,81 @@
-function groupItemData() {
-	return <div>groupItemData</div>;
+import UsersList from "components/UsersList";
+import { GROUPS_IDS_QUERY, GROUP_NAME_QUERY } from "core/queries/groupQueries";
+import { GROUP_STUDENTS } from "core/queries/studentQueries";
+import { createAxiosService } from "core/utils";
+import Head from "next/head";
+
+function groupItemData({ name, students }) {
+	return (
+		<div className="container">
+			<Head>
+				<title>{name || "Group"}</title>
+				<meta name="description" content="Group students" />
+				<link rel="icon" href="/favicon.ico" />
+			</Head>
+			<div className="grid grid-row-[auto_1fr] gap-8">
+				<UsersList users={students} />
+			</div>
+		</div>
+	);
+}
+
+export async function getStaticPaths() {
+	const {
+		data: {
+			data: { Groups },
+		},
+	} = await createAxiosService(GROUPS_IDS_QUERY);
+
+	if (Groups) {
+		const paths = Groups?.map((group) => ({
+			params: { groupId: group?.id },
+		}));
+		return { paths, fallback: false };
+	}
+	return { fallback: false };
+}
+
+// This also gets called at build time
+export async function getStaticProps({ params }) {
+	const { groupId } = params;
+	const {
+		data: {
+			data: { Students },
+		},
+	} = await createAxiosService(GROUP_STUDENTS, {
+		data: {
+			isActive: null,
+			role: "Student",
+			groupId,
+			PaginationInputType: {
+				myCursor: null,
+				orderByKey: "name",
+				orderDirection: "asc",
+				take: 5,
+				skip: null,
+			},
+		},
+	});
+	const {
+		data: {
+			data: {
+				Group: { name },
+			},
+		},
+	} = await createAxiosService(GROUP_NAME_QUERY, {
+		groupId,
+	});
+
+	let props = {};
+	if (Students) {
+		props = { ...props, students: Students };
+	}
+	if (name) {
+		props = { ...props, name };
+	}
+
+	// Pass post data to the page via props
+	return { props };
 }
 
 export default groupItemData;

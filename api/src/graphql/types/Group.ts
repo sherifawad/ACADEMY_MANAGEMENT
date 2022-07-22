@@ -2,6 +2,7 @@ import { Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, booleanArg } from "nexus";
 import { Attendance } from "./Attendance";
 import { Profile } from "./Profile";
+import { queryArgs, UsersFilterInputType } from "./User";
 
 //generates Group type at schema.graphql
 export const Group = objectType({
@@ -18,8 +19,19 @@ export const Group = objectType({
 		t.field("endAt", { type: "DateTime" });
 		t.list.field("profiles", {
 			type: Profile,
-			async resolve(_parent, _args, ctx) {
-				return await ctx.prisma.grade
+			args: { data: UsersFilterInputType },
+			async resolve(_parent, args, ctx) {
+				const { data } = args;
+				if (data) {
+					return await ctx.prisma.group
+						.findUnique({
+							where: {
+								id: _parent.id,
+							},
+						})
+						.profiles(queryArgs(data));
+				}
+				return await ctx.prisma.group
 					.findUnique({
 						where: {
 							id: _parent.id,

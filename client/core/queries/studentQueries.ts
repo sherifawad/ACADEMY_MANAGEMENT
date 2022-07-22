@@ -19,6 +19,16 @@ export const GET_USERS = `
         }
     }
 `;
+export const GROUP_STUDENTS = `
+    query Students($data: UsersFilterInputType) {
+        Students(data: $data) {
+            name
+            id
+            isActive
+            avatar
+        }
+    }
+`;
 
 export const GET_STUDENT_DETAILS = `
     query Query($userId: String!, $take: Int) {

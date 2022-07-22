@@ -2,7 +2,7 @@ import { Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable } from "nexus";
 import { Attendance } from "./Attendance";
 import { Exam } from "./Exam";
-import { User } from "./User";
+import { queryArgs, User, UsersFilterInputType } from "./User";
 
 //generates Profile type at schema.graphql
 export const Profile = objectType({
@@ -27,7 +27,7 @@ export const Profile = objectType({
 					.exams({ take });
 			},
 		});
-		t.list.field("users", {
+		t.field("user", {
 			type: User,
 			async resolve(_parent, _args, ctx) {
 				return await ctx.prisma.profile
@@ -36,7 +36,7 @@ export const Profile = objectType({
 							id: _parent.id,
 						},
 					})
-					.users();
+					.user();
 			},
 		});
 		t.list.field("attendances", {

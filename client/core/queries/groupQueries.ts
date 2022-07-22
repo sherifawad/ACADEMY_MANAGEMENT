@@ -13,3 +13,20 @@ export const GROUPS_QUERY = `
 		}
 	}
 `;
+
+export const GROUPS_IDS_QUERY = `
+    query Groups {
+        Groups {
+            id
+            name
+        }
+    }
+`;
+
+export const GROUP_NAME_QUERY = `
+    query Group($groupId: String!) {
+        Group(id: $groupId) {
+            name
+        }
+    }
+`;
