@@ -121,6 +121,14 @@ type PageCursor {
   page: Int
 }
 
+input PaginationInputType {
+  myCursor: String
+  orderByKey: String!
+  orderDirection: String!
+  skip: Int
+  take: Int!
+}
+
 type Profile {
   attendances(take: Int): [Attendance]
   bio: String
@@ -180,6 +188,7 @@ type User {
 }
 
 input UsersFilterInputType {
+  PaginationInputType: PaginationInputType
   isActive: Boolean
   role: Role
 }

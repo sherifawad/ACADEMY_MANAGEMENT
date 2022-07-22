@@ -11,6 +11,33 @@ import LoginInvalidError from "../utils/errors/loginInvalid";
 import { setTokenCookie } from "../../core/auth-cookies";
 import { createTokens } from "../../utils/auth";
 
+export interface CursorPaginationInput {
+	take?: number | null;
+	skip?: number | null; // Skip the cursor
+	myCursor?: string | null;
+	orderByKey?: string | null;
+	orderDirection?: string | null;
+}
+export interface CursorPagination {
+	take?: number;
+	skip?: number; // Skip the cursor
+	cursor?: {
+		id: string;
+	};
+	orderBy?: { [x: string]: string };
+}
+
+export interface UserFilter {
+	role?: Role | null;
+	isActive?: boolean | null;
+}
+export interface UserFilterPagination extends CursorPagination {
+	where?: UserFilter;
+}
+export interface UserFilterPaginationInput extends UserFilter {
+	PaginationInputType?: CursorPaginationInput | null;
+}
+
 //generates User type at schema.graphql
 export const User = objectType({
 	name: "User",
@@ -45,10 +72,25 @@ export const User = objectType({
 	},
 });
 
+export const PaginationInputType = inputObjectType({
+	name: "PaginationInputType",
+
+	definition(t) {
+		t.nullable.string("myCursor");
+		t.nonNull.string("orderByKey");
+		t.nonNull.string("orderDirection");
+		t.nonNull.int("take");
+		t.nullable.int("skip");
+	},
+});
+
 export const UsersFilterInputType = inputObjectType({
 	name: "UsersFilterInputType",
 
 	definition(t) {
+		t.nullable.field("PaginationInputType", {
+			type: "PaginationInputType",
+		});
 		t.nullable.field("role", { type: "Role" });
 		t.nullable.boolean("isActive");
 	},
@@ -68,6 +110,51 @@ export const UsersQuery = extendType({
 	},
 });
 
+export const queryArgs = (args: UserFilterPaginationInput): UserFilterPagination => {
+	const { role, isActive } = args;
+	const { take, skip, myCursor, orderByKey, orderDirection } = args.PaginationInputType || {};
+
+	let data = {};
+	let where = {};
+	if (myCursor) {
+		data = {
+			...data,
+			skip: 1, // Skip the cursor
+			cursor: {
+				id: myCursor,
+			},
+		};
+	}
+
+	if (skip) {
+		data = {
+			...data,
+			skip,
+		};
+	}
+
+	if (orderByKey && orderDirection) {
+		data = { ...data, orderBy: { [orderByKey]: orderDirection } };
+	}
+
+	if (take) {
+		data = { ...data, take: Number(take) };
+	}
+
+	if (role) {
+		where = { ...where, role };
+	}
+	if (isActive) {
+		where = { ...where, isActive };
+	}
+
+	if (where) {
+		data = { ...data, where };
+	}
+	console.log("🚀 ~ file: User.ts ~ line 155 ~ data", data);
+	return data;
+};
+
 export const FilteredUsersQuery = extendType({
 	type: "Query",
 	definition(t) {
@@ -76,12 +163,18 @@ export const FilteredUsersQuery = extendType({
 			args: { data: UsersFilterInputType },
 			resolve: async (_parent, args, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
-				return await prisma.user.findMany({
-					where: {
-						role: args.data?.role,
-						isActive: args.data?.isActive,
-					},
-				});
+				// return await prisma.user.findMany({
+				// 	where: {
+				// 		role: args.data?.role,
+				// 		isActive: args.data?.isActive,
+				// 	},
+				// });
+				const { data } = args;
+				if (data) {
+					return await prisma.user.findMany(queryArgs(data));
+				}
+
+				return await prisma.user.findMany();
 			},
 		});
 	},
