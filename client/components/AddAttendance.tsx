@@ -4,7 +4,7 @@ import { createAxiosService } from "core/utils";
 import { format } from "date-fns";
 import { arEG } from "date-fns/locale";
 import { useEffect, useRef, useState } from "react";
-import { DatePicker, TimePicker } from "react-next-dates";
+import { DatePicker, DateTimePicker, TimePicker } from "react-next-dates";
 import { useMutation } from "react-query";
 
 export interface attendance {
@@ -77,10 +77,13 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 
 	return (
 		<form method="dialog" className="space-y-6" action="#" ref={mainRef}>
-			<div className="flex">
-				<TimePicker
+			<div className="flex flex-col gap-4">
+				<DateTimePicker
 					locale={arEG}
-					precision={15}
+					datePlaceholder="Date"
+					timePlaceholder="Time"
+					timePrecision={15}
+					timeFormat="hh:mm a"
 					date={attendanceState.startAt ? new Date(attendanceState.startAt) : null}
 					onChange={(d) => {
 						setAttendanceState({
@@ -90,7 +93,7 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 					}}
 					portalContainer={mainRef.current}
 				>
-					{({ inputProps }) => (
+					{({ dateInputProps, timeInputProps }) => (
 						<div className="w-full">
 							<label
 								htmlFor="start"
@@ -98,23 +101,34 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 							>
 								Start At
 							</label>
-							<input
-								{...inputProps}
-								type="time"
-								name="start"
-								id="start"
-								className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-								required
-							/>
+							<div className="flex gap-4">
+								<input
+									{...dateInputProps}
+									name="startDate"
+									id="startDate"
+									className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+									required
+								/>
+								<input
+									{...timeInputProps}
+									name="startTime"
+									id="startTime"
+									className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+									required
+								/>
+							</div>
 						</div>
 					)}
-				</TimePicker>
+				</DateTimePicker>
 
-				<TimePicker
+				<DateTimePicker
 					locale={arEG}
+					datePlaceholder="Date"
+					timePlaceholder="Time"
+					timeFormat="hh:mm a"
 					date={attendanceState.endAt ? new Date(attendanceState.endAt) : null}
 					portalContainer={mainRef.current}
-					precision={15}
+					timePrecision={15}
 					onChange={(d) => {
 						setAttendanceState({
 							...attendanceState,
@@ -122,7 +136,7 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 						});
 					}}
 				>
-					{({ inputProps }) => (
+					{({ dateInputProps, timeInputProps }) => (
 						<div className="w-full">
 							<label
 								htmlFor="end"
@@ -130,17 +144,23 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 							>
 								End At
 							</label>
-							<input
-								{...inputProps}
-								type="time"
-								name="end"
-								id="end"
-								className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-								required
-							/>
+							<div className="flex gap-4">
+								<input
+									{...dateInputProps}
+									name="endDate"
+									id="endDate"
+									className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+								/>
+								<input
+									{...timeInputProps}
+									name="endTime"
+									id="endTime"
+									className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+								/>
+							</div>
 						</div>
 					)}
-				</TimePicker>
+				</DateTimePicker>
 			</div>
 
 			<div className="row-span-full">

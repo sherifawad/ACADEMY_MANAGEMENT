@@ -1,4 +1,4 @@
-import { createAxiosService } from "core/utils";
+import { createAxiosService, getDayNames } from "core/utils";
 import { format } from "date-fns";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useTable } from "react-table";
@@ -6,6 +6,7 @@ import { useTable } from "react-table";
 export interface paginationInputProps {
 	list: any[];
 	hiddenColumns?: string[] | undefined | null;
+	formatDate?: string | null;
 	_count?: number | null;
 	nextCursor?: string | null;
 	queryString: string;
@@ -27,6 +28,7 @@ function usePagination({
 	nextCursor,
 	edit,
 	setItemsState,
+	formatDate = "dd MMM hh:mm a",
 	hiddenColumns,
 	queryString,
 	queryVariables,
@@ -36,7 +38,7 @@ function usePagination({
 		asc: "asc",
 	};
 
-	const [pageSize, setPageSize] = useState(2);
+	const [pageSize, setPageSize] = useState(4);
 	const [currentOrder, setCurrentOrder] = useState(ORDER.desc);
 	const [isAscending, setIsAscending] = useState(false);
 	const [currentSortProperty, setCurrentSortProperty] = useState("id");
@@ -64,15 +66,6 @@ function usePagination({
 		gotoFirst({ force: true, take: pageSize });
 	}, [pageSize]);
 
-	// useEffect(() => {
-	// 	if (isAscending) {
-	// 		setCurrentOrder(ORDER.asc);
-	// 	} else {
-	// 		setCurrentOrder(ORDER.desc);
-	// 	}
-	// 	sortColumn(currentSortProperty, isAscending);
-	// }, [isAscending, currentSortProperty]);
-
 	const data = useMemo(() => {
 		return paginationResult.list;
 	}, [paginationResult.list]);
@@ -86,7 +79,9 @@ function usePagination({
 								Header: key,
 								accessor: key,
 								Cell: ({ value }) =>
-									value === null ? "_" : format(new Date(value), "hh:mm a"),
+									value === null
+										? "_"
+										: `${getDayNames(value)} ${format(new Date(value), formatDate)}`,
 							};
 						}
 						return { Header: key, accessor: key };

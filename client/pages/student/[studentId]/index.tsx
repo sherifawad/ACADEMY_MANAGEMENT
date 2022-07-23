@@ -135,7 +135,7 @@ export async function getStaticPaths() {
 
 // This also gets called at build time
 export async function getStaticProps({ params }) {
-	const result = await createAxiosService(GET_STUDENT_DETAILS, { userId: params.studentId, take: 2 });
+	const result = await createAxiosService(GET_STUDENT_DETAILS, { userId: params.studentId, take: 5 });
 
 	if (result?.data?.data) {
 		return { props: { user: result?.data?.data.User } };
