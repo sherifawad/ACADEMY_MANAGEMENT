@@ -22,10 +22,17 @@ export const GET_USERS = `
 export const GROUP_STUDENTS = `
     query Students($data: UsersFilterInputType) {
         Students(data: $data) {
-            name
-            id
-            isActive
-            avatar
+            list {
+                id
+                name
+                isActive
+                avatar
+            }
+            nextCursor
+            totalCount {
+                _count
+            }
+            groupName
         }
     }
 `;

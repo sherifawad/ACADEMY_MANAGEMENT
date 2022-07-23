@@ -15,6 +15,7 @@ export const GET_PAGINATED_STUDENT_ATTENDANCES = `
         }
     }
 `;
+
 export const GET_STUDENT_ATTENDANCES = `
     query Attendances($studentId: String!, $take: Int) {
         Attendances(studentId: $studentId, take: $take) {

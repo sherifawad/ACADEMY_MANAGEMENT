@@ -1,4 +1,12 @@
-import { Contact, Group, PrismaClient, RefreshToken, Role, User as prismaUser } from "@prisma/client";
+import {
+	Contact,
+	Group,
+	PrismaClient,
+	Profile,
+	RefreshToken,
+	Role,
+	User as prismaUser,
+} from "@prisma/client";
 import { hashPassword, verifyPassword } from "../../core/crypto";
 import { nonNull, objectType, stringArg, extendType, inputObjectType, intArg, nullable } from "nexus";
 import { Context } from ".";
@@ -11,6 +19,15 @@ import LoginInvalidError from "../utils/errors/loginInvalid";
 import { setTokenCookie } from "../../core/auth-cookies";
 import { createTokens } from "../../utils/auth";
 
+// export interface User {
+// 	id: string;
+// 	name?: string | null;
+// 	avatar?: string | null;
+// 	isActive?: boolean | null;
+// 	role?: Role | null;
+// 	profile?: Profile | null;
+// 	contact?: Contact | null;
+// }
 export interface CursorPaginationInput {
 	take?: number | null;
 	skip?: number | null; // Skip the cursor
@@ -95,6 +112,25 @@ export const UsersFilterInputType = inputObjectType({
 		t.nullable.field("role", { type: "Role" });
 		t.nullable.boolean("isActive");
 		t.nullable.string("groupId");
+	},
+});
+
+export const UsersCount = objectType({
+	name: "UsersCount",
+	definition(t) {
+		t.int("_count");
+	},
+});
+
+export const StudentsResponse = objectType({
+	name: "StudentsResponse",
+	definition(t) {
+		t.list.field("list", {
+			type: User,
+		});
+		t.nullable.string("nextCursor");
+		t.nullable.string("groupName");
+		t.nullable.field("totalCount", { type: UsersCount });
 	},
 });
 
@@ -194,8 +230,8 @@ export const FilteredUsersQuery = extendType({
 export const GroupStudentsQuery = extendType({
 	type: "Query",
 	definition(t) {
-		t.list.field("Students", {
-			type: "User",
+		t.field("Students", {
+			type: "StudentsResponse",
 			args: { data: UsersFilterInputType },
 			resolve: async (_parent, args, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
@@ -206,11 +242,44 @@ export const GroupStudentsQuery = extendType({
 				// 	},
 				// });
 				const { data } = args;
+				let result: prismaUser[];
+				let totalCount: { _count: number } | undefined | null;
+				let nextCursor: string | undefined | null;
+				let groupName: { name: string } | undefined | null;
+
 				if (data) {
-					return await prisma.user.findMany(queryArgs(data));
+					result = await prisma.user.findMany(queryArgs(data));
+
+					nextCursor = result[result?.length - 1]?.id;
+
+					if (!data?.PaginationInputType?.myCursor) {
+						totalCount = await prisma.user.aggregate({
+							where: {
+								profile: {
+									group: {
+										id: data?.groupId,
+									},
+								},
+							},
+							_count: true,
+						});
+						groupName = await prisma.Group.findUnique({
+							where: { id: data?.groupId },
+							select: {
+								name: true,
+							},
+						});
+					}
+				} else {
+					result = await prisma.user.findMany();
 				}
 
-				return await prisma.user.findMany();
+				return {
+					list: result,
+					nextCursor,
+					totalCount,
+                    groupName: groupName?.name
+				};
 			},
 		});
 	},

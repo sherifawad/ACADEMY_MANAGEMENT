@@ -158,7 +158,7 @@ type Query {
   PaginatedAttendances(myCursor: String, orderByKey: String, orderDirection: String, size: Int, skip: Int, studentId: String!): AttendanceResponse
   Profile(id: String!): Profile!
   Profiles: [Profile]!
-  Students(data: UsersFilterInputType): [User]
+  Students(data: UsersFilterInputType): StudentsResponse
   User(id: String!, take: Int): User!
   UserExams(studentId: String!): [Exam]!
   Users: [User]
@@ -169,6 +169,13 @@ enum Role {
   ADMIN
   Student
   USER
+}
+
+type StudentsResponse {
+  groupName: String
+  list: [User]
+  nextCursor: String
+  totalCount: UsersCount
 }
 
 """
@@ -186,6 +193,10 @@ type User {
   profile: Profile
   role: Role
   updatedAt: DateTime
+}
+
+type UsersCount {
+  _count: Int
 }
 
 input UsersFilterInputType {

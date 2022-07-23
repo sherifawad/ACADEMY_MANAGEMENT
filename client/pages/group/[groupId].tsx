@@ -4,11 +4,11 @@ import { GROUP_STUDENTS } from "core/queries/studentQueries";
 import { createAxiosService } from "core/utils";
 import Head from "next/head";
 
-function groupItemData({ name, students }) {
+function groupItemData({ students, _count, groupName, nextCursor }) {
 	return (
 		<div className="container">
 			<Head>
-				<title>{name || "Group"}</title>
+				<title>{groupName || "Group"}</title>
 				<meta name="description" content="Group students" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
@@ -40,7 +40,14 @@ export async function getStaticProps({ params }) {
 	const { groupId } = params;
 	const {
 		data: {
-			data: { Students },
+			data: {
+				Students: {
+					list,
+					nextCursor,
+					groupName,
+					totalCount: { _count },
+				},
+			},
 		},
 	} = await createAxiosService(GROUP_STUDENTS, {
 		data: {
@@ -56,22 +63,10 @@ export async function getStaticProps({ params }) {
 			},
 		},
 	});
-	const {
-		data: {
-			data: {
-				Group: { name },
-			},
-		},
-	} = await createAxiosService(GROUP_NAME_QUERY, {
-		groupId,
-	});
 
 	let props = {};
-	if (Students) {
-		props = { ...props, students: Students };
-	}
-	if (name) {
-		props = { ...props, name };
+	if (list && list.length > 0) {
+		props = { ...props, students: list, _count, groupName, nextCursor };
 	}
 
 	// Pass post data to the page via props
