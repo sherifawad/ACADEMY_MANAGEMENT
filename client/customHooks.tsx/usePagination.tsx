@@ -14,6 +14,13 @@ export interface paginationInputProps {
 	queryVariables?: {} | null;
 }
 
+export interface goFirstInputProps {
+	force?: boolean | null;
+	currentSortProperty?: string | null;
+	currentOrder?: string;
+	take?: number | null;
+}
+
 function usePagination({
 	list,
 	_count,
@@ -54,7 +61,7 @@ function usePagination({
 
 	useEffect(() => {
 		setPaginationOption({ ...paginationOption, size: pageSize });
-		gotoFirst(true);
+		gotoFirst({ force: true, take: pageSize });
 	}, [pageSize]);
 
 	// useEffect(() => {
@@ -151,12 +158,12 @@ function usePagination({
 		}
 	};
 
-	const gotoFirst = async (
-		force: boolean = false,
-		currentSortProperty: string = null,
-		currentOrder: string = null,
-		take: number = pageSize
-	) => {
+	const gotoFirst = async ({
+		force = false,
+		currentSortProperty = null,
+		currentOrder = null,
+		take = pageSize,
+	}: goFirstInputProps) => {
 		if (!force && isFirstPage) return;
 		let options = {
 			...paginationOption,
@@ -253,10 +260,18 @@ function usePagination({
 		}
 	};
 
-	const sortColumn = useCallback((sortProperty: string, isAsc: boolean = false) => {
-		const sortDirection = isAsc ? "asc" : "desc";
-		gotoFirst(true, sortProperty, sortDirection);
-	}, []);
+	const sortColumn = useCallback(
+		(sortProperty: string, isAsc: boolean = false) => {
+			const sortDirection = isAsc ? "asc" : "desc";
+			gotoFirst({
+				force: true,
+				currentSortProperty: sortProperty,
+				currentOrder: sortDirection,
+				take: pageSize,
+			});
+		},
+		[pageSize]
+	);
 
 	const headerClickHandler = useCallback(
 		(headerName: string) => {
@@ -265,7 +280,7 @@ function usePagination({
 			setIsAscending(!isAscending);
 			sortColumn(headerName, !isAscending);
 		},
-		[isAscending, currentSortProperty, ]
+		[isAscending, currentSortProperty, pageSize]
 	);
 
 	const PaginatedTable = useMemo(() => {
