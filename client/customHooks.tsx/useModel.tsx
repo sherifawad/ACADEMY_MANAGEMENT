@@ -68,6 +68,7 @@ function useModel() {
 	return {
 		itemData,
 		setItemData,
+		setIsOpened,
 		Model,
 		modelProps,
 	};

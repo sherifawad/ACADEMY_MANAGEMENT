@@ -8,9 +8,10 @@ import { DatePicker, TimePicker } from "react-next-dates";
 import { useMutation } from "react-query";
 
 export interface attendance {
-	startAt: Date;
-	endAt?: Date;
-	note?: String;
+	id: string | null;
+	startAt: Date | null;
+	endAt?: Date | null;
+	note?: String | null;
 	profileId: String;
 }
 
@@ -27,9 +28,10 @@ export interface AttendanceState extends attendance {
 function AddAttendance({ onProceed, onClose, initialAttendance }: initialProperties) {
 	const mainRef = useRef();
 
-	const { profileId, startAt, endAt, note } = initialAttendance;
+	const { profileId, startAt, endAt, note, id } = initialAttendance;
 
 	const [attendanceState, setAttendanceState] = useState({
+		id,
 		startAt,
 		endAt,
 		note,
@@ -170,7 +172,7 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 				type="submit"
 				className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
 			>
-				Add
+				{id ? "Edit" : "Add"}
 			</button>
 		</form>
 	);

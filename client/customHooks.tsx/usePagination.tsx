@@ -4,12 +4,13 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useTable } from "react-table";
 
 export interface paginationInputProps {
-	list: [];
+	list: any[];
 	hiddenColumns?: string[] | undefined | null;
 	_count?: number | null;
 	nextCursor?: string | null;
 	queryString: string;
 	edit?: Function | null;
+	setItemsState?: Function | null;
 	queryVariables?: {} | null;
 }
 
@@ -18,6 +19,7 @@ function usePagination({
 	_count,
 	nextCursor,
 	edit,
+	setItemsState,
 	hiddenColumns,
 	queryString,
 	queryVariables,
@@ -37,7 +39,6 @@ function usePagination({
 	const [canGoPrevious, setCanPrevious] = useState(false);
 	const [currentPageNumber, setCurrentPageNumber] = useState(1);
 	const [paginationOption, setPaginationOption] = useState({
-		// studentId: profileId,
 		...queryVariables,
 		myCursor: nextCursor,
 		orderByKey: currentSortProperty,
@@ -53,17 +54,17 @@ function usePagination({
 
 	useEffect(() => {
 		setPaginationOption({ ...paginationOption, size: pageSize });
-		gotoFirst(true, null, null, pageSize);
-	}, [pageSize, setPageSize]);
+		gotoFirst(true);
+	}, [pageSize]);
 
-	useEffect(() => {
-		if (isAscending) {
-			setCurrentOrder(ORDER.asc);
-		} else {
-			setCurrentOrder(ORDER.desc);
-		}
-		sortColumn(currentSortProperty, isAscending);
-	}, [isAscending, currentSortProperty]);
+	// useEffect(() => {
+	// 	if (isAscending) {
+	// 		setCurrentOrder(ORDER.asc);
+	// 	} else {
+	// 		setCurrentOrder(ORDER.desc);
+	// 	}
+	// 	sortColumn(currentSortProperty, isAscending);
+	// }, [isAscending, currentSortProperty]);
 
 	const data = useMemo(() => {
 		return paginationResult.list;
@@ -72,22 +73,26 @@ function usePagination({
 	const columns = useMemo(
 		() =>
 			data[0]
-				? Object.keys(data[0])
-						.filter((key) => key !== "id")
-						.map((key) => {
-							if (key === "startAt" || key === "endAt") {
-								return {
-									Header: key,
-									accessor: key,
-									Cell: ({ value }) =>
-										value === null ? "_" : format(new Date(value), "hh:mm a"),
-								};
-							}
-							return { Header: key, accessor: key };
-						})
+				? Object.keys(data[0]).map((key) => {
+						if (key === "startAt" || key === "endAt") {
+							return {
+								Header: key,
+								accessor: key,
+								Cell: ({ value }) =>
+									value === null ? "_" : format(new Date(value), "hh:mm a"),
+							};
+						}
+						return { Header: key, accessor: key };
+				  })
 				: [],
 		[list]
 	);
+
+	const editRowHandler = (row) => {
+		setItemsState({
+			...row.values,
+		});
+	};
 
 	const tableHooks = (hooks) => {
 		hooks.visibleColumns.push((columns) => [
@@ -96,7 +101,7 @@ function usePagination({
 				id: "Edit",
 				Header: "Edit",
 				Cell: ({ row }) => {
-					return <button onClick={edit}>Edit</button>;
+					return <button onClick={() => editRowHandler(row)}>Edit</button>;
 				},
 			},
 		]);
@@ -159,7 +164,6 @@ function usePagination({
 			myCursor: null,
 			skip: null,
 		};
-		console.log("🚀 ~ file: usePagination.tsx ~ line 156 ~ options", options);
 		if (currentSortProperty) {
 			options = { ...options, orderByKey: currentSortProperty };
 		}
@@ -169,7 +173,6 @@ function usePagination({
 
 		const result = await createAxiosService(queryString, options);
 		const { list, nextCursor } = result?.data?.data?.PaginatedAttendances;
-		console.log("🚀 ~ file: usePagination.tsx ~ line 170 ~ list count ", list.length);
 		if (list && list.length > 0) {
 			setPaginationResult({
 				list,
@@ -255,11 +258,15 @@ function usePagination({
 		gotoFirst(true, sortProperty, sortDirection);
 	}, []);
 
-	const headerClickHandler = useCallback((headerName: string) => {
-		if (headerName.toLowerCase() === "edit") return;
-		setCurrentSortProperty(headerName);
-		setIsAscending(!isAscending);
-	}, []);
+	const headerClickHandler = useCallback(
+		(headerName: string) => {
+			if (headerName.toLowerCase() === "edit") return;
+			setCurrentSortProperty(headerName);
+			setIsAscending(!isAscending);
+			sortColumn(headerName, !isAscending);
+		},
+		[isAscending, currentSortProperty, ]
+	);
 
 	const PaginatedTable = useMemo(() => {
 		return () => {
@@ -398,7 +405,7 @@ function usePagination({
 				</>
 			);
 		};
-	}, [list, paginationResult.list]);
+	}, [paginationResult.list]);
 
 	return {
 		PaginatedTable,
