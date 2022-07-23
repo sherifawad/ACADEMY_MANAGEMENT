@@ -1,6 +1,6 @@
 import AddGroup from "components/AddGroup";
 import GroupsList from "components/GroupsList";
-import useModel from "components/useModel";
+import useModel from "customHooks.tsx/useModel";
 
 function GroupContents({ groups = [] }) {
 	const { Model, modelProps, itemData, setItemData } = useModel();

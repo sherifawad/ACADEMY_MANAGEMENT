@@ -3,6 +3,7 @@ import AddModel from "components/AddModel";
 import { GET_PAGINATED_STUDENT_ATTENDANCES } from "core/queries/attendancesQueries";
 import { GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService } from "core/utils";
+import usePagination from "customHooks.tsx/usePagination";
 import { format } from "date-fns";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -15,6 +16,15 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		nextCursor,
 		totalCount: { _count },
 	} = PaginatedAttendances;
+
+	const { PaginatedTable } = usePagination({
+		list,
+		_count,
+		nextCursor,
+		queryVariables: { studentId: profileId },
+		hiddenColumns: ["note"],
+		queryString: GET_PAGINATED_STUDENT_ATTENDANCES,
+	});
 
 	const ORDER = {
 		desc: "desc",
@@ -110,6 +120,16 @@ function Attendance({ PaginatedAttendances, profileId }) {
 				: [],
 		[list]
 	);
+
+	const rowEditHandler = (row) => {
+		setAttendanceState({
+			startAt: row.values.startAt,
+			endAt: row.values.endAt,
+			note: row.values.note,
+		});
+		setIsOpened(true);
+		// alert("Note: " + row.values.note);
+	};
 
 	const tableHooks = (hooks) => {
 		hooks.visibleColumns.push((columns) => [
@@ -379,132 +399,7 @@ function Attendance({ PaginatedAttendances, profileId }) {
 			>
 				Add
 			</div>
-			<div className="w-full mb-8 overflow-hidden rounded-lg shadow-lg pt-4">
-				<div className="w-full overflow-x-auto">
-					<table {...getTableProps()} className="w-full">
-						<thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:text-gray-400">
-							{headerGroups.map((headerGroup) => (
-								<tr
-									{...headerGroup.getHeaderGroupProps()}
-									className="text-md font-semibold tracking-wide text-left text-gray-900 bg-gray-100 uppercase border-b border-gray-600"
-								>
-									{headerGroup.headers.map((column) => (
-										<th {...column.getHeaderProps()} className="px-4 py-3">
-											<a href="#" onClick={() => headerClickHandler(column.id)}>
-												{column.render("Header")}
-												{column.id !== "Edit" && (
-													<span>
-														{column.id === currentSortProperty
-															? isAscending
-																? " ▲"
-																: " ▼"
-															: ""}
-													</span>
-												)}
-											</a>
-										</th>
-									))}
-								</tr>
-							))}
-						</thead>
-
-						<tbody {...getTableBodyProps()} className="bg-white">
-							{rows.map((row) => {
-								prepareRow(row);
-
-								return (
-									<tr {...row.getRowProps()} className="text-gray-700">
-										{row.cells.map((cell) => {
-											return (
-												<td {...cell.getCellProps()} className="px-4 py-3 border">
-													{cell.render("Cell")}
-												</td>
-											);
-										})}
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>
-				</div>
-			</div>
-
-			<div className="flex items-center justify-center">
-				<div className="flex flex-col items-center mb-8 px-4 mx-auto mt-8">
-					<div className="font-sans flex justify-end items-center space-x-1 select-none whitespace-nowrap">
-						<a
-							href="#"
-							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
-								isFirstPage ? "" : "hover:bg-teal-400 hover:text-white"
-							}`}
-							style={{ transition: "all 0.2s ease" }}
-							onClick={gotoFirst}
-						>
-							First
-						</a>
-						<a
-							href="#"
-							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
-								canGoPrevious ? "hover:bg-teal-400 hover:text-white" : ""
-							}`}
-							style={{ transition: "all 0.2s ease" }}
-							onClick={gotoPrevious}
-						>
-							Prev
-						</a>
-						<a
-							href="#"
-							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
-								canGoNext ? "hover:bg-teal-400 hover:text-white" : ""
-							}`}
-							style={{ transition: "all 0.2s ease" }}
-							onClick={gotoNext}
-						>
-							Next
-						</a>
-						<a
-							href="#"
-							className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
-								!isLastPage ? "hover:bg-teal-400 hover:text-white" : ""
-							}`}
-							style={{ transition: "all 0.2s ease" }}
-							onClick={gotoLast}
-						>
-							Last
-						</a>
-						<span>
-							Page{" "}
-							<strong>
-								{Math.abs(currentPageNumber)} of {Math.abs(Math.ceil(_count / pageSize))}
-							</strong>{" "}
-						</span>
-						{/*<span>
-							| Go to page:{" "}
-							<input
-								type="number"
-								defaultValue={pageIndex + 1}
-								onChange={(e) => {
-									const page = e.target.value ? Number(e.target.value) - 1 : 0;
-									gotoPage(page);
-								}}
-								style={{ width: "100px" }}
-							/>
-						</span>*/}
-						<select
-							value={pageSize}
-							onChange={(e) => {
-								setPageSize(Number(e.target.value));
-							}}
-						>
-							{[1, 2, 5, 10, 15].map((pageSize) => (
-								<option key={pageSize} value={pageSize}>
-									Show {pageSize}
-								</option>
-							))}
-						</select>
-					</div>
-				</div>
-			</div>
+			<PaginatedTable />
 		</div>
 	);
 }

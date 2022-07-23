@@ -6,7 +6,7 @@ import Head from "next/head";
 import { GROUPS_QUERY } from "core/queries/groupQueries";
 
 import { createAxiosService } from "core/utils";
-import useModel from "components/useModel";
+import useModel from "customHooks.tsx/useModel";
 import GroupContents from "components/pageContents/GroupContents";
 
 function group({ groups = [] }) {

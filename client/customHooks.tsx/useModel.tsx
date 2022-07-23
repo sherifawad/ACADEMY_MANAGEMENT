@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import AddModel from "./AddModel";
+import AddModel from "../components/AddModel";
 
 function useModel() {
 	// eslint-disable-next-line react-hooks/rules-of-hooks
