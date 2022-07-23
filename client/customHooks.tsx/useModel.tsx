@@ -7,21 +7,11 @@ function useModel() {
 	const [isOpened, setIsOpened] = useState(false);
 	const [itemData, setItemData] = useState(null);
 
-	// eslint-disable-next-line react-hooks/rules-of-hooks
-	const router = useRouter();
-
 	useEffect(() => {
 		if (itemData?.id) {
 			setIsOpened(true);
 		}
 	}, [setItemData, itemData]);
-
-	// Call this function whenever you want to
-	// refresh props!
-	const onProceed = useCallback(() => {
-		router.replace(router.asPath);
-		console.log("Proceed clicked");
-	}, []);
 
 	const onClose = useCallback(() => {
 		setIsOpened(false);
@@ -60,10 +50,9 @@ function useModel() {
 
 	const modelProps = useMemo(() => {
 		return {
-			onProceed,
 			onClose,
 		};
-	}, [onProceed, onClose]);
+	}, [onClose]);
 
 	return {
 		itemData,

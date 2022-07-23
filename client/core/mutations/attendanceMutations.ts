@@ -8,3 +8,10 @@ export const CREATE_ATTENDANCE_MUTATION = `
         }
     }
 `;
+export const UPDATE_ATTENDANCE_MUTATION = `
+    mutation Mutation($updateAttendanceId: String!, $startAt: DateTime, $endAt: DateTime, $note: String) {
+        updateAttendance(id: $updateAttendanceId, startAt: $startAt, endAt: $endAt, note: $note) {
+            id
+        }
+    }
+`;

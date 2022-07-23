@@ -38,8 +38,8 @@ function usePagination({
 		asc: "asc",
 	};
 
-	const [pageSize, setPageSize] = useState(4);
-	const [currentOrder, setCurrentOrder] = useState(ORDER.desc);
+	const [pageSize, setPageSize] = useState(5);
+	const [currentOrder, setCurrentOrder] = useState(ORDER.asc);
 	const [isAscending, setIsAscending] = useState(false);
 	const [currentSortProperty, setCurrentSortProperty] = useState("id");
 	const [isLastPage, setIsLastPage] = useState(false);
@@ -419,6 +419,7 @@ function usePagination({
 
 	return {
 		PaginatedTable,
+		refetch: () => gotoFirst({ force: true }),
 	};
 }
 

@@ -5,30 +5,30 @@ import { createAxiosService } from "core/utils";
 import useModel from "customHooks.tsx/useModel";
 import usePagination from "customHooks.tsx/usePagination";
 import { useRouter } from "next/router";
+import { useCallback, useMemo, useState } from "react";
 
-function Attendance({ PaginatedAttendances, profileId }) {
-	const {
-		list,
-		nextCursor,
-		totalCount: { _count },
-	} = PaginatedAttendances;
+const initialData = async (studentId: string) => {
+	return await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, {
+		studentId,
+		myCursor: null,
+		orderByKey: "id",
+		orderDirection: "asc",
+		size: 5,
+	});
+};
 
+function Attendance({ list, nextCursor, _count, profileId }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
-
-	// eslint-disable-next-line react-hooks/rules-of-hooks
-	const router = useRouter();
-	// Call this function whenever you want to
-	// refresh props!
 
 	const rowEditHandler = () => {
 		setIsOpened(true);
 		// alert("Note: " + row.values.note);
 	};
 
-	const { PaginatedTable } = usePagination({
+	const { PaginatedTable, refetch } = usePagination({
 		list,
-		_count,
 		nextCursor,
+		_count,
 		edit: rowEditHandler,
 		setItemsState: setItemData,
 		queryVariables: { studentId: profileId },
@@ -36,11 +36,16 @@ function Attendance({ PaginatedAttendances, profileId }) {
 		queryString: GET_PAGINATED_STUDENT_ATTENDANCES,
 	});
 
+	const onProceed = async () => {
+		refetch();
+		console.log("Proceed clicked");
+	};
+
 	return (
 		<div className="container grid">
 			<Model title="Add Attendance">
 				<AddAttendance
-					onProceed={modelProps.onProceed}
+					onProceed={onProceed}
 					onClose={modelProps.onClose}
 					initialAttendance={{
 						profileId,
@@ -74,25 +79,34 @@ export async function getStaticPaths() {
 
 // This also gets called at build time
 export async function getStaticProps({ params }) {
-	const result = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, {
-		studentId: params.studentId,
-		myCursor: null,
-		orderByKey: "note",
-		orderDirection: "desc",
-		size: 2,
-	});
-
-	if (result?.data?.data) {
-		return {
-			props: {
-				PaginatedAttendances: result?.data?.data.PaginatedAttendances,
-				profileId: params.studentId,
+	try {
+		const {
+			data: {
+				data: {
+					PaginatedAttendances: {
+						list,
+						nextCursor,
+						totalCount: { _count },
+					},
+				},
 			},
+		} = await initialData(params.studentId);
+
+		if (list && list.length > 0) {
+			return {
+				props: {
+					list,
+					nextCursor,
+					_count,
+					profileId: params.studentId,
+				},
+			};
+		}
+	} catch (error) {
+		return {
+			props: null,
 		};
 	}
-
-	// Pass post data to the page via props
-	return { props: {} };
 }
 
 export default Attendance;

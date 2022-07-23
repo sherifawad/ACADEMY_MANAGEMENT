@@ -1,4 +1,4 @@
-import { CREATE_ATTENDANCE_MUTATION } from "core/mutations/attendanceMutations";
+import { CREATE_ATTENDANCE_MUTATION, UPDATE_ATTENDANCE_MUTATION } from "core/mutations/attendanceMutations";
 import { CREATE_EXAM_MUTATION } from "core/mutations/examMutations";
 import { createAxiosService } from "core/utils";
 import { format } from "date-fns";
@@ -47,7 +47,7 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 		});
 	}, [startAt, endAt, note]);
 
-	const mutation = useMutation(
+	const createMutation = useMutation(
 		"AddAttendance",
 		() =>
 			createAxiosService(CREATE_ATTENDANCE_MUTATION, {
@@ -58,15 +58,32 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 			}).then((response) => response.data.data),
 		{
 			onSuccess: () => {
-				console.log("Attenda Created Successfully");
+				console.log("Attendance Created Successfully");
+			},
+		}
+	);
+
+	const updateMutation = useMutation(
+		"UpdateAttendance",
+		() =>
+			createAxiosService(UPDATE_ATTENDANCE_MUTATION, {
+				updateAttendanceId: attendanceState.id,
+				startAt: attendanceState.startAt,
+				endAt: attendanceState.endAt,
+				note: attendanceState.note,
+			}).then((response) => response.data.data),
+		{
+			onSuccess: () => {
+				console.log("Attendance Updated Successfully");
 			},
 		}
 	);
 
 	const submitContact = async (e) => {
 		e.preventDefault();
-		if (mutation.isLoading) return;
-		await mutation.mutateAsync();
+		if (createMutation.isLoading) return;
+		if (updateMutation.isLoading) return;
+		id ? await updateMutation.mutateAsync() : await createMutation.mutateAsync();
 	};
 
 	const proceedAndClose = async (e) => {

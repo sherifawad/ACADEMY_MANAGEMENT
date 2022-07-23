@@ -24,7 +24,7 @@ export const Profile = objectType({
 							id: _parent.id,
 						},
 					})
-					.exams({ take });
+					.exams({ take, orderBy: { date: "desc" } });
 			},
 		});
 		t.field("user", {
@@ -49,7 +49,7 @@ export const Profile = objectType({
 							id: _parent.id,
 						},
 					})
-					.attendances({ take });
+					.attendances({ take, orderBy: { startAt: "desc" } });
 			},
 		});
 		t.field("group", {
