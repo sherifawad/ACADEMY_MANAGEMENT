@@ -1,3 +1,4 @@
+import StudentsGroupList from "components/StudentsGroupList";
 import UsersList from "components/UsersList";
 import { GROUPS_IDS_QUERY, GROUP_NAME_QUERY } from "core/queries/groupQueries";
 import { GROUP_STUDENTS } from "core/queries/studentQueries";
@@ -13,7 +14,8 @@ function groupItemData({ students, _count, groupName, nextCursor }) {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 			<div className="grid grid-row-[auto_1fr] gap-8">
-				<UsersList users={students} />
+				{/* <UsersList users={students} /> */}
+				<StudentsGroupList students={students} />
 			</div>
 		</div>
 	);
