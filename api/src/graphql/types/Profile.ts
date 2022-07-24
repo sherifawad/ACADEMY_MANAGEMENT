@@ -2,7 +2,7 @@ import { Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable } from "nexus";
 import { Attendance } from "./Attendance";
 import { Exam } from "./Exam";
-import { queryArgs, User, UsersFilterInputType } from "./User";
+import { queryArgs, User } from "./User";
 
 //generates Profile type at schema.graphql
 export const Profile = objectType({

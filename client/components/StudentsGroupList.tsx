@@ -35,7 +35,15 @@ function StudentsGroupList({ students = [] }) {
 	);
 	const data = useMemo(() => students, []);
 
-	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow, selectedFlatRows } = useTable(
+	const {
+		getTableProps,
+		getTableBodyProps,
+		headerGroups,
+		rows,
+		prepareRow,
+		selectedFlatRows,
+		state: { selectedRowIds },
+	} = useTable(
 		{
 			columns,
 			data,
@@ -76,7 +84,8 @@ function StudentsGroupList({ students = [] }) {
 				<code>
 					{JSON.stringify(
 						{
-							selectedFlatRows: selectedFlatRows.map((row) => row.original),
+							selectedRowIds: selectedRowIds,
+							"selectedFlatRows[].original": selectedFlatRows.map((d) => d.original),
 						},
 						null,
 						2

@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 function Student({ user }) {
+	console.log("🚀 ~ file: index.tsx ~ line 9 ~ Student ~ user", user);
 	return (
 		<div className="container w-full">
 			<div className="flex flex-col md:flex-row gap-4">
@@ -118,31 +119,43 @@ function Student({ user }) {
 }
 
 export async function getStaticPaths() {
-	const result = await createAxiosService(GET_USERS_IDS, {
-		data: {
+	try {
+		const {
+			data: {
+				data: {
+					FilteredUsers: { list },
+				},
+			},
+		} = await createAxiosService(GET_USERS_IDS, {
 			role: "Student",
-		},
-	});
+		});
 
-	if (result?.data?.data) {
-		const paths = result.data?.data?.FilteredUsers?.map((user) => ({
+		const paths = list?.map((user) => ({
 			params: { studentId: user.id },
 		}));
 		return { paths, fallback: false };
+	} catch (error) {
+		return { fallback: false };
 	}
-	return { fallback: false };
 }
 
 // This also gets called at build time
 export async function getStaticProps({ params }) {
-	const result = await createAxiosService(GET_STUDENT_DETAILS, { userId: params.studentId, take: 5 });
+	try {
+		const {
+			data: {
+				data: { User },
+			},
+		} = await createAxiosService(GET_STUDENT_DETAILS, {
+			userId: params.studentId,
+			attendancesTake2: 5,
+			examsTake2: 5,
+		});
 
-	if (result?.data?.data) {
-		return { props: { user: result?.data?.data.User } };
+		return { props: { user: User } };
+	} catch (error) {
+		return { props: {} };
 	}
-
-	// Pass post data to the page via props
-	return { props: {} };
 }
 
 export default Student;

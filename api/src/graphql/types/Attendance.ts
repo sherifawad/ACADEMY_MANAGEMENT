@@ -2,6 +2,7 @@ import { Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core } from "nexus";
 // @ts-ignore
 import { prismaOffsetPagination } from "prisma-offset-pagination";
+import { PaginationInputType, queryArgs } from "./User";
 
 export interface prismaCursorPagination {
 	take: number;
@@ -195,67 +196,46 @@ export const AttendanceByUserDateQuery = extendType({
 export const AttendanceByUserIdQuery = extendType({
 	type: "Query",
 	definition(t) {
-		t.field("PaginatedAttendances", {
+		t.field("studentAttendances", {
 			type: "AttendanceResponse",
 			args: {
+				data: PaginationInputType,
 				studentId: nonNull(stringArg()),
-				myCursor: nullable(stringArg()),
-				orderByKey: nullable(stringArg()),
-				orderDirection: nullable(stringArg()),
-				size: nullable(intArg()),
-				skip: nullable(intArg()),
 			},
-			resolve: async (
-				_parent,
-				{ studentId, size, myCursor, orderByKey, orderDirection, skip },
-				{ prisma, user }
-			) => {
+			resolve: async (_parent, args, { prisma, user }) => {
+				const { data, studentId } = args;
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
 					return null;
 
-				let data: prismaCursorPagination = {
-					take: Number(size),
-					where: {
+				let where = {};
+				if (studentId) {
+					where = {
+						...where,
 						Profile: { id: studentId },
-					},
-				};
-
-				if (myCursor) {
-					data = {
-						...data,
-						skip: 1, // Skip the cursor
-						cursor: {
-							id: myCursor,
-						},
 					};
 				}
-
-				if (skip) {
-					data = {
-						...data,
-						skip,
-					};
-				}
-
-				if (orderByKey && orderDirection) {
-					data = { ...data, orderBy: { [orderByKey]: orderDirection } };
-				}
-				const result: attendance[] = await prisma.attendance.findMany(data);
+				let result: attendance[];
 				let totalCount: { _count: number } | undefined | null;
-				let prevCursor: string | undefined | null = result[0]?.id;
-				const nextCursor: string | undefined | null = result[result?.length - 1]?.id;
+				let nextCursor: string | undefined | null;
+				if (data) {
+					result = await prisma.attendance.findMany(queryArgs(data, where));
 
-				if (!myCursor) {
-					totalCount = await prisma.attendance.aggregate({
-						where: {
-							Profile: { id: studentId },
-						},
-						_count: true,
-					});
+					nextCursor = result[result?.length - 1]?.id;
+
+					if (!data?.myCursor) {
+						totalCount = await prisma.attendance.aggregate({
+							where: {
+								Profile: { id: studentId },
+							},
+							_count: true,
+						});
+					}
+				} else {
+					result = await prisma.user.findMany();
 				}
+
 				return {
 					list: result,
-					prevCursor,
 					nextCursor,
 					totalCount,
 				};

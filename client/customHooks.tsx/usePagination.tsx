@@ -9,10 +9,10 @@ export interface paginationInputProps {
 	formatDate?: string | null;
 	_count?: number | null;
 	nextCursor?: string | null;
-	queryString: string;
 	edit?: Function | null;
 	setItemsState?: Function | null;
 	queryVariables?: {} | null;
+	query?: Function | null;
 }
 
 export interface goFirstInputProps {
@@ -30,7 +30,7 @@ function usePagination({
 	setItemsState,
 	formatDate = "dd MMM hh:mm a",
 	hiddenColumns,
-	queryString,
+	query,
 	queryVariables,
 }: paginationInputProps) {
 	const ORDER = {
@@ -49,11 +49,13 @@ function usePagination({
 	const [currentPageNumber, setCurrentPageNumber] = useState(1);
 	const [paginationOption, setPaginationOption] = useState({
 		...queryVariables,
-		myCursor: nextCursor,
-		orderByKey: currentSortProperty,
-		orderDirection: currentOrder,
-		size: pageSize,
-		skip: null,
+		data: {
+			myCursor: nextCursor,
+			orderByKey: currentSortProperty,
+			orderDirection: currentOrder,
+			take: pageSize,
+			skip: null,
+		},
 	});
 
 	const [paginationResult, setPaginationResult] = useState({
@@ -62,7 +64,7 @@ function usePagination({
 	});
 
 	useEffect(() => {
-		setPaginationOption({ ...paginationOption, size: pageSize });
+		setPaginationOption({ ...paginationOption, data: { ...paginationOption.data, take: pageSize } });
 		gotoFirst({ force: true, take: pageSize });
 	}, [pageSize]);
 
@@ -130,12 +132,9 @@ function usePagination({
 		if (isLastPage) return;
 		const options = {
 			...paginationOption,
-			myCursor: null,
-			size: -pageSize,
-			skip: null,
+			data: { ...paginationOption.data, myCursor: null, take: -pageSize, skip: null },
 		};
-		const result = await createAxiosService(queryString, options);
-		const { list, nextCursor } = result?.data?.data?.PaginatedAttendances;
+		const { list, nextCursor } = await query(options);
 		if (list && list.length > 0) {
 			setPaginationResult({
 				list,
@@ -143,7 +142,7 @@ function usePagination({
 			});
 			setPaginationOption({
 				...paginationOption,
-				myCursor: nextCursor,
+				data: { ...paginationOption.data, myCursor: nextCursor },
 			});
 			setIsLastPage(true);
 			setIsFirstPage(false);
@@ -162,19 +161,16 @@ function usePagination({
 		if (!force && isFirstPage) return;
 		let options = {
 			...paginationOption,
-			size: take,
-			myCursor: null,
-			skip: null,
+			data: { ...paginationOption.data, take, myCursor: null, skip: null },
 		};
 		if (currentSortProperty) {
-			options = { ...options, orderByKey: currentSortProperty };
+			options = { ...options, data: { ...options.data, orderByKey: currentSortProperty } };
 		}
 		if (currentOrder) {
-			options = { ...options, orderDirection: currentOrder };
+			options = { ...options, data: { ...options.data, orderDirection: currentOrder } };
 		}
 
-		const result = await createAxiosService(queryString, options);
-		const { list, nextCursor } = result?.data?.data?.PaginatedAttendances;
+		const { list, nextCursor } = await query(options);
 		if (list && list.length > 0) {
 			setPaginationResult({
 				list,
@@ -182,9 +178,12 @@ function usePagination({
 			});
 			setPaginationOption({
 				...paginationOption,
-				myCursor: nextCursor,
-				orderDirection: options.orderDirection,
-				orderByKey: options.orderByKey,
+				data: {
+					...paginationOption.data,
+					myCursor: nextCursor,
+					orderDirection: options.data.orderDirection,
+					orderByKey: options.data.orderByKey,
+				},
 			});
 			setIsFirstPage(true);
 			setCanGoNext(true);
@@ -204,10 +203,9 @@ function usePagination({
 		if (!canGoNext) return;
 		const options = {
 			...paginationOption,
-			size: pageSize,
+			data: { ...paginationOption.data, take: pageSize },
 		};
-		const result = await createAxiosService(queryString, options);
-		const { list, nextCursor } = result?.data?.data?.PaginatedAttendances;
+		const { list, nextCursor } = await query(options);
 		if (list && list.length > 0) {
 			setPaginationResult({
 				list,
@@ -215,7 +213,7 @@ function usePagination({
 			});
 			setPaginationOption({
 				...paginationOption,
-				myCursor: nextCursor,
+				data: { ...paginationOption.data, myCursor: nextCursor },
 			});
 			if (currentPageNumber + 1 === Math.abs(Math.ceil(_count / pageSize))) {
 				setCanGoNext(false);
@@ -231,11 +229,9 @@ function usePagination({
 		if (!canGoPrevious) return;
 		let options = {
 			...paginationOption,
-			myCursor: paginationResult.nextCursor,
-			size: -pageSize,
+			data: { ...paginationOption.data, myCursor: paginationResult.nextCursor, take: -pageSize },
 		};
-		const result = await createAxiosService(queryString, options);
-		const { list, nextCursor } = result?.data?.data?.PaginatedAttendances;
+		const { list, nextCursor } = await query(options);
 		if (list && list.length > 0) {
 			setPaginationResult({
 				list,
@@ -243,7 +239,7 @@ function usePagination({
 			});
 			setPaginationOption({
 				...paginationOption,
-				myCursor: nextCursor,
+				data: { ...paginationOption.data, myCursor: nextCursor },
 			});
 			if (currentPageNumber - 1 === 1) {
 				setCanPrevious(false);

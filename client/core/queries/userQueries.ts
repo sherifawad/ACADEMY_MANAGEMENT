@@ -21,27 +21,32 @@ export const GET_USERS = `
 `;
 
 export const GET_USERS_IDS = `
-    query FilteredUsers($data: UsersFilterInputType) {
-        FilteredUsers(data: $data) {
-            id
+    query FilteredUsers($role: Role) {
+        FilteredUsers(role: $role) {
+            nextCursor
+            totalCount {
+                _count
+            }
+            list {
+                id
+            }
         }
     }
 `;
 
 export const GET_STUDENT_DETAILS = `
-    query Query($userId: String!, $take: Int) {
-        User(id: $userId, take: $take) {
+    query User($userId: String!, $attendancesTake2: Int, $examsTake2: Int) {
+        User(id: $userId) {
             id
             name
             isActive
             avatar
             contact {
-                note
-                phone
-                parentsPhones
-                address
-                email
-                emailConfirmed
+                    note
+                    phone
+                    parentsPhones
+                    address
+                    email
             }
             profile {
                 bio
@@ -50,20 +55,16 @@ export const GET_STUDENT_DETAILS = `
                     isActive
                     startAt
                     endAt
-                    grade {
-                        isActive
-                        name
-                    }
                 }
-                exams(take: $take) {
+                attendances(take: $attendancesTake2) {
+                    startAt
+                    endAt
+                    note
+                }
+                exams(take: $examsTake2) {
                     note
                     score
                     date
-                }
-                attendances(take: $take) {
-                    note
-                    startAt
-                    endAt
                 }
             }
         }

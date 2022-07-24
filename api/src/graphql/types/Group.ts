@@ -2,7 +2,7 @@ import { Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, booleanArg } from "nexus";
 import { Attendance } from "./Attendance";
 import { Profile } from "./Profile";
-import { queryArgs, UsersFilterInputType } from "./User";
+import { PaginationInputType, queryArgs } from "./User";
 
 //generates Group type at schema.graphql
 export const Group = objectType({
@@ -19,7 +19,7 @@ export const Group = objectType({
 		t.field("endAt", { type: "DateTime" });
 		t.list.field("profiles", {
 			type: Profile,
-			args: { data: UsersFilterInputType },
+			args: { data: PaginationInputType },
 			async resolve(_parent, args, ctx) {
 				const { data } = args;
 				if (data) {

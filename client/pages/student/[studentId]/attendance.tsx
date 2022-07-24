@@ -4,17 +4,21 @@ import { GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService } from "core/utils";
 import useModel from "customHooks.tsx/useModel";
 import usePagination from "customHooks.tsx/usePagination";
-import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
 
-const initialData = async (studentId: string) => {
-	return await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, {
-		studentId,
-		myCursor: null,
-		orderByKey: "id",
-		orderDirection: "asc",
-		size: 5,
-	});
+const initialData = async (variable: {}) => {
+	const {
+		data: {
+			data: {
+				studentAttendances: { list, nextCursor, totalCount },
+			},
+		},
+	} = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, variable);
+	if (totalCount) {
+		const { _count } = totalCount;
+		return { list, nextCursor, _count };
+	} else {
+		return { list, nextCursor };
+	}
 };
 
 function Attendance({ list, nextCursor, _count, profileId }) {
@@ -33,7 +37,7 @@ function Attendance({ list, nextCursor, _count, profileId }) {
 		setItemsState: setItemData,
 		queryVariables: { studentId: profileId },
 		hiddenColumns: ["id", "note"],
-		queryString: GET_PAGINATED_STUDENT_ATTENDANCES,
+		query: initialData,
 	});
 
 	const onProceed = async () => {
@@ -62,35 +66,39 @@ function Attendance({ list, nextCursor, _count, profileId }) {
 }
 
 export async function getStaticPaths() {
-	const result = await createAxiosService(GET_USERS_IDS, {
-		data: {
+	try {
+		const {
+			data: {
+				data: {
+					FilteredUsers: { list },
+				},
+			},
+		} = await createAxiosService(GET_USERS_IDS, {
 			role: "Student",
-		},
-	});
+		});
 
-	if (result?.data?.data) {
-		const paths = result.data?.data?.FilteredUsers?.map((user) => ({
+		const paths = list?.map((user) => ({
 			params: { studentId: user.id },
 		}));
 		return { paths, fallback: false };
+	} catch (error) {
+		return { fallback: false };
 	}
-	return { fallback: false };
 }
 
 // This also gets called at build time
 export async function getStaticProps({ params }) {
 	try {
-		const {
+		const variables = {
+			studentId: params?.studentId,
 			data: {
-				data: {
-					PaginatedAttendances: {
-						list,
-						nextCursor,
-						totalCount: { _count },
-					},
-				},
+				myCursor: null,
+				orderByKey: "id",
+				orderDirection: "asc",
+				take: 5,
 			},
-		} = await initialData(params.studentId);
+		};
+		const { list, nextCursor, _count } = await initialData(variables);
 
 		if (list && list.length > 0) {
 			return {

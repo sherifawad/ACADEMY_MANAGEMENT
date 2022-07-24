@@ -20,8 +20,8 @@ export const GET_USERS = `
     }
 `;
 export const GROUP_STUDENTS = `
-    query Students($data: UsersFilterInputType) {
-        Students(data: $data) {
+    query Paginated($data: UsersFilterInputType) {
+        Paginated(data: $data) {
             list {
                 id
                 name

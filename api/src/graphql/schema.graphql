@@ -61,6 +61,16 @@ type Exam {
   updatedBy: String
 }
 
+type ExamsCount {
+  _count: Int
+}
+
+type ExamsResponse {
+  list: [Exam]
+  nextCursor: String
+  totalCount: ExamsCount
+}
+
 type Grade {
   createdAt: DateTime
   createdBy: String
@@ -82,7 +92,7 @@ type Group {
   id: String
   isActive: Boolean
   name: String
-  profiles(data: UsersFilterInputType): [Profile]
+  profiles(data: PaginationInputType): [Profile]
   startAt: DateTime
   updatedAt: DateTime
   updatedBy: String
@@ -150,18 +160,18 @@ type Query {
   Contact(id: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
-  FilteredUsers(data: UsersFilterInputType): [User]
+  FilteredUsers(data: PaginationInputType, isActive: Boolean, role: Role): UsersResponse
   Grade(id: String!): Grade!
   Grades: [Grade]!
   Group(id: String!): Group!
   Groups: [Group]!
-  PaginatedAttendances(myCursor: String, orderByKey: String, orderDirection: String, size: Int, skip: Int, studentId: String!): AttendanceResponse
   Profile(id: String!): Profile!
   Profiles: [Profile]!
-  Students(data: UsersFilterInputType): StudentsResponse
+  SExams(data: PaginationInputType, studentId: String!): ExamsResponse
   User(id: String!, take: Int): User!
-  UserExams(studentId: String!): [Exam]!
   Users: [User]
+  studentAttendances(data: PaginationInputType, studentId: String!): AttendanceResponse
+  studentsGroup(data: PaginationInputType, groupId: String!, isActive: Boolean, role: Role): StudentsResponse
 }
 
 """User Role"""
@@ -172,10 +182,8 @@ enum Role {
 }
 
 type StudentsResponse {
+  Students: UsersResponse
   groupName: String
-  list: [User]
-  nextCursor: String
-  totalCount: UsersCount
 }
 
 """
@@ -200,10 +208,15 @@ type UsersCount {
 }
 
 input UsersFilterInputType {
-  PaginationInputType: PaginationInputType
-  groupId: String
+  StudentId: String
   isActive: Boolean
   role: Role
+}
+
+type UsersResponse {
+  list: [User]
+  nextCursor: String
+  totalCount: UsersCount
 }
 
 type pageCursors {

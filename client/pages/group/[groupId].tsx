@@ -3,9 +3,18 @@ import UsersList from "components/UsersList";
 import { GROUPS_IDS_QUERY, GROUP_NAME_QUERY } from "core/queries/groupQueries";
 import { GROUP_STUDENTS } from "core/queries/studentQueries";
 import { createAxiosService } from "core/utils";
+import usePagination from "customHooks.tsx/usePagination";
 import Head from "next/head";
 
-function groupItemData({ students, _count, groupName, nextCursor }) {
+function groupItemData({ students, _count, groupName, nextCursor, groupId }) {
+	const { PaginatedTable, refetch } = usePagination({
+		list: students,
+		nextCursor,
+		_count,
+		queryVariables: { groupId },
+		hiddenColumns: ["id"],
+		queryString: GROUP_STUDENTS,
+	});
 	return (
 		<div className="container">
 			<Head>
@@ -13,9 +22,10 @@ function groupItemData({ students, _count, groupName, nextCursor }) {
 				<meta name="description" content="Group students" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
+			<PaginatedTable />
 			<div className="grid grid-row-[auto_1fr] gap-8">
 				{/* <UsersList users={students} /> */}
-				<StudentsGroupList students={students} />
+				{/* <StudentsGroupList students={students} /> */}
 			</div>
 		</div>
 	);
@@ -68,7 +78,7 @@ export async function getStaticProps({ params }) {
 
 	let props = {};
 	if (list && list.length > 0) {
-		props = { ...props, students: list, _count, groupName, nextCursor };
+		props = { ...props, students: list, _count, groupName, nextCursor, groupId };
 	}
 
 	// Pass post data to the page via props

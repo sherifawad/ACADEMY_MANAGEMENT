@@ -8,7 +8,17 @@ import {
 	User as prismaUser,
 } from "@prisma/client";
 import { hashPassword, verifyPassword } from "../../core/crypto";
-import { nonNull, objectType, stringArg, extendType, inputObjectType, intArg, nullable } from "nexus";
+import {
+	nonNull,
+	objectType,
+	stringArg,
+	extendType,
+	inputObjectType,
+	intArg,
+	nullable,
+	booleanArg,
+	arg,
+} from "nexus";
 import { Context } from ".";
 import { GetUserPassword } from "./UserPassword";
 import { Role as userRole } from "@prisma/client";
@@ -102,16 +112,15 @@ export const PaginationInputType = inputObjectType({
 	},
 });
 
-export const UsersFilterInputType = inputObjectType({
+export const UserFilterInputType = inputObjectType({
 	name: "UsersFilterInputType",
-
 	definition(t) {
-		t.nullable.field("PaginationInputType", {
-			type: "PaginationInputType",
-		});
+		// t.nullable.field("PaginationInputType", {
+		// 	type: "PaginationInputType",
+		// });
 		t.nullable.field("role", { type: "Role" });
 		t.nullable.boolean("isActive");
-		t.nullable.string("groupId");
+		t.nullable.string("StudentId");
 	},
 });
 
@@ -122,15 +131,23 @@ export const UsersCount = objectType({
 	},
 });
 
-export const StudentsResponse = objectType({
-	name: "StudentsResponse",
+export const UsersResponse = objectType({
+	name: "UsersResponse",
 	definition(t) {
 		t.list.field("list", {
 			type: User,
 		});
 		t.nullable.string("nextCursor");
-		t.nullable.string("groupName");
 		t.nullable.field("totalCount", { type: UsersCount });
+	},
+});
+export const StudentsResponse = objectType({
+	name: "StudentsResponse",
+	definition(t) {
+		t.field("Students", {
+			type: UsersResponse,
+		});
+		t.nullable.string("groupName");
 	},
 });
 
@@ -148,12 +165,10 @@ export const UsersQuery = extendType({
 	},
 });
 
-export const queryArgs = (args: UserFilterPaginationInput): UserFilterPagination => {
-	const { role, isActive, groupId } = args;
-	const { take, skip, myCursor, orderByKey, orderDirection } = args.PaginationInputType || {};
+export const queryArgs = (args: CursorPaginationInput, filter = {}): UserFilterPagination => {
+	const { take, skip, myCursor, orderByKey, orderDirection } = args || {};
 
 	let data = {};
-	let where = {};
 	if (myCursor) {
 		data = {
 			...data,
@@ -179,25 +194,8 @@ export const queryArgs = (args: UserFilterPaginationInput): UserFilterPagination
 		data = { ...data, take: Number(take) };
 	}
 
-	if (role) {
-		where = { ...where, role };
-	}
-	if (isActive) {
-		where = { ...where, isActive };
-	}
-	if (groupId) {
-		where = {
-			...where,
-			profile: {
-				group: {
-					id: groupId,
-				},
-			},
-		};
-	}
-
-	if (where) {
-		data = { ...data, where };
+	if (filter) {
+		data = { ...data, where: filter };
 	}
 	return data;
 };
@@ -205,9 +203,13 @@ export const queryArgs = (args: UserFilterPaginationInput): UserFilterPagination
 export const FilteredUsersQuery = extendType({
 	type: "Query",
 	definition(t) {
-		t.list.field("FilteredUsers", {
-			type: "User",
-			args: { data: UsersFilterInputType },
+		t.field("FilteredUsers", {
+			type: "UsersResponse",
+			args: {
+				data: PaginationInputType,
+				isActive: nullable(booleanArg()),
+				role: nullable(arg({ type: "Role" })),
+			},
 			resolve: async (_parent, args, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 				// return await prisma.user.findMany({
@@ -216,12 +218,42 @@ export const FilteredUsersQuery = extendType({
 				// 		isActive: args.data?.isActive,
 				// 	},
 				// });
-				const { data } = args;
+				const { data, isActive, role } = args;
+				let where = {};
+				if (role) {
+					where = { ...where, role };
+				}
+				if (isActive) {
+					where = { ...where, isActive };
+				}
+				let result: prismaUser[];
+				let totalCount: { _count: number } | undefined | null;
+				let nextCursor: string | undefined | null;
+				let groupName: { name: string } | undefined | null;
+
 				if (data) {
-					return await prisma.user.findMany(queryArgs(data));
+					result = await prisma.user.findMany(queryArgs(data, where));
+
+					nextCursor = result[result?.length - 1]?.id;
+
+					if (!data?.myCursor) {
+						totalCount = await prisma.user.aggregate({
+							where,
+							_count: true,
+						});
+					}
+				} else {
+					result = await prisma.user.findMany({
+						where,
+					});
 				}
 
-				return await prisma.user.findMany();
+				return {
+					list: result,
+					nextCursor,
+					totalCount,
+					groupName: groupName?.name,
+				};
 			},
 		});
 	},
@@ -230,55 +262,74 @@ export const FilteredUsersQuery = extendType({
 export const GroupStudentsQuery = extendType({
 	type: "Query",
 	definition(t) {
-		t.field("Students", {
+		t.field("studentsGroup", {
 			type: "StudentsResponse",
-			args: { data: UsersFilterInputType },
+			args: {
+				data: PaginationInputType,
+				isActive: nullable(booleanArg()),
+				groupId: nonNull(stringArg()),
+				role: nullable(arg({ type: "Role" })),
+			},
 			resolve: async (_parent, args, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
-				// return await prisma.user.findMany({
-				// 	where: {
-				// 		role: args.data?.role,
-				// 		isActive: args.data?.isActive,
-				// 	},
-				// });
-				const { data } = args;
+
+				const { data, isActive, groupId, role } = args;
+				let where = {};
+				if (role) {
+					where = { ...where, role };
+				}
+				if (isActive) {
+					where = { ...where, isActive };
+				}
+				if (groupId) {
+					where = {
+						...where,
+						profile: {
+							group: {
+								id: groupId,
+							},
+						},
+					};
+				}
 				let result: prismaUser[];
 				let totalCount: { _count: number } | undefined | null;
 				let nextCursor: string | undefined | null;
 				let groupName: { name: string } | undefined | null;
 
 				if (data) {
-					result = await prisma.user.findMany(queryArgs(data));
+					result = await prisma.user.findMany(queryArgs(data, where));
 
 					nextCursor = result[result?.length - 1]?.id;
 
-					if (!data?.PaginationInputType?.myCursor) {
+					if (!data?.myCursor) {
 						totalCount = await prisma.user.aggregate({
 							where: {
 								profile: {
 									group: {
-										id: data?.groupId,
+										id: groupId,
 									},
 								},
 							},
 							_count: true,
 						});
 						groupName = await prisma.Group.findUnique({
-							where: { id: data?.groupId },
+							where: { id: groupId },
 							select: {
 								name: true,
 							},
 						});
 					}
 				} else {
-					result = await prisma.user.findMany();
+					result = await prisma.user.findMany({
+						where,
+					});
 				}
 
 				return {
 					list: result,
 					nextCursor,
 					totalCount,
-                    groupName: groupName?.name
+					groupName: groupName?.name,
 				};
 			},
 		});

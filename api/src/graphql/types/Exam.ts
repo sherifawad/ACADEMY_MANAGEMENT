@@ -1,5 +1,6 @@
-import { Role } from "@prisma/client";
+import { Exam as studentExam, Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, floatArg } from "nexus";
+import { PaginationInputType, queryArgs } from "./User";
 
 //generates Exam type at schema.graphql
 export const Exam = objectType({
@@ -27,6 +28,24 @@ export const Exam = objectType({
 	},
 });
 
+export const ExamsCount = objectType({
+	name: "ExamsCount",
+	definition(t) {
+		t.int("_count");
+	},
+});
+
+export const ExamsResponse = objectType({
+	name: "ExamsResponse",
+	definition(t) {
+		t.list.field("list", {
+			type: Exam,
+		});
+		t.nullable.string("nextCursor");
+		t.nullable.field("totalCount", { type: ExamsCount });
+	},
+});
+
 //get all Exams
 export const ExamsQuery = extendType({
 	type: "Query",
@@ -46,18 +65,49 @@ export const ExamsQuery = extendType({
 export const ExamsByUserIdQuery = extendType({
 	type: "Query",
 	definition(t) {
-		t.nonNull.list.field("UserExams", {
-			type: "Exam",
-			args: { studentId: nonNull(stringArg()) },
-			resolve: async (_parent, { studentId }, { prisma, user }) => {
+		t.field("SExams", {
+			type: "ExamsResponse",
+			args: {
+				data: PaginationInputType,
+				studentId: nonNull(stringArg()),
+			},
+			resolve: async (_parent, args, { prisma, user }) => {
+				const { studentId, data } = args;
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
 					return null;
-
-				return await prisma.exam.findMany({
-					where: {
+				let where = {};
+				if (studentId) {
+					where = {
+						...where,
 						Profile: { id: studentId },
-					},
-				});
+					};
+				}
+				let result: studentExam[];
+				let totalCount: { _count: number } | undefined | null;
+				let nextCursor: string | undefined | null;
+
+				if (data) {
+					result = await prisma.exam.findMany(queryArgs(data, where));
+
+					nextCursor = result[result?.length - 1]?.id;
+
+					if (!data?.myCursor) {
+						totalCount = await prisma.exam.aggregate({
+							where: {
+								Profile: { id: studentId },
+							},
+							_count: true,
+						});
+					}
+				} else {
+					result = await prisma.exam.findMany();
+				}
+
+				return {
+					list: result,
+					nextCursor,
+					totalCount,
+				};
 			},
 		});
 	},
@@ -107,7 +157,6 @@ export const createExamMutation = extendType({
 						},
 					},
 				};
-				console.log("🚀 ~ file: Exam.ts ~ line 100 ~ resolve: ~ newExam", newExam);
 				return await prisma.exam.create({
 					data: newExam,
 				});
