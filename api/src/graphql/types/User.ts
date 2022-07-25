@@ -144,7 +144,7 @@ export const UsersResponse = objectType({
 export const StudentsResponse = objectType({
 	name: "StudentsResponse",
 	definition(t) {
-		t.field("Students", {
+		t.field("students", {
 			type: UsersResponse,
 		});
 		t.nullable.string("groupName");
@@ -326,9 +326,11 @@ export const GroupStudentsQuery = extendType({
 				}
 
 				return {
-					list: result,
-					nextCursor,
-					totalCount,
+					students: {
+						list: result,
+						nextCursor,
+						totalCount,
+					},
 					groupName: groupName?.name,
 				};
 			},

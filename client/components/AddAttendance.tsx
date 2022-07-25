@@ -108,7 +108,6 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 							startAt: d,
 						});
 					}}
-					portalContainer={mainRef.current}
 				>
 					{({ dateInputProps, timeInputProps }) => (
 						<div className="w-full">
@@ -144,7 +143,6 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 					timePlaceholder="Time"
 					timeFormat="hh:mm a"
 					date={attendanceState.endAt ? new Date(attendanceState.endAt) : null}
-					portalContainer={mainRef.current}
 					timePrecision={15}
 					onChange={(d) => {
 						setAttendanceState({

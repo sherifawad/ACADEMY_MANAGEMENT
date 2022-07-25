@@ -182,8 +182,8 @@ enum Role {
 }
 
 type StudentsResponse {
-  Students: UsersResponse
   groupName: String
+  students: UsersResponse
 }
 
 """

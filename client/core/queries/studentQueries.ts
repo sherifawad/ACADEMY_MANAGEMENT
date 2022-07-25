@@ -20,17 +20,19 @@ export const GET_USERS = `
     }
 `;
 export const GROUP_STUDENTS = `
-    query Paginated($data: UsersFilterInputType) {
-        Paginated(data: $data) {
-            list {
-                id
-                name
-                isActive
-                avatar
-            }
-            nextCursor
-            totalCount {
-                _count
+    query StudentsGroup($groupId: String!, $role: Role, $data: PaginationInputType) {
+        studentsGroup(groupId: $groupId, role: $role, data: $data) {
+            students {
+                list {
+                    id
+                    name
+                    isActive
+                    avatar
+                }
+                nextCursor
+                totalCount {
+                    _count
+                }
             }
             groupName
         }

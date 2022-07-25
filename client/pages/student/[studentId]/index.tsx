@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 function Student({ user }) {
-	console.log("🚀 ~ file: index.tsx ~ line 9 ~ Student ~ user", user);
 	return (
 		<div className="container w-full">
 			<div className="flex flex-col md:flex-row gap-4">

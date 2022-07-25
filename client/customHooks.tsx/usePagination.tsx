@@ -93,9 +93,14 @@ function usePagination({
 	) as any;
 
 	const editRowHandler = (row) => {
-		setItemsState({
-			...row.values,
-		});
+		if (row) {
+			if (setItemsState) {
+				setItemsState({
+					...row.values,
+				});
+			}
+			edit(row);
+		}
 	};
 
 	const tableHooks = (hooks) => {
@@ -342,7 +347,7 @@ function usePagination({
 										isFirstPage ? "" : "hover:bg-teal-400 hover:text-white"
 									}`}
 									style={{ transition: "all 0.2s ease" }}
-									onClick={gotoFirst}
+									onClick={() => gotoFirst}
 								>
 									First
 								</a>

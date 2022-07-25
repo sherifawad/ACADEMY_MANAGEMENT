@@ -24,9 +24,9 @@ const initialData = async (variable: {}) => {
 function Attendance({ list, nextCursor, _count, profileId }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 
-	const rowEditHandler = () => {
-		setIsOpened(true);
-		// alert("Note: " + row.values.note);
+	const rowEditHandler = (row) => {
+		// setIsOpened(true);
+		// alert("Note: " + row?.values?.note);
 	};
 
 	const { PaginatedTable, refetch } = usePagination({
@@ -100,16 +100,14 @@ export async function getStaticProps({ params }) {
 		};
 		const { list, nextCursor, _count } = await initialData(variables);
 
-		if (list && list.length > 0) {
-			return {
-				props: {
-					list,
-					nextCursor,
-					_count,
-					profileId: params.studentId,
-				},
-			};
-		}
+		return {
+			props: {
+				list,
+				nextCursor,
+				_count,
+				profileId: params.studentId,
+			},
+		};
 	} catch (error) {
 		return {
 			props: null,

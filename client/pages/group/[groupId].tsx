@@ -5,15 +5,41 @@ import { GROUP_STUDENTS } from "core/queries/studentQueries";
 import { createAxiosService } from "core/utils";
 import usePagination from "customHooks.tsx/usePagination";
 import Head from "next/head";
+import { useRouter } from "next/router";
 
-function groupItemData({ students, _count, groupName, nextCursor, groupId }) {
+const initialData = async (variable: {}) => {
+	const {
+		data: {
+			data: {
+				studentsGroup: {
+					students: { list, nextCursor, totalCount },
+					groupName,
+				},
+			},
+		},
+	} = await createAxiosService(GROUP_STUDENTS, variable);
+	let result = {};
+	if (totalCount) {
+		const { _count } = totalCount;
+		return { list, nextCursor, _count, groupName };
+	} else {
+		return { list, nextCursor, groupName };
+	}
+};
+
+function groupItemData({ list, _count, groupName, nextCursor, groupId }) {
+	const router = useRouter();
+	const rowEditHandler = (row) => {
+		router.push(`/student/${row.values?.id}`);
+	};
 	const { PaginatedTable, refetch } = usePagination({
-		list: students,
+		list,
 		nextCursor,
 		_count,
+		edit: rowEditHandler,
 		queryVariables: { groupId },
 		hiddenColumns: ["id"],
-		queryString: GROUP_STUDENTS,
+		query: initialData,
 	});
 	return (
 		<div className="container">
@@ -49,40 +75,34 @@ export async function getStaticPaths() {
 
 // This also gets called at build time
 export async function getStaticProps({ params }) {
-	const { groupId } = params;
-	const {
-		data: {
-			data: {
-				Students: {
-					list,
-					nextCursor,
-					groupName,
-					totalCount: { _count },
-				},
-			},
-		},
-	} = await createAxiosService(GROUP_STUDENTS, {
-		data: {
-			isActive: null,
-			role: "Student",
+	try {
+		const { groupId } = params;
+		const variables = {
 			groupId,
-			PaginationInputType: {
+			role: "Student",
+			data: {
 				myCursor: null,
-				orderByKey: "name",
+				orderByKey: "id",
 				orderDirection: "asc",
 				take: 5,
 				skip: null,
 			},
-		},
-	});
-
-	let props = {};
-	if (list && list.length > 0) {
-		props = { ...props, students: list, _count, groupName, nextCursor, groupId };
+		};
+		const { groupName, list, nextCursor, _count } = await initialData(variables);
+		return {
+			props: {
+				list,
+				_count,
+				groupName,
+				nextCursor,
+				groupId,
+			},
+		};
+	} catch (error) {
+		return {
+			props: null,
+		};
 	}
-
-	// Pass post data to the page via props
-	return { props };
 }
 
 export default groupItemData;
