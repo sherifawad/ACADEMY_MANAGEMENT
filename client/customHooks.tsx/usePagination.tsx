@@ -1,7 +1,7 @@
 import { createAxiosService, getDayNames } from "core/utils";
 import { format } from "date-fns";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { useTable } from "react-table";
+import { Column, useTable } from "react-table";
 
 export interface paginationInputProps {
 	list: any[];
@@ -90,7 +90,7 @@ function usePagination({
 				  })
 				: [],
 		[list]
-	);
+	) as any;
 
 	const editRowHandler = (row) => {
 		setItemsState({
@@ -99,16 +99,18 @@ function usePagination({
 	};
 
 	const tableHooks = (hooks) => {
-		hooks.visibleColumns.push((columns) => [
-			...columns,
-			{
-				id: "Edit",
-				Header: "Edit",
-				Cell: ({ row }) => {
-					return <button onClick={() => editRowHandler(row)}>Edit</button>;
-				},
-			},
-		]);
+		edit
+			? hooks.visibleColumns.push((columns) => [
+					...columns,
+					{
+						id: "Edit",
+						Header: "Edit",
+						Cell: ({ row }) => {
+							return <button onClick={() => editRowHandler(row)}>Edit</button>;
+						},
+					},
+			  ])
+			: undefined;
 	};
 
 	const tableInstance = useTable(
@@ -117,7 +119,7 @@ function usePagination({
 			data,
 			initialState: { hiddenColumns },
 		},
-		edit ? tableHooks : ""
+		tableHooks
 	);
 
 	const {

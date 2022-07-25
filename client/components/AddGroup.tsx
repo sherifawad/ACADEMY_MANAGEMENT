@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import { TimePicker } from "react-next-dates";
 import { useMutation, useQuery } from "react-query";
 import { Group } from "./GroupsListItem";
-import { parse } from "date-fns";
 
 export interface GroupInitials extends Group {
 	onProceed: Function;
@@ -143,7 +142,6 @@ function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grad
 							startAt: d,
 						});
 					}}
-					portalContainer={mainRef.current}
 				>
 					{({ inputProps }) => (
 						<div className="w-full">
@@ -169,7 +167,6 @@ function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grad
 				<TimePicker
 					locale={arEG}
 					date={formState.endAt ? new Date(formState.endAt as Date) : null}
-					portalContainer={mainRef.current}
 					precision={15}
 					onChange={(d) => {
 						setFormState({

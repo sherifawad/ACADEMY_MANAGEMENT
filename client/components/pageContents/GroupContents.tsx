@@ -8,7 +8,7 @@ function GroupContents({ groups = [] }) {
 	return (
 		<>
 			<Model title="Add Group">
-				<AddGroup onProceed={modelProps.onProceed} onClose={modelProps.onClose} {...itemData} />
+				<AddGroup onClose={modelProps.onClose} {...itemData} />
 			</Model>
 			<GroupsList groupsItems={groups} setGroupItemData={setItemData} />
 		</>

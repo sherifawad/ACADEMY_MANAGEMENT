@@ -10,7 +10,7 @@ export interface GroupsList {
 }
 function GroupsList({ groupsItems = [], setGroupItemData }: GroupsList) {
 	return (
-		<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+		<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mt-4">
 			{groupsItems.map((x, i) => (
 				<GroupsListItem key={x.id} {...x} setGroupItemData={setGroupItemData} />
 			))}
