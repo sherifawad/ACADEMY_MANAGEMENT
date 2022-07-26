@@ -400,23 +400,20 @@ function usePagination({
 					...options,
 					data: {
 						...options.data,
-						myCursor: paginationResult.nextCursor,
-						take: -pageSize * 2,
-						skip: -pageSize,
+						myCursor: null,
+						take: pageSize,
 					},
 				};
 				result = await query(options);
-				console.log("🚀 ~ file: usePagination.tsx ~ line 406 ~ gotoPrevious ~ options", options);
 				resultList = result.list;
 			}
 			if (resultList && resultList.length > 0) {
 				const { list, prevCursor, nextCursor } = result;
-				if (isLastPage && list.length < pageSize)
-					setPaginationResult({
-						list,
-						prevCursor,
-						nextCursor,
-					});
+				setPaginationResult({
+					list,
+					prevCursor,
+					nextCursor,
+				});
 				setPaginationOption({
 					...paginationOption,
 					data: { ...paginationOption.data, myCursor: nextCursor },
