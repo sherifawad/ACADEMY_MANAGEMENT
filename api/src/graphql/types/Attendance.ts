@@ -217,10 +217,12 @@ export const AttendanceByUserIdQuery = extendType({
 				let result: attendance[];
 				let totalCount: { _count: number } | undefined | null;
 				let nextCursor: string | undefined | null;
+                let prevCursor: string | undefined | null;
 				if (data) {
 					result = await prisma.attendance.findMany(queryArgs(data, where));
 
 					nextCursor = result[result?.length - 1]?.id;
+                    prevCursor = result[0]?.id;
 
 					if (!data?.myCursor) {
 						totalCount = await prisma.attendance.aggregate({
@@ -236,6 +238,7 @@ export const AttendanceByUserIdQuery = extendType({
 
 				return {
 					list: result,
+                    prevCursor,
 					nextCursor,
 					totalCount,
 				};

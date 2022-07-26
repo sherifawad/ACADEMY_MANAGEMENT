@@ -23,6 +23,7 @@ export const GET_USERS = `
 export const GET_USERS_IDS = `
     query FilteredUsers($role: Role) {
         FilteredUsers(role: $role) {
+            prevCursor
             nextCursor
             totalCount {
                 _count

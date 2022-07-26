@@ -6,41 +6,54 @@ import { createAxiosService } from "core/utils";
 import usePagination from "customHooks.tsx/usePagination";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 const initialData = async (variable: {}) => {
 	const {
 		data: {
-			data: {
-				studentsGroup: {
-					students: { list, nextCursor, totalCount },
-					groupName,
-				},
-			},
+			data: { studentsGroup },
 		},
 	} = await createAxiosService(GROUP_STUDENTS, variable);
 	let result = {};
-	if (totalCount) {
-		const { _count } = totalCount;
-		return { list, nextCursor, _count, groupName };
+	if (studentsGroup) {
+		const {
+			students: { list, nextCursor, prevCursor, totalCount },
+			groupName,
+		} = studentsGroup;
+		if (totalCount) {
+			const { _count } = totalCount;
+			return { list, nextCursor, prevCursor, _count, groupName };
+		} else {
+			return { list, nextCursor, prevCursor, groupName };
+		}
 	} else {
-		return { list, nextCursor, groupName };
+		return {};
 	}
 };
 
-function groupItemData({ list, _count, groupName, nextCursor, groupId }) {
+function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupId }) {
+	const [flatRows, setFlatRows] = useState([]);
+
 	const router = useRouter();
 	const rowEditHandler = (row) => {
 		router.push(`/student/${row.values?.id}`);
 	};
-	const { PaginatedTable, refetch } = usePagination({
+	const { PaginatedTable, refetch, checkedItems } = usePagination({
 		list,
+		prevCursor,
 		nextCursor,
+		hasCheckBox: true,
 		_count,
 		edit: rowEditHandler,
 		queryVariables: { groupId },
-		hiddenColumns: ["id"],
+		hiddenColumns: ["id", "avatar"],
 		query: initialData,
 	});
+
+	useEffect(() => {
+		setFlatRows([checkedItems]);
+	}, [checkedItems]);
+
 	return (
 		<div className="container">
 			<Head>
@@ -52,6 +65,17 @@ function groupItemData({ list, _count, groupName, nextCursor, groupId }) {
 			<div className="grid grid-row-[auto_1fr] gap-8">
 				{/* <UsersList users={students} /> */}
 				{/* <StudentsGroupList students={students} /> */}
+				<pre>
+					<code>
+						{JSON.stringify(
+							{
+								"selectedFlatRows[].original": flatRows?.map((d) => d),
+							},
+							null,
+							2
+						)}
+					</code>
+				</pre>
 			</div>
 		</div>
 	);
@@ -88,12 +112,13 @@ export async function getStaticProps({ params }) {
 				skip: null,
 			},
 		};
-		const { groupName, list, nextCursor, _count } = await initialData(variables);
+		const { groupName, list, nextCursor, prevCursor, _count } = await initialData(variables);
 		return {
 			props: {
 				list,
 				_count,
 				groupName,
+				prevCursor,
 				nextCursor,
 				groupId,
 			},

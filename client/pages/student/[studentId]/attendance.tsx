@@ -9,19 +9,19 @@ const initialData = async (variable: {}) => {
 	const {
 		data: {
 			data: {
-				studentAttendances: { list, nextCursor, totalCount },
+				studentAttendances: { list, nextCursor, prevCursor, totalCount },
 			},
 		},
 	} = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, variable);
 	if (totalCount) {
 		const { _count } = totalCount;
-		return { list, nextCursor, _count };
+		return { list, nextCursor, prevCursor, _count };
 	} else {
-		return { list, nextCursor };
+		return { list, prevCursor, nextCursor };
 	}
 };
 
-function Attendance({ list, nextCursor, _count, profileId }) {
+function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 
 	const rowEditHandler = (row) => {
@@ -31,6 +31,7 @@ function Attendance({ list, nextCursor, _count, profileId }) {
 
 	const { PaginatedTable, refetch } = usePagination({
 		list,
+		prevCursor,
 		nextCursor,
 		_count,
 		edit: rowEditHandler,
@@ -98,11 +99,12 @@ export async function getStaticProps({ params }) {
 				take: 5,
 			},
 		};
-		const { list, nextCursor, _count } = await initialData(variables);
+		const { list, nextCursor, prevCursor, _count } = await initialData(variables);
 
 		return {
 			props: {
 				list,
+				prevCursor,
 				nextCursor,
 				_count,
 				profileId: params.studentId,

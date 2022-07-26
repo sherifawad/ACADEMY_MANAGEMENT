@@ -29,6 +29,7 @@ export const GROUP_STUDENTS = `
                     isActive
                     avatar
                 }
+                prevCursor
                 nextCursor
                 totalCount {
                     _count

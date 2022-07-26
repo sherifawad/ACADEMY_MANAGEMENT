@@ -41,6 +41,7 @@ export const ExamsResponse = objectType({
 		t.list.field("list", {
 			type: Exam,
 		});
+		t.string("prevCursor");
 		t.nullable.string("nextCursor");
 		t.nullable.field("totalCount", { type: ExamsCount });
 	},
@@ -85,11 +86,13 @@ export const ExamsByUserIdQuery = extendType({
 				let result: studentExam[];
 				let totalCount: { _count: number } | undefined | null;
 				let nextCursor: string | undefined | null;
+                let prevCursor: string | undefined | null;
 
 				if (data) {
 					result = await prisma.exam.findMany(queryArgs(data, where));
 
 					nextCursor = result[result?.length - 1]?.id;
+                    prevCursor = result[0]?.id;
 
 					if (!data?.myCursor) {
 						totalCount = await prisma.exam.aggregate({
@@ -104,7 +107,8 @@ export const ExamsByUserIdQuery = extendType({
 				}
 
 				return {
-					list: result,
+                    list: result,
+                    prevCursor,
 					nextCursor,
 					totalCount,
 				};

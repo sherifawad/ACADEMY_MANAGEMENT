@@ -137,6 +137,7 @@ export const UsersResponse = objectType({
 		t.list.field("list", {
 			type: User,
 		});
+		t.string("prevCursor");
 		t.nullable.string("nextCursor");
 		t.nullable.field("totalCount", { type: UsersCount });
 	},
@@ -228,6 +229,7 @@ export const FilteredUsersQuery = extendType({
 				}
 				let result: prismaUser[];
 				let totalCount: { _count: number } | undefined | null;
+				let prevCursor: string | undefined | null;
 				let nextCursor: string | undefined | null;
 				let groupName: { name: string } | undefined | null;
 
@@ -235,6 +237,7 @@ export const FilteredUsersQuery = extendType({
 					result = await prisma.user.findMany(queryArgs(data, where));
 
 					nextCursor = result[result?.length - 1]?.id;
+					prevCursor = result[0]?.id;
 
 					if (!data?.myCursor) {
 						totalCount = await prisma.user.aggregate({
@@ -250,6 +253,7 @@ export const FilteredUsersQuery = extendType({
 
 				return {
 					list: result,
+					prevCursor,
 					nextCursor,
 					totalCount,
 					groupName: groupName?.name,
@@ -293,6 +297,7 @@ export const GroupStudentsQuery = extendType({
 				}
 				let result: prismaUser[];
 				let totalCount: { _count: number } | undefined | null;
+				let prevCursor: string | undefined | null;
 				let nextCursor: string | undefined | null;
 				let groupName: { name: string } | undefined | null;
 
@@ -300,6 +305,7 @@ export const GroupStudentsQuery = extendType({
 					result = await prisma.user.findMany(queryArgs(data, where));
 
 					nextCursor = result[result?.length - 1]?.id;
+					prevCursor = result[0]?.id;
 
 					if (!data?.myCursor) {
 						totalCount = await prisma.user.aggregate({
@@ -328,6 +334,7 @@ export const GroupStudentsQuery = extendType({
 				return {
 					students: {
 						list: result,
+						prevCursor,
 						nextCursor,
 						totalCount,
 					},

@@ -1,11 +1,14 @@
-import { forwardRef, useEffect, useRef } from "react";
+import { ChangeEvent, ChangeEventHandler, forwardRef, useEffect, useRef } from "react";
 
 interface Props {
 	indeterminate?: boolean;
+	change?: boolean;
 	name: string;
+	onChange?: ((e: ChangeEvent) => void) | undefined;
+	checked?: boolean;
 }
 export const IndeterminateCheckbox = forwardRef<HTMLInputElement, Props>(
-	({ indeterminate, ...rest }, ref) => {
+	({ onChange, checked, indeterminate, ...rest }, ref) => {
 		const defaultRef = useRef();
 		const resolvedRef = ref || defaultRef;
 
@@ -17,7 +20,14 @@ export const IndeterminateCheckbox = forwardRef<HTMLInputElement, Props>(
 
 		return (
 			<>
-				<input type="checkbox" ref={resolvedRef} {...rest} />
+				<input
+					type="checkbox"
+					ref={resolvedRef}
+					onChange={onChange}
+					checked={checked}
+					aria-label={`click to ${checked ? "un-" : ""}select row`}
+					{...rest}
+				/>
 			</>
 		);
 	}

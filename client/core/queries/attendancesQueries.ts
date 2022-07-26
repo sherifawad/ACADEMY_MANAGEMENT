@@ -7,6 +7,7 @@ export const GET_PAGINATED_STUDENT_ATTENDANCES = `
                 startAt
                 endAt
             }
+            prevCursor
             nextCursor
             totalCount {
                 _count

@@ -68,6 +68,7 @@ type ExamsCount {
 type ExamsResponse {
   list: [Exam]
   nextCursor: String
+  prevCursor: String
   totalCount: ExamsCount
 }
 
@@ -216,6 +217,7 @@ input UsersFilterInputType {
 type UsersResponse {
   list: [User]
   nextCursor: String
+  prevCursor: String
   totalCount: UsersCount
 }
 

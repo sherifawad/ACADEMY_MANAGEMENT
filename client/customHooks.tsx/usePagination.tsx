@@ -1,15 +1,19 @@
+import { IndeterminateCheckbox } from "components/IndeterminateCheckbox";
 import { createAxiosService, getDayNames } from "core/utils";
 import { format } from "date-fns";
+import Image from "next/image";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { Column, useTable } from "react-table";
+import { Column, Hooks, useRowSelect, useTable } from "react-table";
 
 export interface paginationInputProps {
 	list: any[];
 	hiddenColumns?: string[] | undefined | null;
 	formatDate?: string | null;
 	_count?: number | null;
+	prevCursor?: string | null;
 	nextCursor?: string | null;
 	edit?: Function | null;
+	hasCheckBox?: boolean | null;
 	setItemsState?: Function | null;
 	queryVariables?: {} | null;
 	query?: Function | null;
@@ -22,11 +26,54 @@ export interface goFirstInputProps {
 	take?: number | null;
 }
 
+export const useCheckboxes = (hooks: Hooks, checkedItems) => {
+	return useMemo(() => {
+		return hooks.visibleColumns.push((columns: Column[]) => [
+			{
+				id: "selection",
+				width: "50px",
+				className: "checkbox",
+				Header: ({ getToggleAllRowsSelectedProps }: any) => {
+					return (
+						<div>
+							<IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+						</div>
+					);
+				},
+				Cell: ({
+					row: {
+						getToggleRowSelectedProps,
+						original: { id },
+					},
+				}: any) => {
+					const { onChange, checked, ...restProps } = getToggleRowSelectedProps();
+					const isChecked = checkedItems?.indexOf(id) >= 0 || checked;
+
+					return (
+						<div>
+							<IndeterminateCheckbox
+								indeterminate
+								value={id}
+								checked={isChecked}
+								onChange={(e) => onChange(e)}
+								{...restProps}
+							/>
+						</div>
+					);
+				},
+			},
+			...columns,
+		]);
+	}, [hooks, checkedItems]);
+};
+
 function usePagination({
 	list,
 	_count,
+	prevCursor,
 	nextCursor,
 	edit,
+	hasCheckBox,
 	setItemsState,
 	formatDate = "dd MMM hh:mm a",
 	hiddenColumns,
@@ -37,6 +84,8 @@ function usePagination({
 		desc: "desc",
 		asc: "asc",
 	};
+	const [checkedItems, setCheckedItems] = useState([]);
+	const [checkedAllItems, setCheckedAllItems] = useState([]);
 
 	const [pageSize, setPageSize] = useState(5);
 	const [currentOrder, setCurrentOrder] = useState(ORDER.asc);
@@ -60,6 +109,7 @@ function usePagination({
 
 	const [paginationResult, setPaginationResult] = useState({
 		list,
+		prevCursor,
 		nextCursor,
 	});
 
@@ -85,12 +135,105 @@ function usePagination({
 										? "_"
 										: `${getDayNames(value)} ${format(new Date(value), formatDate)}`,
 							};
+						} else if (key === "name") {
+							return {
+								Header: key,
+								accessor: key,
+								Cell: ({
+									row: {
+										original: { avatar },
+									},
+									value,
+								}) =>
+									value === null ? (
+										""
+									) : (
+										<div className="flex items-center gap-2">
+											{avatar && (
+												<Image
+													className="rounded-full self-center place-self-center"
+													src={`/${avatar}`}
+													alt="student image"
+													width="60"
+													height="60"
+												/>
+											)}
+											{!avatar && (
+												<div className="p-2 rounded-full bg-blue-50 relative flex justify-center self-center place-self-center">
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														className="w-8 h-8 text-gray-200"
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth="2"
+															d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+														/>
+													</svg>
+												</div>
+											)}
+											<p>{value}</p>
+										</div>
+									),
+							};
 						}
 						return { Header: key, accessor: key };
 				  })
 				: [],
 		[list]
 	) as any;
+
+	const handleCheckChange = useCallback(
+		(e) => {
+			const { value, checked } = e.target;
+			// setCheckedItems((prevState) => {
+			// 	return { ...prevState, [value]: checked };
+			// });
+
+			if (checked) {
+				setCheckedItems((prevState) => {
+					if (prevState.indexOf(value) == -1) return [...prevState, value];
+					else {
+						return prevState;
+					}
+				});
+			} else {
+				setCheckedItems((prevState) => prevState.filter((x) => x !== value));
+			}
+		},
+		[setCheckedItems, checkedItems]
+	);
+
+	const handleAllCheckChange = useCallback(
+		(e, rows) => {
+			const { checked } = e.target;
+			let result = [];
+			console.log("🚀 ~ file: usePagination.tsx ~ line 190 ~ checked", checked);
+			if (checked) {
+				rows.map(({ original: { id } }) => result.push(id));
+				setCheckedAllItems(result);
+				setCheckedItems((prevState) => [...prevState, ...result]);
+			} else {
+				result = checkedItems.filter(function (val) {
+					return checkedAllItems.indexOf(val) == -1;
+				});
+				setCheckedAllItems([]);
+			}
+			setCheckedItems(result);
+		},
+		[checkedItems]
+	);
+
+	useEffect(() => {
+		// for (const [key, value] of Object.entries(checkedItems)) {
+		// 	console.log(`${key}: ${value}`);
+		// }
+		console.log(checkedItems);
+	}, [checkedAllItems, checkedItems]);
 
 	const editRowHandler = (row) => {
 		if (row) {
@@ -104,18 +247,16 @@ function usePagination({
 	};
 
 	const tableHooks = (hooks) => {
-		edit
-			? hooks.visibleColumns.push((columns) => [
-					...columns,
-					{
-						id: "Edit",
-						Header: "Edit",
-						Cell: ({ row }) => {
-							return <button onClick={() => editRowHandler(row)}>Edit</button>;
-						},
-					},
-			  ])
-			: undefined;
+		hooks.visibleColumns.push((columns) => [
+			...columns,
+			{
+				id: "Edit",
+				Header: "Edit",
+				Cell: ({ row }) => {
+					return <button onClick={() => editRowHandler(row)}>Edit</button>;
+				},
+			},
+		]);
 	};
 
 	const tableInstance = useTable(
@@ -124,7 +265,9 @@ function usePagination({
 			data,
 			initialState: { hiddenColumns },
 		},
-		tableHooks
+		edit ? tableHooks : undefined,
+		hasCheckBox ? useRowSelect : undefined,
+		hasCheckBox ? (hooks) => useCheckboxes(hooks, checkedItems) : undefined
 	);
 
 	const {
@@ -141,10 +284,11 @@ function usePagination({
 			...paginationOption,
 			data: { ...paginationOption.data, myCursor: null, take: -pageSize, skip: null },
 		};
-		const { list, nextCursor } = await query(options);
+		const { list, prevCursor, nextCursor } = await query(options);
 		if (list && list.length > 0) {
 			setPaginationResult({
 				list,
+				prevCursor,
 				nextCursor,
 			});
 			setPaginationOption({
@@ -165,7 +309,9 @@ function usePagination({
 		currentOrder = null,
 		take = pageSize,
 	}: goFirstInputProps) => {
-		if (!force && isFirstPage) return;
+		if (isFirstPage) {
+			if (!force) return;
+		}
 		let options = {
 			...paginationOption,
 			data: { ...paginationOption.data, take, myCursor: null, skip: null },
@@ -177,10 +323,11 @@ function usePagination({
 			options = { ...options, data: { ...options.data, orderDirection: currentOrder } };
 		}
 
-		const { list, nextCursor } = await query(options);
+		const { list, prevCursor, nextCursor } = await query(options);
 		if (list && list.length > 0) {
 			setPaginationResult({
 				list,
+				prevCursor,
 				nextCursor,
 			});
 			setPaginationOption({
@@ -212,10 +359,11 @@ function usePagination({
 			...paginationOption,
 			data: { ...paginationOption.data, take: pageSize },
 		};
-		const { list, nextCursor } = await query(options);
+		const { list, prevCursor, nextCursor } = await query(options);
 		if (list && list.length > 0) {
 			setPaginationResult({
 				list,
+				prevCursor,
 				nextCursor,
 			});
 			setPaginationOption({
@@ -236,25 +384,51 @@ function usePagination({
 		if (!canGoPrevious) return;
 		let options = {
 			...paginationOption,
-			data: { ...paginationOption.data, myCursor: paginationResult.nextCursor, take: -pageSize },
+			data: {
+				...paginationOption.data,
+				myCursor: paginationResult.prevCursor,
+				take: -pageSize,
+			},
 		};
-		const { list, nextCursor } = await query(options);
-		if (list && list.length > 0) {
-			setPaginationResult({
-				list,
-				nextCursor,
-			});
-			setPaginationOption({
-				...paginationOption,
-				data: { ...paginationOption.data, myCursor: nextCursor },
-			});
-			if (currentPageNumber - 1 === 1) {
-				setCanPrevious(false);
-				setIsFirstPage(true);
+		let resultList;
+		let result = await query(options);
+		resultList = result.list;
+		if (resultList && resultList.length > 0) {
+			if (isLastPage && resultList.length < pageSize) {
+				const newSize = pageSize - resultList.length - pageSize;
+				options = {
+					...options,
+					data: {
+						...options.data,
+						myCursor: paginationResult.nextCursor,
+						take: -pageSize * 2,
+						skip: -pageSize,
+					},
+				};
+				result = await query(options);
+				console.log("🚀 ~ file: usePagination.tsx ~ line 406 ~ gotoPrevious ~ options", options);
+				resultList = result.list;
 			}
-			setCanGoNext(true);
-			setIsLastPage(false);
-			setCurrentPageNumber(currentPageNumber - 1);
+			if (resultList && resultList.length > 0) {
+				const { list, prevCursor, nextCursor } = result;
+				if (isLastPage && list.length < pageSize)
+					setPaginationResult({
+						list,
+						prevCursor,
+						nextCursor,
+					});
+				setPaginationOption({
+					...paginationOption,
+					data: { ...paginationOption.data, myCursor: nextCursor },
+				});
+				if (currentPageNumber - 1 === 1) {
+					setCanPrevious(false);
+					setIsFirstPage(true);
+				}
+				setCanGoNext(true);
+				setIsLastPage(false);
+				setCurrentPageNumber(currentPageNumber - 1);
+			}
 		}
 	};
 
@@ -274,6 +448,8 @@ function usePagination({
 	const headerClickHandler = useCallback(
 		(headerName: string) => {
 			if (headerName.toLowerCase() === "edit") return;
+			if (headerName.toLowerCase() === "selection") return;
+			console.log("sort clicked");
 			setCurrentSortProperty(headerName);
 			setIsAscending(!isAscending);
 			sortColumn(headerName, !isAscending);
@@ -292,11 +468,20 @@ function usePagination({
 									{headerGroups.map((headerGroup) => (
 										<tr
 											{...headerGroup.getHeaderGroupProps()}
-											className="text-md font-semibold tracking-wide text-left text-gray-900 bg-gray-100 uppercase border-b border-gray-600"
+											className="text-md font-semibold tracking-wide text-center text-gray-900 bg-gray-100 uppercase border-b border-gray-600"
 										>
 											{headerGroup.headers.map((column: any) => (
 												<th {...column.getHeaderProps()} className="px-4 py-3">
-													<a href="#" onClick={() => headerClickHandler(column.id)}>
+													<a
+														href="#"
+														onClick={(e) => {
+															if (column.id === "selection") {
+																handleAllCheckChange(e, rows);
+															} else {
+																headerClickHandler(column.id);
+															}
+														}}
+													>
 														{column.render("Header")}
 														{column.id !== "Edit" && (
 															<span>
@@ -319,12 +504,17 @@ function usePagination({
 										prepareRow(row);
 
 										return (
-											<tr {...row.getRowProps()} className="text-gray-700">
+											<tr {...row.getRowProps()} className="text-gray-700 text-center">
 												{row.cells.map((cell) => {
 													return (
 														<td
-															{...cell.getCellProps()}
 															className="px-4 py-3 border"
+															{...cell.getCellProps()}
+															onClick={(e) => {
+																if (cell.column.id === "selection") {
+																	handleCheckChange(e);
+																}
+															}}
 														>
 															{cell.render("Cell")}
 														</td>
@@ -347,7 +537,7 @@ function usePagination({
 										isFirstPage ? "" : "hover:bg-teal-400 hover:text-white"
 									}`}
 									style={{ transition: "all 0.2s ease" }}
-									onClick={() => gotoFirst}
+									onClick={() => gotoFirst({})}
 								>
 									First
 								</a>
@@ -422,6 +612,7 @@ function usePagination({
 
 	return {
 		PaginatedTable,
+		checkedItems,
 		refetch: () => gotoFirst({ force: true }),
 	};
 }
