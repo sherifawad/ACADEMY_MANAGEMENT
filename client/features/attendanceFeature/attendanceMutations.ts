@@ -16,7 +16,7 @@ export const CREATE_ATTENDANCE_MUTATION = `
 export const CREATE_MULTIPLE_ATTENDANCE_MUTATION = `
     mutation CreateMultipleAttendance($startAt: DateTime!, $profileIds: [String!]!, $endAt: DateTime, $note: String) {
         createMultipleAttendance(startAt: $startAt, profileIds: $profileIds, endAt: $endAt, note: $note) {
-            count
+        count
         }
     }
 `;
@@ -30,8 +30,8 @@ export const UPDATE_ATTENDANCE_MUTATION = `
 `;
 
 export const UPDATE_MULTIPLE_ATTENDANCE_MUTATION = `
-    mutation CreateMultipleAttendance($startAtCondition: DateTime!, $profileIds: [String!]!, $note: String, $endAt: DateTime, $startAt: DateTime, $noteCondition: String, $endAtCondition: DateTime) {
-        updateMultipleAttendance(startAtCondition: $startAtCondition, profileIds: $profileIds, note: $note, endAt: $endAt, startAt: $startAt, noteCondition: $noteCondition, endAtCondition: $endAtCondition) {
+    mutation UpdateMultipleAttendance($startAtCondition: DateTime!, $profileIds: [String!]!, $endAtCondition: DateTime, $noteCondition: String, $startAt: DateTime, $endAt: DateTime, $note: String) {
+        updateMultipleAttendance(startAtCondition: $startAtCondition, profileIds: $profileIds, endAtCondition: $endAtCondition, noteCondition: $noteCondition, startAt: $startAt, endAt: $endAt, note: $note) {
             count
         }
     }
@@ -54,7 +54,7 @@ export const createMultipleAttendanceMutation = (variables: attendanceMutationVa
 		"AddMultipleAttendance",
 		() =>
 			createAxiosService(CREATE_MULTIPLE_ATTENDANCE_MUTATION, variables).then(
-				(response) => response.data.data?.updateMultipleAttendance
+				(response) => response.data.data
 			),
 		{
 			onSuccess: () => {
@@ -85,6 +85,9 @@ export const updateMultipleAttendanceMutation = (variables: attendanceMutationVa
 		{
 			onSuccess: () => {
 				console.log("Attendances Updated Successfully");
+			},
+			onError: (error) => {
+				console.log(error);
 			},
 		}
 	);

@@ -54,7 +54,7 @@ const Navbar = () => {
 					menuOpen ? "flex flex-col " : "hidden"
 				} md:flex md:flex-row md:items-center md:justify-center md:row-start-1 md:col-start-2 md:col-end-3  col-start-1 col-span-3 row-start-2 items-start justify-center content-center space-x-8`}
 			>
-				<Link href="/">
+				<Link href="#">
 					<a className="md:mx-0 mx-8 menu-line">Home</a>
 				</Link>
 

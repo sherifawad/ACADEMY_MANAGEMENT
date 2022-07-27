@@ -242,13 +242,6 @@ function usePagination({
 		[checkedItems]
 	);
 
-	useEffect(() => {
-		// for (const [key, value] of Object.entries(checkedItems)) {
-		// 	console.log(`${key}: ${value}`);
-		// }
-		console.log(checkedItems);
-	}, [checkedAllItems, checkedItems]);
-
 	const editRowHandler = (row) => {
 		if (row) {
 			if (setItemsState) {
@@ -281,7 +274,7 @@ function usePagination({
 			initialState: { hiddenColumns },
 			autoResetSelectedRows: false,
 			getRowId,
-		},
+		} as any,
 		...tableHooks
 	);
 
@@ -482,8 +475,12 @@ function usePagination({
 											{...headerGroup.getHeaderGroupProps()}
 											className="text-md font-semibold tracking-wide text-center text-gray-900 bg-gray-100 uppercase border-b border-gray-600"
 										>
-											{headerGroup.headers.map((column: any) => (
-												<th {...column.getHeaderProps()} className="px-4 py-3">
+											{headerGroup.headers.map((column: any, idex) => (
+												<th
+													key={idex}
+													{...column.getHeaderProps()}
+													className="px-4 py-3"
+												>
 													<a
 														href="#"
 														onClick={(e) => {
@@ -517,9 +514,10 @@ function usePagination({
 
 										return (
 											<tr {...row.getRowProps()} className="text-gray-700 text-center">
-												{row.cells.map((cell) => {
+												{row.cells.map((cell, idx) => {
 													return (
 														<td
+															key={idx}
 															className="px-4 py-3 border"
 															{...cell.getCellProps()}
 															onClick={(e) => {

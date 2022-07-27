@@ -72,8 +72,8 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 				<AddAttendance
 					onProceed={onProceed}
 					onClose={modelProps.onClose}
-					profileIds={flatRows}
-                    edit={modelProps.editButtonClicked}
+					profileIds={checkedItems}
+					edit={modelProps.editButtonClicked}
 					initialAttendance={{
 						profileId: "",
 						id: itemData?.id,

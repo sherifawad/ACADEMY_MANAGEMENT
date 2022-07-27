@@ -26,6 +26,7 @@ function AttendancesCard({ id = "", attendances = [] }) {
 							<AddAttendance
 								onProceed={onProceed}
 								onClose={modelProps.onClose}
+								edit={modelProps.editButtonClicked}
 								initialAttendance={{
 									profileId: id,
 									id: itemData?.id,

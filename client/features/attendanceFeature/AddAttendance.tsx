@@ -10,14 +10,13 @@ import {
 import { initialProperties } from "./attendancesTypes";
 
 function AddAttendance({ onProceed, onClose, initialAttendance, profileIds, edit }: initialProperties) {
-	console.log("🚀 ~ file: AddAttendance.tsx ~ line 13 ~ AddAttendance ~ edit", edit);
 	const mainRef = useRef();
 
 	const { profileId, startAt, endAt, note, id } = initialAttendance;
 
 	const [startAtCondition, setStartAtCondition] = useState(null);
 	const [endAtCondition, setEndAtCondition] = useState(null);
-	const [noteCondition, setNoteCondition] = useState(null);
+	const [noteCondition, setNoteCondition] = useState("");
 
 	const [attendanceState, setAttendanceState] = useState({
 		id,
@@ -36,66 +35,53 @@ function AddAttendance({ onProceed, onClose, initialAttendance, profileIds, edit
 		});
 	}, [startAt, endAt, note]);
 
-	const createMutation = useCallback(
-		() =>
-			createAttendanceMutation({
-				profileId,
-				startAt: attendanceState.startAt,
-				endAt: endAt || attendanceState.endAt,
-				note: note || attendanceState.note,
-			}),
-		[profileId]
-	);
+	const createMutation = createAttendanceMutation({
+		profileId,
+		startAt: attendanceState.startAt,
+		endAt: attendanceState.endAt,
+		note: attendanceState.note?.length > 0 ? attendanceState.note : null,
+	});
 
-	const createMultipleMutation = useCallback(
-		() =>
-			createMultipleAttendanceMutation({
-				profileIds,
-				startAt: attendanceState.startAt,
-				endAt: endAt || attendanceState.endAt,
-				note: note || attendanceState.note,
-			}),
-		[edit, profileIds]
-	);
+	const createMultipleMutation = createMultipleAttendanceMutation({
+		profileIds,
+		startAt: attendanceState.startAt,
+		endAt: attendanceState.endAt,
+		note: attendanceState.note?.length > 0 ? attendanceState.note : null,
+	});
 
-	const updateMutation = useCallback(
-		() =>
-			updateAttendanceMutation({
-				startAtCondition,
-				endAtCondition,
-				noteCondition,
-				updateAttendanceId: attendanceState.id,
-				startAt: attendanceState.startAt,
-				endAt: attendanceState.endAt,
-				note: attendanceState.note,
-			}),
-		[id]
-	);
+	const updateMutation = updateAttendanceMutation({
+		updateAttendanceId: attendanceState.id,
+		startAt: attendanceState.startAt,
+		endAt: attendanceState.endAt,
+		note: attendanceState.note,
+	});
 
-	const updateMultipleMutation = useCallback(
-		() =>
-			updateMultipleAttendanceMutation({
-				updateAttendanceId: attendanceState.id,
-				startAt: attendanceState.startAt,
-				endAt: attendanceState.endAt,
-				note: attendanceState.note,
-			}),
-		[edit, profileIds]
-	);
+	const updateMultipleMutation = updateMultipleAttendanceMutation({
+		profileIds,
+		startAtCondition,
+		endAtCondition,
+		noteCondition: noteCondition.length > 0 ? noteCondition : null,
+		startAt: attendanceState.startAt || startAtCondition,
+		endAt: attendanceState.endAt,
+		note: attendanceState.note,
+	});
 
 	const submitContact = async (e) => {
-		e.preventDefault();
-		if (createMutation().isLoading) return;
-		if (updateMutation().isLoading) return;
-		if (createMultipleMutation().isLoading) return;
-		if (updateMultipleMutation().isLoading) return;
-		if (profileIds && profileIds.length > 0) {
-			edit
-				? await updateMultipleMutation().mutateAsync()
-				: await createMultipleMutation().mutateAsync();
-			return;
-		}
-		id ? await updateMutation().mutateAsync() : await createMutation().mutateAsync();
+		try {
+			e.preventDefault();
+
+			if (createMutation.isLoading) return;
+			if (updateMutation.isLoading) return;
+			if (createMultipleMutation.isLoading) return;
+			if (updateMultipleMutation.isLoading) return;
+			if (profileIds && profileIds.length > 0) {
+				edit
+					? await updateMultipleMutation.mutateAsync()
+					: await createMultipleMutation.mutateAsync();
+				return;
+			}
+			id ? await updateMutation.mutateAsync() : await createMutation.mutateAsync();
+		} catch (error) {}
 	};
 
 	const proceedAndClose = async (e) => {

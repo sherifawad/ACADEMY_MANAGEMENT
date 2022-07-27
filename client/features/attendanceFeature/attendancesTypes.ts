@@ -10,8 +10,8 @@ export interface initialProperties {
 	onProceed: Function;
 	onClose: Function;
 	initialAttendance: attendance;
-	profileIds?: string[];
-	edit?: boolean | null; // Boolean
+	profileIds?: string[] | null;
+	edit: boolean; // Boolean
 }
 
 export interface attendanceMutationVariables {
