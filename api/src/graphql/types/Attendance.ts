@@ -356,10 +356,6 @@ export const createMultipleAttendanceMutation = extendType({
 						createdBy: user.id,
 					})
 				);
-				console.log(
-					"🚀 ~ file: Attendance.ts ~ line 350 ~ resolve: ~ newAttendances",
-					newAttendances
-				);
 
 				return await prisma.attendance.createMany({
 					data: newAttendances,

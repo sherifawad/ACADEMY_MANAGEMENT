@@ -1,4 +1,3 @@
-import { gql, useMutation } from "@apollo/client";
 import Link from "next/link";
 import React, { useState } from "react";
 import { BiLock } from "react-icons/bi";
@@ -6,21 +5,6 @@ import { FaRegUser } from "react-icons/fa";
 import { getCsrfToken, getSession, signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Paths from "core/paths";
-const LOGIN_MUTATION = gql`
-	mutation Mutation($email: String!, $password: String!) {
-		userLogin(email: $email, password: $password) {
-			token
-			user {
-				id
-				name
-				avatar
-				email
-				role
-				createdAt
-			}
-		}
-	}
-`;
 
 function Login({ setLogin }) {
 	const router = useRouter();

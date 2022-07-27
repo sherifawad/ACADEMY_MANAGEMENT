@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import Image from "next/image";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Column, Hooks, useRowSelect, useTable } from "react-table";
+import usePrevious from "./usePrevious";
 
 export interface paginationInputProps {
 	list: any[];
