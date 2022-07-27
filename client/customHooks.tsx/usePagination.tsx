@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import Image from "next/image";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Column, Hooks, useRowSelect, useTable } from "react-table";
+import { inputHooks, useCheckboxes, useEditHooks, useInputHooks } from "./reactTableHooks";
 import usePrevious from "./usePrevious";
 
 export interface paginationInputProps {
@@ -18,6 +19,7 @@ export interface paginationInputProps {
 	setItemsState?: Function | null;
 	queryVariables?: {} | null;
 	query?: Function | null;
+	inputColumn?: inputHooks | null;
 }
 
 export interface goFirstInputProps {
@@ -27,60 +29,6 @@ export interface goFirstInputProps {
 	take?: number | null;
 }
 
-export const useCheckboxes = (hooks: Hooks, checkedItems) => {
-	return useMemo(() => {
-		return hooks.visibleColumns.push((columns: Column[]) => [
-			{
-				id: "selection",
-				width: "50px",
-				className: "checkbox",
-				Header: ({ getToggleAllRowsSelectedProps }: any) => {
-					return (
-						<div>
-							<IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
-						</div>
-					);
-				},
-				Cell: ({
-					row: {
-						getToggleRowSelectedProps,
-						original: { id },
-					},
-				}: any) => {
-					const { onChange, checked, ...restProps } = getToggleRowSelectedProps();
-					const isChecked = checkedItems?.indexOf(id) >= 0 || checked;
-
-					return (
-						<div>
-							<IndeterminateCheckbox
-								indeterminate
-								value={id}
-								checked={isChecked}
-								onChange={(e) => onChange(e)}
-								{...restProps}
-							/>
-						</div>
-					);
-				},
-			},
-			...columns,
-		]);
-	}, [hooks, checkedItems]);
-};
-
-export const useEditHooks = (hooks: any, edit: Function) => {
-	hooks.visibleColumns.push((columns) => [
-		...columns,
-		{
-			id: "Edit",
-			Header: "Edit",
-			Cell: ({ row }) => {
-				return <button onClick={() => edit(row)}>Edit</button>;
-			},
-		},
-	]);
-};
-
 function usePagination({
 	list,
 	_count,
@@ -88,6 +36,7 @@ function usePagination({
 	nextCursor,
 	edit,
 	hasCheckBox,
+	inputColumn,
 	setItemsState,
 	formatDate = "dd MMM hh:mm a",
 	hiddenColumns,
@@ -100,6 +49,7 @@ function usePagination({
 	};
 
 	const [checkedItems, setCheckedItems] = useState([]);
+	const [inputsData, setInputData] = useState({});
 	const [checkedAllItems, setCheckedAllItems] = useState([]);
 
 	const [pageSize, setPageSize] = useState(5);
@@ -260,6 +210,11 @@ function usePagination({
 		tableHooks.push(useRowSelect);
 		tableHooks.push((hooks: any) => useCheckboxes(hooks, checkedItems));
 	}
+	if (inputColumn) {
+		tableHooks.push((hooks: any) =>
+			useInputHooks(hooks, inputColumn.columId, inputColumn.headerName, setInputData)
+		);
+	}
 	if (edit) {
 		tableHooks.push((hooks: any) => useEditHooks(hooks, editRowHandler));
 	}
@@ -286,6 +241,14 @@ function usePagination({
 		prepareRow,
 		rows, // Instead of using 'rows', we'll use page,
 	} = tableInstance;
+
+	// useEffect(() => {
+	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", checkedItems);
+	// }, [checkedItems]);
+
+	useEffect(() => {
+		console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", inputsData);
+	}, [inputsData]);
 
 	const gotoLast = async () => {
 		if (isLastPage) return;

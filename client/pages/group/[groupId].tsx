@@ -45,9 +45,10 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 		nextCursor,
 		hasCheckBox: true,
 		_count,
+		inputColumn: { columId: "examScore", headerName: "ExamScore" },
 		edit: rowEditHandler,
 		queryVariables: { groupId },
-		hiddenColumns: ["id", "avatar"],
+		hiddenColumns: ["id", "avatar", "isActive"],
 		query: initialData,
 	});
 
