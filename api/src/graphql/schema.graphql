@@ -21,6 +21,10 @@ type AttendanceResponse {
   totalCount: AttendancesCount
 }
 
+type AttendancesCUResponse {
+  count: Int
+}
+
 type AttendancesCount {
   _count: Int
 }
@@ -105,6 +109,7 @@ type Mutation {
   createExam(date: DateTime!, note: String, profileId: String!, score: Float!): Exam!
   createGrade(isActive: Boolean!, name: String!): Grade!
   createGroup(endAt: DateTime, gradeId: String, isActive: Boolean, name: String!, startAt: DateTime): Group!
+  createMultipleAttendance(endAt: DateTime, note: String, profileIds: [String!]!, startAt: DateTime!): AttendancesCUResponse
   createProfile(bio: String, id: String!): Profile!
   deleteAttendance(id: String!): Attendance!
   deleteContact(id: String!): Contact!
@@ -120,6 +125,7 @@ type Mutation {
   updateExam(date: DateTime, id: String!, note: String, score: String): Exam!
   updateGrade(id: String!, isActive: Boolean!, name: String!): Grade!
   updateGroup(endAt: DateTime, gradeId: String, id: String!, isActive: Boolean, name: String, startAt: DateTime): Group!
+  updateMultipleAttendance(endAt: DateTime, note: String, profileIds: [String!]!, startAt: DateTime, startAtCondition: DateTime): AttendancesCUResponse!
   updateProfile(bio: String, id: String!): Profile!
   updateUser(avatar: String, email: String, id: String!, name: String, password: String): User!
   userLogin(email: String!, password: String!): AuthPayload!

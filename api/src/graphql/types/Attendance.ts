@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core } from "nexus";
+import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core, list } from "nexus";
 // @ts-ignore
 import { prismaOffsetPagination } from "prisma-offset-pagination";
 import { PaginationInputType, queryArgs } from "./User";
@@ -18,7 +18,7 @@ export interface prismaCursorPagination {
 
 export interface attendance {
 	id: string;
-	note?: string; // Skip the cursor
+	note?: string | null; // Skip the cursor
 	profileId: string; // Skip the cursor
 	createdBy?: string; // Skip the cursor
 	updatedBy?: string; // Skip the cursor
@@ -120,6 +120,13 @@ export const AttendancesCount = objectType({
 	},
 });
 
+export const AttendancesCUResponse = objectType({
+	name: "AttendancesCUResponse",
+	definition(t) {
+		t.int("count");
+	},
+});
+
 export const AttendanceResponse = objectType({
 	name: "AttendanceResponse",
 	definition(t) {
@@ -217,12 +224,12 @@ export const AttendanceByUserIdQuery = extendType({
 				let result: attendance[];
 				let totalCount: { _count: number } | undefined | null;
 				let nextCursor: string | undefined | null;
-                let prevCursor: string | undefined | null;
+				let prevCursor: string | undefined | null;
 				if (data) {
 					result = await prisma.attendance.findMany(queryArgs(data, where));
 
 					nextCursor = result[result?.length - 1]?.id;
-                    prevCursor = result[0]?.id;
+					prevCursor = result[0]?.id;
 
 					if (!data?.myCursor) {
 						totalCount = await prisma.attendance.aggregate({
@@ -238,7 +245,7 @@ export const AttendanceByUserIdQuery = extendType({
 
 				return {
 					list: result,
-                    prevCursor,
+					prevCursor,
 					nextCursor,
 					totalCount,
 				};
@@ -325,6 +332,40 @@ export const createAttendanceMutation = extendType({
 	},
 });
 
+//create Multiple Attendance
+export const createMultipleAttendanceMutation = extendType({
+	type: "Mutation",
+	definition(t) {
+		t.field("createMultipleAttendance", {
+			type: "AttendancesCUResponse",
+			args: {
+				startAt: nonNull(arg({ type: "DateTime" })),
+				endAt: nullable(arg({ type: "DateTime" })),
+				note: nullable(stringArg()),
+				profileIds: nonNull(list(nonNull(stringArg()))),
+			},
+			resolve: async (_parent, { startAt, endAt, note, profileIds }, { prisma, user }) => {
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+				const newAttendances: Omit<attendance, "id">[] = [];
+				profileIds.forEach((id) =>
+					newAttendances.push({
+						startAt,
+						endAt,
+						note,
+						profileId: id,
+						createdBy: user.id,
+					})
+				);
+
+				return await prisma.attendance.createMany({
+					data: newAttendances,
+					skipDuplicates: true,
+				});
+			},
+		});
+	},
+});
+
 // update Attendance
 export const UpdateAttendanceMutation = extendType({
 	type: "Mutation",
@@ -351,6 +392,50 @@ export const UpdateAttendanceMutation = extendType({
 				return await prisma.attendance.update({
 					where: { id },
 					data: { ...updateAttendance },
+				});
+			},
+		});
+	},
+});
+
+// update Multiple Attendance
+export const UpdateMultipleAttendanceMutation = extendType({
+	type: "Mutation",
+	definition(t) {
+		t.nonNull.field("updateMultipleAttendance", {
+			type: "AttendancesCUResponse",
+			args: {
+				startAtCondition: arg({ type: "DateTime" }),
+				startAt: arg({ type: "DateTime" }),
+				endAt: arg({ type: "DateTime" }),
+				note: stringArg(),
+				profileIds: nonNull(list(nonNull(stringArg()))),
+			},
+			resolve: async (
+				_parent,
+				{ startAtCondition, startAt, endAt, note, profileIds },
+				{ prisma, user }
+			) => {
+				if (!user || user.role !== Role.ADMIN) return null;
+
+				const prepareProfileIds: { profileId: string }[] = [];
+				profileIds.forEach((id: string) => prepareProfileIds.push({ profileId: id }));
+
+				const updateAttendance = {
+					startAt,
+					endAt,
+					note,
+					updatedBy: user.id,
+				};
+				const where = {
+					AND: {
+						startAt: startAtCondition,
+					},
+					OR: prepareProfileIds,
+				};
+				return await prisma.attendance.updateMany({
+					where,
+					data: updateAttendance,
 				});
 			},
 		});
