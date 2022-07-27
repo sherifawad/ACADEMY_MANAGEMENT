@@ -1,4 +1,3 @@
-import { CREATE_ATTENDANCE_MUTATION, UPDATE_ATTENDANCE_MUTATION } from "core/mutations/attendanceMutations";
 import { CREATE_EXAM_MUTATION } from "core/mutations/examMutations";
 import { createAxiosService } from "core/utils";
 import { format } from "date-fns";
@@ -6,6 +5,12 @@ import { arEG } from "date-fns/locale";
 import { useEffect, useRef, useState } from "react";
 import { DatePicker, DateTimePicker, TimePicker } from "react-next-dates";
 import { useMutation } from "react-query";
+import {
+	createAttendanceMutation,
+	CREATE_ATTENDANCE_MUTATION,
+	updateAttendanceMutation,
+	UPDATE_ATTENDANCE_MUTATION,
+} from "./attendanceMutations";
 
 export interface attendance {
 	id: string | null;
@@ -47,37 +52,19 @@ function AddAttendance({ onProceed, onClose, initialAttendance }: initialPropert
 		});
 	}, [startAt, endAt, note]);
 
-	const createMutation = useMutation(
-		"AddAttendance",
-		() =>
-			createAxiosService(CREATE_ATTENDANCE_MUTATION, {
-				profileId,
-				startAt: attendanceState.startAt,
-				endAt: endAt || attendanceState.endAt,
-				note: note || attendanceState.note,
-			}).then((response) => response.data.data),
-		{
-			onSuccess: () => {
-				console.log("Attendance Created Successfully");
-			},
-		}
-	);
+	const createMutation = createAttendanceMutation({
+		profileId,
+		startAt: attendanceState.startAt,
+		endAt: endAt || attendanceState.endAt,
+		note: note || attendanceState.note,
+	});
 
-	const updateMutation = useMutation(
-		"UpdateAttendance",
-		() =>
-			createAxiosService(UPDATE_ATTENDANCE_MUTATION, {
-				updateAttendanceId: attendanceState.id,
-				startAt: attendanceState.startAt,
-				endAt: attendanceState.endAt,
-				note: attendanceState.note,
-			}).then((response) => response.data.data),
-		{
-			onSuccess: () => {
-				console.log("Attendance Updated Successfully");
-			},
-		}
-	);
+	const updateMutation = updateAttendanceMutation({
+		updateAttendanceId: attendanceState.id,
+		startAt: attendanceState.startAt,
+		endAt: attendanceState.endAt,
+		note: attendanceState.note,
+	});
 
 	const submitContact = async (e) => {
 		e.preventDefault();

@@ -1,5 +1,5 @@
-import AddAttendance from "components/AddAttendance";
-import { GET_PAGINATED_STUDENT_ATTENDANCES } from "core/queries/attendancesQueries";
+import AddAttendance from "features/attendanceFeature/AddAttendance";
+import { GET_PAGINATED_STUDENT_ATTENDANCES } from "features/attendanceFeature/attendancesQueries";
 import { GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService } from "core/utils";
 import useModel from "customHooks.tsx/useModel";

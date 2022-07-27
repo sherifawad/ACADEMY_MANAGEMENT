@@ -1,3 +1,6 @@
+import { createAxiosService } from "core/utils";
+import { useMutation } from "react-query";
+
 export const CREATE_ATTENDANCE_MUTATION = `
     mutation Mutation($startAt: DateTime!, $profileId: String!, $note: String, $endAt: DateTime) {
         createAttendance(startAt: $startAt, profileId: $profileId, note: $note, endAt: $endAt) {
@@ -32,3 +35,27 @@ export const UPDATE_MULTIPLE_ATTENDANCE_MUTATION = `
         }
     }
 `;
+
+export const createAttendanceMutation = (variables: { [x: string]: any }) =>
+	useMutation(
+		"AddAttendance",
+		() =>
+			createAxiosService(CREATE_ATTENDANCE_MUTATION, variables).then((response) => response.data.data),
+		{
+			onSuccess: () => {
+				console.log("Attendance Created Successfully");
+			},
+		}
+	);
+
+export const updateAttendanceMutation = (variables: { [x: string]: any }) =>
+	useMutation(
+		"UpdateAttendance",
+		() =>
+			createAxiosService(UPDATE_ATTENDANCE_MUTATION, variables).then((response) => response.data.data),
+		{
+			onSuccess: () => {
+				console.log("Attendance Updated Successfully");
+			},
+		}
+	);

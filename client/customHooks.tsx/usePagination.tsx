@@ -262,10 +262,12 @@ function usePagination({
 
 	// Setup table hooks
 	const tableHooks = [];
-	if (hasCheckBox) tableHooks.push(useRowSelect);
+	if (hasCheckBox) {
+		tableHooks.push(useRowSelect);
+		tableHooks.push((hooks: any) => useCheckboxes(hooks, checkedItems));
+	}
 	if (edit) {
 		tableHooks.push((hooks: any) => useEditHooks(hooks, editRowHandler));
-		tableHooks.push((hooks: any) => useCheckboxes(hooks, checkedItems));
 	}
 
 	const getRowId = useCallback((row) => {
