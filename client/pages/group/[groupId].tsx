@@ -3,7 +3,9 @@ import UsersList from "components/UsersList";
 import { GROUPS_IDS_QUERY, GROUP_NAME_QUERY } from "core/queries/groupQueries";
 import { GROUP_STUDENTS } from "core/queries/studentQueries";
 import { createAxiosService } from "core/utils";
+import useModel from "customHooks.tsx/useModel";
 import usePagination from "customHooks.tsx/usePagination";
+import AddAttendance from "features/attendanceFeature/AddAttendance";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -14,7 +16,6 @@ const initialData = async (variable: {}) => {
 			data: { studentsGroup },
 		},
 	} = await createAxiosService(GROUP_STUDENTS, variable);
-	let result = {};
 	if (studentsGroup) {
 		const {
 			students: { list, nextCursor, prevCursor, totalCount },
@@ -50,6 +51,12 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 		query: initialData,
 	});
 
+	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel(true);
+	const onProceed = () => {
+		router.replace(router.asPath);
+		console.log("Proceed clicked");
+	};
+
 	useEffect(() => {
 		setFlatRows([checkedItems]);
 	}, [checkedItems]);
@@ -61,6 +68,21 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 				<meta name="description" content="Group students" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
+			<Model title="Attendance">
+				<AddAttendance
+					onProceed={onProceed}
+					onClose={modelProps.onClose}
+					profileIds={flatRows}
+                    edit={modelProps.editButtonClicked}
+					initialAttendance={{
+						profileId: "",
+						id: itemData?.id,
+						startAt: itemData?.startAt,
+						endAt: itemData?.endAt,
+						note: itemData?.note,
+					}}
+				/>
+			</Model>
 			<PaginatedTable />
 			<div className="grid grid-row-[auto_1fr] gap-8">
 				{/* <UsersList users={students} /> */}

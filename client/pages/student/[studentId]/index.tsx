@@ -2,10 +2,15 @@ import CardContainer from "components/layout/CardContainer";
 import { GET_STUDENT_DETAILS, GET_USERS, GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService, getDayNames } from "core/utils";
 import { format } from "date-fns";
+import AttendancesCard from "features/attendanceFeature/AttendancesCard";
 import Image from "next/image";
 import Link from "next/link";
 
 function Student({ user }) {
+	const {
+		id,
+		profile: { attendances },
+	} = user || {};
 	return (
 		<div className="container w-full">
 			<div className="flex flex-col md:flex-row gap-4">
@@ -46,49 +51,7 @@ function Student({ user }) {
 					</div>
 				</CardContainer>
 				<div className="flex flex-col justify-between  flex-wrap md:w-3/5 gap-4">
-					<CardContainer>
-						<div>
-							<Link href={`/student/${user.id}/attendance`}>
-								<a>
-									<h3 className="font-bold underline-offset-4 underline">Attendance</h3>
-								</a>
-							</Link>
-							<div className="divide-y">
-								{user?.profile?.attendances?.map((attendance) => (
-									<div key={attendance.id} className="py-4 flex  flex-wrap gap-2">
-										<div className="grid grid-cols-[auto_1fr] gap-2 place-items-center">
-											<div
-												className={`w-3 h-3 ${
-													attendance?.endAt ? "bg-green-600" : "bg-red-600"
-												} rounded-full`}
-											></div>
-
-											<div className="">{getDayNames(attendance.startAt)}</div>
-										</div>
-										<div className="">
-											{new Date(attendance.startAt).toLocaleDateString("en-US")}
-										</div>
-										{attendance.endAt && (
-											<div className="">
-												{new Date(attendance.startAt).toLocaleTimeString("en-US", {
-													hour: "2-digit",
-													minute: "2-digit",
-												})}
-											</div>
-										)}
-										{attendance.endAt && (
-											<div className="">
-												{new Date(attendance.endAt).toLocaleTimeString("en-US", {
-													hour: "2-digit",
-													minute: "2-digit",
-												})}
-											</div>
-										)}
-									</div>
-								))}
-							</div>
-						</div>
-					</CardContainer>
+					<AttendancesCard attendances={attendances} id={id} />
 					<CardContainer>
 						<div>
 							<Link href={`/student/${user.id}/exam`}>

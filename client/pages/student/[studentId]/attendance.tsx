@@ -1,25 +1,9 @@
 import AddAttendance from "features/attendanceFeature/AddAttendance";
-import { GET_PAGINATED_STUDENT_ATTENDANCES } from "features/attendanceFeature/attendancesQueries";
+import { studentAttendancesQuery } from "features/attendanceFeature/attendancesQueries";
 import { GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService } from "core/utils";
 import useModel from "customHooks.tsx/useModel";
 import usePagination from "customHooks.tsx/usePagination";
-
-const initialData = async (variable: {}) => {
-	const {
-		data: {
-			data: {
-				studentAttendances: { list, nextCursor, prevCursor, totalCount },
-			},
-		},
-	} = await createAxiosService(GET_PAGINATED_STUDENT_ATTENDANCES, variable);
-	if (totalCount) {
-		const { _count } = totalCount;
-		return { list, nextCursor, prevCursor, _count };
-	} else {
-		return { list, prevCursor, nextCursor };
-	}
-};
 
 function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
@@ -38,7 +22,7 @@ function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 		setItemsState: setItemData,
 		queryVariables: { studentId: profileId },
 		hiddenColumns: ["id", "note"],
-		query: initialData,
+		query: studentAttendancesQuery,
 	});
 
 	const onProceed = async () => {
@@ -99,7 +83,7 @@ export async function getStaticProps({ params }) {
 				take: 5,
 			},
 		};
-		const { list, nextCursor, prevCursor, _count } = await initialData(variables);
+		const { list, nextCursor, prevCursor, _count } = await studentAttendancesQuery(variables);
 
 		return {
 			props: {

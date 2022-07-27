@@ -1,5 +1,6 @@
 import { createAxiosService } from "core/utils";
 import { useMutation } from "react-query";
+import { attendanceMutationVariables } from "./attendancesTypes";
 
 export const CREATE_ATTENDANCE_MUTATION = `
     mutation Mutation($startAt: DateTime!, $profileId: String!, $note: String, $endAt: DateTime) {
@@ -36,7 +37,7 @@ export const UPDATE_MULTIPLE_ATTENDANCE_MUTATION = `
     }
 `;
 
-export const createAttendanceMutation = (variables: { [x: string]: any }) =>
+export const createAttendanceMutation = (variables: attendanceMutationVariables) =>
 	useMutation(
 		"AddAttendance",
 		() =>
@@ -48,7 +49,21 @@ export const createAttendanceMutation = (variables: { [x: string]: any }) =>
 		}
 	);
 
-export const updateAttendanceMutation = (variables: { [x: string]: any }) =>
+export const createMultipleAttendanceMutation = (variables: attendanceMutationVariables) =>
+	useMutation(
+		"AddMultipleAttendance",
+		() =>
+			createAxiosService(CREATE_MULTIPLE_ATTENDANCE_MUTATION, variables).then(
+				(response) => response.data.data?.updateMultipleAttendance
+			),
+		{
+			onSuccess: () => {
+				console.log("Attendances Created Successfully");
+			},
+		}
+	);
+
+export const updateAttendanceMutation = (variables: attendanceMutationVariables) =>
 	useMutation(
 		"UpdateAttendance",
 		() =>
@@ -56,6 +71,20 @@ export const updateAttendanceMutation = (variables: { [x: string]: any }) =>
 		{
 			onSuccess: () => {
 				console.log("Attendance Updated Successfully");
+			},
+		}
+	);
+
+export const updateMultipleAttendanceMutation = (variables: attendanceMutationVariables) =>
+	useMutation(
+		"UpdateMultipleAttendance",
+		() =>
+			createAxiosService(UPDATE_MULTIPLE_ATTENDANCE_MUTATION, variables).then(
+				(response) => response.data.data
+			),
+		{
+			onSuccess: () => {
+				console.log("Attendances Updated Successfully");
 			},
 		}
 	);
