@@ -428,7 +428,7 @@ export const UpdateMultipleAttendanceMutation = extendType({
 					ANDConditions.push({ endAt: endAtCondition });
 				}
 				if (noteCondition) {
-					ANDConditions.push({ note: noteCondition });
+					ANDConditions.push({ note: { contains: noteCondition } });
 				}
 				const ORConditions: { profileId: string }[] = [];
 				profileIds.forEach((id: string) => ORConditions.push({ profileId: id }));

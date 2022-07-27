@@ -22,7 +22,7 @@ function AttendancesCard({ id = "", attendances = [] }) {
 								<h3 className="font-bold underline-offset-4 underline">Attendance</h3>
 							</a>
 						</Link>
-						<Model title="Add Attendance">
+						<Model title="Attendance">
 							<AddAttendance
 								onProceed={onProceed}
 								onClose={modelProps.onClose}

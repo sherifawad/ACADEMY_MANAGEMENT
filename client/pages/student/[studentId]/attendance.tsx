@@ -32,7 +32,7 @@ function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 
 	return (
 		<div className="container grid">
-			<Model title="Add Attendance">
+			<Model title="Attendance">
 				<AddAttendance
 					onProceed={onProceed}
 					onClose={modelProps.onClose}
