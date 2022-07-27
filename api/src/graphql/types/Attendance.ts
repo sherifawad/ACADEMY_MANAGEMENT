@@ -405,7 +405,9 @@ export const UpdateMultipleAttendanceMutation = extendType({
 		t.nonNull.field("updateMultipleAttendance", {
 			type: "AttendancesCUResponse",
 			args: {
-				startAtCondition: arg({ type: "DateTime" }),
+				startAtCondition: nonNull(arg({ type: "DateTime" })),
+				endAtCondition: arg({ type: "DateTime" }),
+				noteCondition: stringArg(),
 				startAt: arg({ type: "DateTime" }),
 				endAt: arg({ type: "DateTime" }),
 				note: stringArg(),
@@ -413,13 +415,23 @@ export const UpdateMultipleAttendanceMutation = extendType({
 			},
 			resolve: async (
 				_parent,
-				{ startAtCondition, startAt, endAt, note, profileIds },
+				{ startAtCondition, endAtCondition, noteCondition, startAt, endAt, note, profileIds },
 				{ prisma, user }
 			) => {
 				if (!user || user.role !== Role.ADMIN) return null;
 
-				const prepareProfileIds: { profileId: string }[] = [];
-				profileIds.forEach((id: string) => prepareProfileIds.push({ profileId: id }));
+				const ANDConditions = [];
+				if (startAtCondition) {
+					ANDConditions.push({ startAt: startAtCondition });
+				}
+				if (endAtCondition) {
+					ANDConditions.push({ endAt: endAtCondition });
+				}
+				if (noteCondition) {
+					ANDConditions.push({ note: noteCondition });
+				}
+				const ORConditions: { profileId: string }[] = [];
+				profileIds.forEach((id: string) => ORConditions.push({ profileId: id }));
 
 				const updateAttendance = {
 					startAt,
@@ -428,10 +440,8 @@ export const UpdateMultipleAttendanceMutation = extendType({
 					updatedBy: user.id,
 				};
 				const where = {
-					AND: {
-						startAt: startAtCondition,
-					},
-					OR: prepareProfileIds,
+					AND: ANDConditions,
+					OR: ORConditions,
 				};
 				return await prisma.attendance.updateMany({
 					where,

@@ -125,7 +125,7 @@ type Mutation {
   updateExam(date: DateTime, id: String!, note: String, score: String): Exam!
   updateGrade(id: String!, isActive: Boolean!, name: String!): Grade!
   updateGroup(endAt: DateTime, gradeId: String, id: String!, isActive: Boolean, name: String, startAt: DateTime): Group!
-  updateMultipleAttendance(endAt: DateTime, note: String, profileIds: [String!]!, startAt: DateTime, startAtCondition: DateTime): AttendancesCUResponse!
+  updateMultipleAttendance(endAt: DateTime, endAtCondition: DateTime, note: String, noteCondition: String, profileIds: [String!]!, startAt: DateTime, startAtCondition: DateTime!): AttendancesCUResponse!
   updateProfile(bio: String, id: String!): Profile!
   updateUser(avatar: String, email: String, id: String!, name: String, password: String): User!
   userLogin(email: String!, password: String!): AuthPayload!
