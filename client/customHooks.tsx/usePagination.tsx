@@ -67,6 +67,19 @@ export const useCheckboxes = (hooks: Hooks, checkedItems) => {
 	}, [hooks, checkedItems]);
 };
 
+export const useEditHooks = (hooks: any, edit: Function) => {
+	hooks.visibleColumns.push((columns) => [
+		...columns,
+		{
+			id: "Edit",
+			Header: "Edit",
+			Cell: ({ row }) => {
+				return <button onClick={() => edit(row)}>Edit</button>;
+			},
+		},
+	]);
+};
+
 function usePagination({
 	list,
 	_count,
@@ -84,6 +97,7 @@ function usePagination({
 		desc: "desc",
 		asc: "asc",
 	};
+
 	const [checkedItems, setCheckedItems] = useState([]);
 	const [checkedAllItems, setCheckedAllItems] = useState([]);
 
@@ -246,28 +260,27 @@ function usePagination({
 		}
 	};
 
-	const tableHooks = (hooks) => {
-		hooks.visibleColumns.push((columns) => [
-			...columns,
-			{
-				id: "Edit",
-				Header: "Edit",
-				Cell: ({ row }) => {
-					return <button onClick={() => editRowHandler(row)}>Edit</button>;
-				},
-			},
-		]);
-	};
+	// Setup table hooks
+	const tableHooks = [];
+	if (hasCheckBox) tableHooks.push(useRowSelect);
+	if (edit) {
+		tableHooks.push((hooks: any) => useEditHooks(hooks, editRowHandler));
+		tableHooks.push((hooks: any) => useCheckboxes(hooks, checkedItems));
+	}
+
+	const getRowId = useCallback((row) => {
+		return row?.original?.id || row?.id;
+	}, []);
 
 	const tableInstance = useTable(
 		{
 			columns,
 			data,
 			initialState: { hiddenColumns },
+			autoResetSelectedRows: false,
+			getRowId,
 		},
-		edit ? tableHooks : undefined,
-		hasCheckBox ? useRowSelect : undefined,
-		hasCheckBox ? (hooks) => useCheckboxes(hooks, checkedItems) : undefined
+		...tableHooks
 	);
 
 	const {

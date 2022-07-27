@@ -111,7 +111,7 @@ function studentExams({ exams = [], profileId }) {
 		previousPage,
 		setPageSize,
 		state: { pageIndex, pageSize },
-	} = tableInstance;
+	}: any = tableInstance;
 
 	return (
 		<div className="container grid">
