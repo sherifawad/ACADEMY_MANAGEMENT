@@ -20,6 +20,7 @@ export interface paginationInputProps {
 	queryVariables?: {} | null;
 	query?: Function | null;
 	inputColumn?: inputHooks | null;
+    tableInitialState?: any;
 }
 
 export interface goFirstInputProps {
@@ -42,12 +43,13 @@ function usePagination({
 	hiddenColumns,
 	query,
 	queryVariables,
+	tableInitialState,
 }: paginationInputProps) {
 	const ORDER = {
 		desc: "desc",
 		asc: "asc",
 	};
-	const initialState = { hiddenColumns, stateArr: {} };
+	const initialState = { hiddenColumns, stateArr: {}, ...tableInitialState };
 
 	const [checkedItems, setCheckedItems] = useState([]);
 	const [inputsData, setInputData] = useState({});
@@ -277,9 +279,9 @@ function usePagination({
 	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", inputsData);
 	// }, [inputsData]);
 
-	useEffect(() => {
-		console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ stateArr", (state as any).stateArr);
-	}, [state]);
+	// useEffect(() => {
+	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ stateArr", (state as any).stateArr);
+	// }, [state]);
 
 	const gotoLast = async () => {
 		if (isLastPage) return;
