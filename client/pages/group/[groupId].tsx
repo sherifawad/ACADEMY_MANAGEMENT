@@ -1,3 +1,4 @@
+import AddExam from "components/AddExam";
 import StudentsGroupList from "components/StudentsGroupList";
 import UsersList from "components/UsersList";
 import { GROUPS_IDS_QUERY, GROUP_NAME_QUERY } from "core/queries/groupQueries";
@@ -34,6 +35,9 @@ const initialData = async (variable: {}) => {
 
 function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupId }) {
 	const [flatRows, setFlatRows] = useState([]);
+	const [showMainModel, setShowMainModel] = useState(true);
+	const [showAttendancesModel, setShowAttendancesModel] = useState(false);
+	const [showExamsModel, setShowExamsModel] = useState(false);
 
 	const router = useRouter();
 	const rowEditHandler = (row) => {
@@ -52,11 +56,30 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 		query: initialData,
 	});
 
-	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel(true);
+	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel(false);
+    
 	const onProceed = () => {
 		router.replace(router.asPath);
 		console.log("Proceed clicked");
 	};
+
+	const attendancesClicked = () => {
+		setShowMainModel(false);
+		setShowAttendancesModel(true);
+		setShowExamsModel(false);
+	};
+	const examsClicked = () => {
+		setShowMainModel(false);
+		setShowAttendancesModel(false);
+		setShowExamsModel(true);
+	};
+
+	// reset values on model opened
+	useEffect(() => {
+		setShowMainModel(true);
+		setShowAttendancesModel(false);
+		setShowExamsModel(false);
+	}, [Model]);
 
 	useEffect(() => {
 		setFlatRows([checkedItems]);
@@ -69,20 +92,48 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 				<meta name="description" content="Group students" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
-			<Model title="Attendance">
-				<AddAttendance
-					onProceed={onProceed}
-					onClose={modelProps.onClose}
-					profileIds={checkedItems}
-					edit={modelProps.editButtonClicked}
-					initialAttendance={{
-						profileId: "",
-						id: itemData?.id,
-						startAt: itemData?.startAt,
-						endAt: itemData?.endAt,
-						note: itemData?.note,
-					}}
-				/>
+			<Model title="Action">
+				{showAttendancesModel && (
+					<AddAttendance
+						onProceed={onProceed}
+						onClose={modelProps.onClose}
+						profileIds={checkedItems}
+						edit={modelProps.editButtonClicked}
+						initialAttendance={{
+							profileId: "",
+							id: itemData?.id,
+							startAt: itemData?.startAt,
+							endAt: itemData?.endAt,
+							note: itemData?.note,
+						}}
+					/>
+				)}
+				{showExamsModel && (
+					<AddExam
+						onProceed={onProceed}
+						onClose={modelProps.onClose}
+						profileId=""
+						score={itemData?.score}
+						date={itemData?.date}
+						note={itemData?.note}
+					/>
+				)}
+				{showMainModel && (
+					<div className="flex items-center justify-center gap-4">
+						<button
+							className="justify-self-end block w-32 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+							onClick={attendancesClicked}
+						>
+							Attendances
+						</button>
+						<button
+							className="justify-self-end block w-32 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+							onClick={examsClicked}
+						>
+							Exams
+						</button>
+					</div>
+				)}
 			</Model>
 			<PaginatedTable />
 			<div className="grid grid-row-[auto_1fr] gap-8">
