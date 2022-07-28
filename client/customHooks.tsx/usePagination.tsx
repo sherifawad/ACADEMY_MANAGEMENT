@@ -2,7 +2,7 @@ import { IndeterminateCheckbox } from "components/IndeterminateCheckbox";
 import { createAxiosService, getDayNames } from "core/utils";
 import { format } from "date-fns";
 import Image from "next/image";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Column, Hooks, useRowSelect, useTable } from "react-table";
 import { inputHooks, useCheckboxes, useEditHooks, useInputHooks } from "./reactTableHooks";
 import usePrevious from "./usePrevious";
@@ -152,27 +152,6 @@ function usePagination({
 		[list]
 	) as any;
 
-	const handleCheckChange = useCallback(
-		(e) => {
-			const { value, checked } = e.target;
-			// setCheckedItems((prevState) => {
-			// 	return { ...prevState, [value]: checked };
-			// });
-
-			if (checked) {
-				setCheckedItems((prevState) => {
-					if (prevState.indexOf(value) == -1) return [...prevState, value];
-					else {
-						return prevState;
-					}
-				});
-			} else {
-				setCheckedItems((prevState) => prevState.filter((x) => x !== value));
-			}
-		},
-		[setCheckedItems, checkedItems]
-	);
-
 	const handleAllCheckChange = useCallback(
 		(e, rows) => {
 			const { checked } = e.target;
@@ -208,7 +187,7 @@ function usePagination({
 	const tableHooks = [];
 	if (hasCheckBox) {
 		tableHooks.push(useRowSelect);
-		tableHooks.push((hooks: any) => useCheckboxes(hooks, checkedItems));
+		tableHooks.push((hooks: any) => useCheckboxes(hooks, setCheckedItems));
 	}
 	if (inputColumn) {
 		tableHooks.push((hooks: any) =>
@@ -228,7 +207,13 @@ function usePagination({
 			columns,
 			data,
 			initialState: { hiddenColumns },
+			autoResetPage: false,
+			autoResetExpanded: false,
+			autoResetGroupBy: false,
 			autoResetSelectedRows: false,
+			autoResetSortBy: false,
+			autoResetFilters: false,
+			autoResetRowState: false,
 			getRowId,
 		} as any,
 		...tableHooks
@@ -241,6 +226,24 @@ function usePagination({
 		prepareRow,
 		rows, // Instead of using 'rows', we'll use page,
 	} = tableInstance;
+
+	const inputChange = (e: ChangeEvent<HTMLInputElement>, id: string) => {
+		const { value } = e.target;
+		if (!id || id.length <= 0 || value === undefined) return;
+		setInputData((prevState) => {
+			// value is empty string remove from list
+			if (value.length <= 0) {
+				const { [id]: _, ...newData } = prevState as { [x: string]: number };
+				return { ...newData };
+			}
+			// if value is number add
+			if (!Number.isNaN(Number(value))) {
+				return { ...prevState, [id]: Number(value) };
+			}
+			// if value is not number skip
+			return prevState;
+		});
+	};
 
 	// useEffect(() => {
 	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", checkedItems);
@@ -484,11 +487,6 @@ function usePagination({
 															key={idx}
 															className="px-4 py-3 border"
 															{...cell.getCellProps()}
-															onClick={(e) => {
-																if (cell.column.id === "selection") {
-																	handleCheckChange(e);
-																}
-															}}
 														>
 															{cell.render("Cell")}
 														</td>

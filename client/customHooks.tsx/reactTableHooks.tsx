@@ -1,13 +1,13 @@
 import { IndeterminateCheckbox } from "components/IndeterminateCheckbox";
-import { ChangeEvent, Dispatch, SetStateAction, useMemo } from "react";
-import { Column, Hooks } from "react-table";
+import { ChangeEvent, Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Column, HeaderGroup, Hooks, Row } from "react-table";
 
 export interface inputHooks {
 	columId: string;
 	headerName: string;
 }
 
-export const useCheckboxes = (hooks: Hooks, checkedItems: any[]) => {
+export const useCheckboxes = (hooks: Hooks, setCheckedItems: Dispatch<SetStateAction<string[]>>) => {
 	return useMemo(() => {
 		return hooks.visibleColumns.push((columns: Column[]) => [
 			{
@@ -25,21 +25,40 @@ export const useCheckboxes = (hooks: Hooks, checkedItems: any[]) => {
 					row: {
 						getToggleRowSelectedProps,
 						original: { id },
+						toggleRowSelected,
+						isSelected,
 					},
 				}: any) => {
-					const { onChange, checked, ...restProps } = getToggleRowSelectedProps();
-					// const isChecked = checkedItems?.indexOf(id) >= 0 || checked;
+					const { onChange, ...restProps } = getToggleRowSelectedProps();
 
 					return (
 						<div>
-							<IndeterminateCheckbox value={id} {...getToggleRowSelectedProps()} />
+							<IndeterminateCheckbox
+								value={id}
+								onChange={(e) => {
+									const { value, checked } = (e as ChangeEvent<HTMLInputElement>).target;
+
+									if (checked) {
+										setCheckedItems((prevState) => {
+											if (prevState.indexOf(value) == -1) return [...prevState, value];
+											else {
+												return prevState;
+											}
+										});
+									} else {
+										setCheckedItems((prevState) => prevState.filter((x) => x !== value));
+									}
+									toggleRowSelected(!isSelected);
+								}}
+								{...restProps}
+							/>
 						</div>
 					);
 				},
 			},
 			...columns,
 		]);
-	}, [hooks, checkedItems]);
+	}, [hooks, setCheckedItems]);
 };
 
 export const useEditHooks = (hooks: any, edit: Function) => {
@@ -84,6 +103,7 @@ export const useInputHooks = (
 			id: columId,
 			Header: HeaderName,
 			Cell: ({
+				cell: { value },
 				row: {
 					original: { id },
 				},
@@ -99,4 +119,38 @@ export const useInputHooks = (
 			},
 		},
 	]);
+};
+
+type EditableCellProps = {
+	value: string;
+	row: Row;
+	column: HeaderGroup;
+	updateMyData: (index: number, id: number, value: string) => void;
+};
+
+const EditableCell = ({
+	value: initialValue,
+	row: { index },
+	column: { id },
+	updateMyData,
+}: EditableCellProps) => {
+	const [value, setValue] = useState(initialValue);
+
+	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setValue(e.target.value);
+	};
+
+	const onBlur = () => {
+		updateMyData(index, +id, value);
+	};
+
+	useEffect(() => {
+		setValue(initialValue);
+	}, [initialValue]);
+
+	return <input value={value} onChange={onChange} onBlur={onBlur} />;
+};
+
+export const defaultColumn = {
+	Cell: EditableCell,
 };
