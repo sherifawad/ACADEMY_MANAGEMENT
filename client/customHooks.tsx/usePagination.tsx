@@ -47,6 +47,7 @@ function usePagination({
 		desc: "desc",
 		asc: "asc",
 	};
+	const initialState = { hiddenColumns, stateArr: {} };
 
 	const [checkedItems, setCheckedItems] = useState([]);
 	const [inputsData, setInputData] = useState({});
@@ -190,9 +191,7 @@ function usePagination({
 		tableHooks.push((hooks: any) => useCheckboxes(hooks, setCheckedItems));
 	}
 	if (inputColumn) {
-		tableHooks.push((hooks: any) =>
-			useInputHooks(hooks, inputColumn.columId, inputColumn.headerName, setInputData)
-		);
+		tableHooks.push((hooks: any) => useInputHooks(hooks, inputColumn.columId, inputColumn.headerName));
 	}
 	if (edit) {
 		tableHooks.push((hooks: any) => useEditHooks(hooks, editRowHandler));
@@ -206,7 +205,6 @@ function usePagination({
 		{
 			columns,
 			data,
-			initialState: { hiddenColumns },
 			autoResetPage: false,
 			autoResetExpanded: false,
 			autoResetGroupBy: false,
@@ -215,7 +213,32 @@ function usePagination({
 			autoResetFilters: false,
 			autoResetRowState: false,
 			getRowId,
+			initialState,
+			stateReducer: (
+				newState: { stateArr: any },
+				action: { type: any; payload: any },
+				prevState: any
+			) => {
+				switch (action.type) {
+					case "add": {
+						return {
+							...prevState,
+							stateArr: { ...prevState.stateArr, ...action.payload },
+						};
+					}
+					case "remove": {
+						const { [action.payload]: _, ...newData } = prevState.stateArr;
+						return {
+							...prevState,
+							stateArr: { ...newData },
+						};
+					}
+					default:
+						return newState;
+				}
+			},
 		} as any,
+
 		...tableHooks
 	);
 
@@ -224,6 +247,7 @@ function usePagination({
 		getTableBodyProps,
 		headerGroups,
 		prepareRow,
+		state,
 		rows, // Instead of using 'rows', we'll use page,
 	} = tableInstance;
 
@@ -249,9 +273,13 @@ function usePagination({
 	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", checkedItems);
 	// }, [checkedItems]);
 
+	// useEffect(() => {
+	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", inputsData);
+	// }, [inputsData]);
+
 	useEffect(() => {
-		console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", inputsData);
-	}, [inputsData]);
+		console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ stateArr", (state as any).stateArr);
+	}, [state]);
 
 	const gotoLast = async () => {
 		if (isLastPage) return;
@@ -585,6 +613,7 @@ function usePagination({
 	return {
 		PaginatedTable,
 		checkedItems,
+		inputsData: (state as any)?.stateArr,
 		refetch: () => gotoFirst({ force: true }),
 	};
 }

@@ -1,6 +1,6 @@
 import { IndeterminateCheckbox } from "components/IndeterminateCheckbox";
 import { ChangeEvent, Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { Column, HeaderGroup, Hooks, Row } from "react-table";
+import { Column, Hooks } from "react-table";
 
 export interface inputHooks {
 	columId: string;
@@ -74,44 +74,46 @@ export const useEditHooks = (hooks: any, edit: Function) => {
 	]);
 };
 
-export const useInputHooks = (
-	hooks: any,
-	columId: string,
-	HeaderName: string,
-	setInputData: Dispatch<SetStateAction<{ [x: string]: number }>>
-) => {
-	const inputChange = (e: ChangeEvent<HTMLInputElement>, id: string) => {
-		const { value } = e.target;
-		if (!id || id.length <= 0 || value === undefined) return;
-		setInputData((prevState) => {
-			// value is empty string remove from list
-			if (value.length <= 0) {
-				const { [id]: _, ...newData } = prevState;
-				return { ...newData };
-			}
-			// if value is number add
-			if (!Number.isNaN(Number(value))) {
-				return { ...prevState, [id]: Number(value) };
-			}
-			// if value is not number skip
-			return prevState;
-		});
-	};
+export const useInputHooks = (hooks: any, columId: string, HeaderName: string) => {
 	return hooks.visibleColumns.push((columns: Column[]) => [
 		...columns,
 		{
 			id: columId,
 			Header: HeaderName,
 			Cell: ({
-				cell: { value },
+				value,
+				state,
+				dispatch,
 				row: {
+					toggleRowSelected,
 					original: { id },
 				},
 			}: any) => {
+				let inputValue = state.stateArr[id] || value;
+
 				return (
 					<input
 						type="text"
-						onChange={(e) => inputChange(e, id)}
+						onChange={(e) => {
+							const { value } = e.target;
+							if (!id || id.length <= 0 || value === undefined) return;
+							//check if value is a number
+							if (!Number.isNaN(Number(value))) {
+								// check the value is not empty string
+								if (value.length > 0) {
+									if (toggleRowSelected) toggleRowSelected(true);
+									dispatch({
+										type: "add",
+										payload: { [id]: Number(value) },
+										prevState: state,
+									});
+									return;
+								}
+							}
+							if (toggleRowSelected) toggleRowSelected(false);
+							dispatch({ type: "remove", payload: id, prevState: state });
+						}}
+						value={inputValue}
 						placeholder={HeaderName}
 						className="w-fit"
 					/>
@@ -119,38 +121,4 @@ export const useInputHooks = (
 			},
 		},
 	]);
-};
-
-type EditableCellProps = {
-	value: string;
-	row: Row;
-	column: HeaderGroup;
-	updateMyData: (index: number, id: number, value: string) => void;
-};
-
-const EditableCell = ({
-	value: initialValue,
-	row: { index },
-	column: { id },
-	updateMyData,
-}: EditableCellProps) => {
-	const [value, setValue] = useState(initialValue);
-
-	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setValue(e.target.value);
-	};
-
-	const onBlur = () => {
-		updateMyData(index, +id, value);
-	};
-
-	useEffect(() => {
-		setValue(initialValue);
-	}, [initialValue]);
-
-	return <input value={value} onChange={onChange} onBlur={onBlur} />;
-};
-
-export const defaultColumn = {
-	Cell: EditableCell,
 };
