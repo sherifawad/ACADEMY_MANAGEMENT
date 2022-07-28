@@ -7,9 +7,15 @@ import {
 	updateAttendanceMutation,
 	updateMultipleAttendanceMutation,
 } from "./attendanceMutations";
-import { initialProperties } from "./attendancesTypes";
+import { attendanceInitialProperties } from "./attendancesTypes";
 
-function AddAttendance({ onProceed, onClose, initialAttendance, profileIds, edit }: initialProperties) {
+function AddAttendance({
+	onProceed,
+	onClose,
+	initialAttendance,
+	profileIds,
+	edit,
+}: attendanceInitialProperties) {
 	const mainRef = useRef();
 
 	const { profileId, startAt, endAt, note, id } = initialAttendance;

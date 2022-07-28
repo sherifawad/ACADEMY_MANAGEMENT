@@ -38,13 +38,16 @@ function AttendancesCard({ id = "", attendances = [] }) {
 						</Model>
 					</div>
 					<div className="divide-y">
-						{attendances?.map((attendance) => (
-							<div key={attendance.id} className="py-4 flex  flex-wrap gap-2">
-								<div className="grid grid-cols-[auto_1fr] gap-2 place-items-center">
+						{attendances?.map((attendance, idx) => (
+							<div
+								key={idx}
+								className="py-4 flex  flex-wrap gap-2 items-center justify-between"
+							>
+								<div className="grid grid-cols-[auto_1fr] place-items-center">
 									<div
 										className={`w-3 h-3 ${
 											attendance?.endAt ? "bg-green-600" : "bg-red-600"
-										} rounded-full`}
+										} rounded-full mie-2`}
 									></div>
 
 									<div className="">{getDayNames(attendance.startAt)}</div>

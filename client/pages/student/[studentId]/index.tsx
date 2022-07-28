@@ -3,13 +3,14 @@ import { GET_STUDENT_DETAILS, GET_USERS, GET_USERS_IDS } from "core/queries/user
 import { createAxiosService, getDayNames } from "core/utils";
 import { format } from "date-fns";
 import AttendancesCard from "features/attendanceFeature/AttendancesCard";
+import ExamsCard from "features/examFeature/ExamsCard";
 import Image from "next/image";
 import Link from "next/link";
 
 function Student({ user }) {
 	const {
 		id,
-		profile: { attendances },
+		profile: { attendances, exams },
 	} = user || {};
 	return (
 		<div className="container w-full">
@@ -52,28 +53,8 @@ function Student({ user }) {
 				</CardContainer>
 				<div className="flex flex-col justify-between  flex-wrap md:w-3/5 gap-4">
 					<AttendancesCard attendances={attendances} id={id} />
-					<CardContainer>
-						<div>
-							<Link href={`/student/${user.id}/exam`}>
-								<a>
-									<h3 className="font-bold underline-offset-4 underline">Exams</h3>
-								</a>
-							</Link>
-							<div className="divide-y">
-								{user?.profile?.exams?.map((exam) => (
-									<div key={exam.id} className="py-4 flex  flex-wrap justify-between gap-2">
-										<div className="flex  flex-wrap items-center gap-2">
-											{exam?.score}
-										</div>
-										<div className="">{getDayNames(exam?.date)}</div>
-										<div className="">
-											{new Date(exam?.date).toLocaleDateString("en-US")}
-										</div>
-									</div>
-								))}
-							</div>
-						</div>
-					</CardContainer>
+
+					<ExamsCard exams={exams} id={id} />
 				</div>
 			</div>
 		</div>

@@ -61,14 +61,19 @@ export const useCheckboxes = (hooks: Hooks, setCheckedItems: Dispatch<SetStateAc
 	}, [hooks, setCheckedItems]);
 };
 
-export const useEditHooks = (hooks: any, edit: Function | null) => {
+export const useEditHooks = (hooks: any, edit: Function) => {
 	hooks.visibleColumns.push((columns: Column[]) => [
 		...columns,
 		{
 			id: "Edit",
 			Header: "Edit",
-			Cell: ({ row }) => {
-				return <button onClick={() => (edit ? edit(row) : {})}>Edit</button>;
+			Cell: ({
+				row: {
+					values,
+					original: { id },
+				},
+			}) => {
+				return <button onClick={() => edit({ id, ...values })}>Edit</button>;
 			},
 		},
 	]);

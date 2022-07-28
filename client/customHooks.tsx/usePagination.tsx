@@ -20,7 +20,7 @@ export interface paginationInputProps {
 	queryVariables?: {} | null;
 	query?: Function | null;
 	inputColumn?: inputHooks | null;
-    tableInitialState?: any;
+	tableInitialState?: any;
 }
 
 export interface goFirstInputProps {
@@ -175,14 +175,12 @@ function usePagination({
 		[checkedItems]
 	);
 
-	const editRowHandler = (row) => {
-		if (row) {
+	const editRowHandler = (values: any) => {
+		if (values) {
 			if (setItemsState) {
-				setItemsState({
-					...row.values,
-				});
+				setItemsState(values);
 			}
-			edit(row);
+			if (edit) edit(values);
 		}
 	};
 

@@ -39,10 +39,7 @@ function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 					edit={modelProps.editButtonClicked}
 					initialAttendance={{
 						profileId,
-						id: itemData?.id,
-						startAt: itemData?.startAt,
-						endAt: itemData?.endAt,
-						note: itemData?.note,
+						...itemData,
 					}}
 				/>
 			</Model>

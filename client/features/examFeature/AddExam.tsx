@@ -1,43 +1,42 @@
-import { CREATE_EXAM_MUTATION } from "core/mutations/examMutations";
+import { createExamMutation, CREATE_EXAM_MUTATION } from "features/examFeature/examMutations";
 import { createAxiosService } from "core/utils";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { arEG } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { DatePicker } from "react-next-dates";
 import { useMutation } from "react-query";
+import { examInitialProperties } from "./examTypes";
 
-function AddExam({ onProceed, onClose, profileId, score, date, note }) {
+function AddExam({ onProceed, onClose, initialExam }: examInitialProperties) {
+	const { profileId, score, date, note, id } = initialExam || {};
+
+	const [dateCondition, setDateCondition] = useState(null);
+	const [scoreCondition, setScoreCondition] = useState(null);
+	const [noteCondition, setNoteCondition] = useState("");
+
 	const [examState, setExamState] = useState({
-		score: "",
-		date: "",
-		note: "",
+		id,
+		score,
+		date: date ? new Date(date) : null,
+		note,
 		error: "",
 	});
 
 	useEffect(() => {
 		setExamState({
 			...examState,
-			score: score || "",
-			date: date ? date.substring(0, 10) : "",
+			score: score || null,
+			date: date ? new Date(date) : null,
 			note: note || "",
 		});
 	}, [score, date, note]);
 
-	const mutation = useMutation(
-		"AddExam",
-		() =>
-			createAxiosService(CREATE_EXAM_MUTATION, {
-				profileId,
-				score: examState.score ? parseFloat(examState.score) : undefined,
-				date: new Date(examState.date),
-				note: examState.note,
-			}).then((response) => response.data.data),
-		{
-			onSuccess: () => {
-				console.log("Exam Created Successfully");
-			},
-		}
-	);
+	const mutation = createExamMutation({
+		profileId,
+		score: examState.score,
+		date: examState.date,
+		note: examState.note?.length > 0 ? examState.note : null,
+	});
 
 	const submitContact = async (e) => {
 		e.preventDefault();
@@ -64,12 +63,12 @@ function AddExam({ onProceed, onClose, profileId, score, date, note }) {
 					type="number"
 					name="score"
 					id="score"
-					value={examState.score}
+					value={String(examState.score)}
 					onChange={(e) =>
 						setExamState({
 							...examState,
 							error: "",
-							score: e.target.value,
+							score: Number(e.target.value),
 						})
 					}
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
@@ -89,12 +88,12 @@ function AddExam({ onProceed, onClose, profileId, score, date, note }) {
 					type="date"
 					name="date"
 					id="date"
-					value={examState.date}
-					onChange={(e) =>
+					value={examState?.date ? format(examState?.date, "yyyy-mm-dd") : ""}
+					onChange={({ target: { value } }) =>
 						setExamState({
 							...examState,
 							error: "",
-							date: e.target.value,
+							date: value && value.length > 1 ? parse(value, "yyyy-mm-dd", new Date()) : null,
 						})
 					}
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
@@ -115,7 +114,7 @@ function AddExam({ onProceed, onClose, profileId, score, date, note }) {
 					cols={5}
 					name="note"
 					id="note"
-					value={examState.note}
+					value={String(examState.note)}
 					onChange={(e) =>
 						setExamState({
 							...examState,

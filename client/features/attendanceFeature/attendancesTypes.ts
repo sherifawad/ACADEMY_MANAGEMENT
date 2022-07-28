@@ -6,7 +6,7 @@ export interface attendance {
 	profileId: String;
 }
 
-export interface initialProperties {
+export interface attendanceInitialProperties {
 	onProceed: Function;
 	onClose: Function;
 	initialAttendance: attendance;

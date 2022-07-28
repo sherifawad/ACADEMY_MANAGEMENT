@@ -23,6 +23,7 @@ function useModel(hasEditButton = false) {
 		setItemData({ id: null, name: "" });
 		setIsOpened(true);
 		setEditButtonClicked(false);
+		console.log("🚀 ~ file: useModel.tsx ~ line 27 ~ onAdd ~ onAdd", onAdd);
 	}, []);
 
 	const onEdit = useCallback(() => {

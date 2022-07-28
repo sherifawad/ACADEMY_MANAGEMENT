@@ -1,4 +1,4 @@
-import AddExam from "components/AddExam";
+import AddExam from "features/examFeature/AddExam";
 import StudentsGroupList from "components/StudentsGroupList";
 import UsersList from "components/UsersList";
 import { GROUPS_IDS_QUERY, GROUP_NAME_QUERY } from "core/queries/groupQueries";
