@@ -65,6 +65,10 @@ type Exam {
   updatedBy: String
 }
 
+type ExamCUResponse {
+  count: Int
+}
+
 type ExamsCount {
   _count: Int
 }
@@ -110,6 +114,7 @@ type Mutation {
   createGrade(isActive: Boolean!, name: String!): Grade!
   createGroup(endAt: DateTime, gradeId: String, isActive: Boolean, name: String!, startAt: DateTime): Group!
   createMultipleAttendance(endAt: DateTime, note: String, profileIds: [String!]!, startAt: DateTime!): AttendancesCUResponse
+  createMultipleExam(date: DateTime!, note: String, profileIds: [String!]!, score: Float!): ExamCUResponse
   createProfile(bio: String, id: String!): Profile!
   deleteAttendance(id: String!): Attendance!
   deleteContact(id: String!): Contact!
@@ -122,10 +127,11 @@ type Mutation {
   studentRegister(address: String!, email: String!, groupId: String!, name: String, parentsPhones: String, password: String!, phone: String!): User!
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateContact(address: String, email: String, emailConfirmed: Boolean, id: String!, note: String, parentsPhones: String, phone: String): Contact!
-  updateExam(date: DateTime, id: String!, note: String, score: String): Exam!
+  updateExam(date: DateTime, id: String!, note: String, score: Float): Exam!
   updateGrade(id: String!, isActive: Boolean!, name: String!): Grade!
   updateGroup(endAt: DateTime, gradeId: String, id: String!, isActive: Boolean, name: String, startAt: DateTime): Group!
   updateMultipleAttendance(endAt: DateTime, endAtCondition: DateTime, note: String, noteCondition: String, profileIds: [String!]!, startAt: DateTime, startAtCondition: DateTime!): AttendancesCUResponse!
+  updateMultipleExam(date: DateTime, dateCondition: DateTime!, note: String, noteCondition: DateTime, profileIds: [String!]!, score: Float, scoreCondition: Float): ExamCUResponse!
   updateProfile(bio: String, id: String!): Profile!
   updateUser(avatar: String, email: String, id: String!, name: String, password: String): User!
   userLogin(email: String!, password: String!): AuthPayload!

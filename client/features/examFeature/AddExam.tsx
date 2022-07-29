@@ -1,4 +1,10 @@
-import { createExamMutation, CREATE_EXAM_MUTATION } from "features/examFeature/examMutations";
+import {
+	createExamMutation,
+	createMultipleExamMutation,
+	CREATE_EXAM_MUTATION,
+	updateExamMutation,
+    updateMultipleExamMutation,
+} from "features/examFeature/examMutations";
 import { createAxiosService } from "core/utils";
 import { format, parse } from "date-fns";
 import { arEG } from "date-fns/locale";
@@ -7,7 +13,7 @@ import { DatePicker } from "react-next-dates";
 import { useMutation } from "react-query";
 import { examInitialProperties } from "./examTypes";
 
-function AddExam({ onProceed, onClose, initialExam }: examInitialProperties) {
+function AddExam({ onProceed, onClose, initialExam, profileIds, edit }: examInitialProperties) {
 	const { profileId, score, date, note, id } = initialExam || {};
 
 	const [dateCondition, setDateCondition] = useState(null);
@@ -31,17 +37,54 @@ function AddExam({ onProceed, onClose, initialExam }: examInitialProperties) {
 		});
 	}, [score, date, note]);
 
-	const mutation = createExamMutation({
+	const createMutation = createExamMutation({
 		profileId,
 		score: examState.score,
 		date: examState.date,
 		note: examState.note?.length > 0 ? examState.note : null,
 	});
 
+	const createMultipleMutation = createMultipleExamMutation({
+		profileIds,
+		score: examState.score,
+		date: examState.date,
+		note: examState.note?.length > 0 ? examState.note : null,
+	});
+
+	const updateMutation = updateExamMutation({
+		updateExamId: examState.id,
+		score: examState.score,
+		date: examState.date,
+		note: examState.note?.length > 0 ? examState.note : null,
+	});
+
+	const updateMultipleMutation = updateMultipleExamMutation({
+		profileIds,
+		dateCondition,
+		scoreCondition,
+		noteCondition: noteCondition.length > 0 ? noteCondition : null,
+		date: examState.date || dateCondition,
+		score: examState.score,
+		note: examState.note,
+	});
+
 	const submitContact = async (e) => {
 		e.preventDefault();
-		if (mutation.isLoading) return;
-		await mutation.mutateAsync();
+		try {
+			e.preventDefault();
+
+			if (createMutation.isLoading) return;
+			if (updateMutation.isLoading) return;
+			if (createMultipleMutation.isLoading) return;
+			if (updateMultipleMutation.isLoading) return;
+			if (profileIds && profileIds.length > 0) {
+				edit
+					? await updateMultipleMutation.mutateAsync()
+					: await createMultipleMutation.mutateAsync();
+				return;
+			}
+			id ? await updateMutation.mutateAsync() : await createMutation.mutateAsync();
+		} catch (error) {}
 	};
 
 	const proceedAndClose = async (e) => {

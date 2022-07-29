@@ -240,7 +240,11 @@ export const AttendanceByUserIdQuery = extendType({
 						});
 					}
 				} else {
-					result = await prisma.user.findMany();
+					result = await prisma.user.findMany({
+						where: {
+							Profile: { id: studentId },
+						},
+					});
 				}
 
 				return {
