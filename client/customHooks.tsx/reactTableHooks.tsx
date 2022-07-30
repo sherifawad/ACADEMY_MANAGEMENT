@@ -82,48 +82,52 @@ export const useEditHooks = (hooks: any, edit: Function) => {
 export const useInputHooks = (hooks: any, columId: string, HeaderName: string) => {
 	return hooks.visibleColumns.push((columns: Column[]) => [
 		...columns,
-		{
-			id: columId,
-			Header: HeaderName,
-			Cell: ({
-				value,
-				state,
-				dispatch,
-				row: {
-					toggleRowSelected,
-					original: { id },
-				},
-			}: any) => {
-				let inputValue = state.stateArr[id] || value;
-
-				return (
-					<input
-						type="text"
-						onChange={(e) => {
-							const { value } = e.target;
-							if (!id || id.length <= 0 || value === undefined) return;
-							//check if value is a number
-							if (!Number.isNaN(Number(value))) {
-								// check the value is not empty string
-								if (value.length > 0) {
-									if (toggleRowSelected) toggleRowSelected(true);
-									dispatch({
-										type: "add",
-										payload: { [id]: Number(value) },
-										prevState: state,
-									});
-									return;
-								}
-							}
-							if (toggleRowSelected) toggleRowSelected(false);
-							dispatch({ type: "remove", payload: id, prevState: state });
-						}}
-						value={inputValue}
-						placeholder={HeaderName}
-						className="w-fit"
-					/>
-				);
-			},
-		},
+		newInputColumn(columId, HeaderName),
 	]);
+};
+
+export const newInputColumn = (columId: string, HeaderName: string) => {
+	return {
+		id: columId,
+		Header: HeaderName,
+		Cell: ({
+			value,
+			state,
+			dispatch,
+			row: {
+				toggleRowSelected,
+				original: { id },
+			},
+		}: any) => {
+			let inputValue = state.stateArr[id] || value;
+
+			return (
+				<input
+					type="text"
+					onChange={(e) => {
+						const { value } = e.target;
+						if (!id || id.length <= 0 || value === undefined) return;
+						//check if value is a number
+						if (!Number.isNaN(Number(value))) {
+							// check the value is not empty string
+							if (value.length > 0) {
+								if (toggleRowSelected) toggleRowSelected(true);
+								dispatch({
+									type: "add",
+									payload: { [id]: Number(value) },
+									prevState: state,
+								});
+								return;
+							}
+						}
+						if (toggleRowSelected) toggleRowSelected(false);
+						dispatch({ type: "remove", payload: id, prevState: state });
+					}}
+					value={inputValue}
+					placeholder={HeaderName}
+					className="w-fit"
+				/>
+			);
+		},
+	};
 };

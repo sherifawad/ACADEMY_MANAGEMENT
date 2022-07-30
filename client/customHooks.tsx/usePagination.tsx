@@ -1,10 +1,11 @@
 import { IndeterminateCheckbox } from "components/IndeterminateCheckbox";
+import Table from "components/Table";
 import { createAxiosService, getDayNames } from "core/utils";
 import { format } from "date-fns";
 import Image from "next/image";
 import { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Column, Hooks, useRowSelect, useTable } from "react-table";
-import { inputHooks, useCheckboxes, useEditHooks, useInputHooks } from "./reactTableHooks";
+import { inputHooks, newInputColumn, useCheckboxes, useEditHooks, useInputHooks } from "./reactTableHooks";
 import usePrevious from "./usePrevious";
 
 export interface paginationInputProps {
@@ -55,6 +56,7 @@ function usePagination({
 	const [inputsData, setInputData] = useState({});
 	const [checkedAllItems, setCheckedAllItems] = useState([]);
 
+	const [tableHooks, setTableHooks] = useState([]);
 	const [pageSize, setPageSize] = useState(5);
 	const [currentOrder, setCurrentOrder] = useState(ORDER.asc);
 	const [isAscending, setIsAscending] = useState(false);
@@ -90,7 +92,7 @@ function usePagination({
 		return paginationResult.list;
 	}, [paginationResult.list]);
 
-	const columns = useMemo(
+	const initialColumns = useMemo(
 		() =>
 			data[0]
 				? Object.keys(data[0]).map((key) => {
@@ -155,6 +157,9 @@ function usePagination({
 		[list]
 	) as any;
 
+	const [columns, setColumns] = useState(initialColumns);
+	const [hasInputColumn, setHasInputColumn] = useState(false);
+
 	const handleAllCheckChange = useCallback(
 		(e, rows) => {
 			const { checked } = e.target;
@@ -184,90 +189,82 @@ function usePagination({
 		}
 	};
 
+	const headerClick = useCallback((e, rows, columnId) => {
+		if (columnId === "selection") {
+			handleAllCheckChange(e, rows);
+		} else {
+			headerClickHandler(columnId);
+		}
+	}, []);
+
 	// Setup table hooks
-	const tableHooks = [];
-	if (hasCheckBox) {
-		tableHooks.push(useRowSelect);
-		tableHooks.push((hooks: any) => useCheckboxes(hooks, setCheckedItems));
-	}
-	if (inputColumn) {
-		tableHooks.push((hooks: any) => useInputHooks(hooks, inputColumn.columId, inputColumn.headerName));
-	}
-	if (edit) {
-		tableHooks.push((hooks: any) => useEditHooks(hooks, editRowHandler));
-	}
+
+	const checkBoxHook = (hooks: any) => useCheckboxes(hooks, setCheckedItems);
+	const inputHook = (hooks: any) => useInputHooks(hooks, inputColumn.columId, inputColumn.headerName);
+	const editHook = (hooks: any) => useEditHooks(hooks, editRowHandler);
+
+	useEffect(() => {
+		if (hasCheckBox) {
+			setTableHooks((prevState) => {
+				if (prevState.indexOf(checkBoxHook) > -1) return prevState;
+				return [...prevState, useRowSelect, checkBoxHook];
+			});
+		} else {
+			setTableHooks((prevState) => {
+				return prevState.filter((x) => x === checkBoxHook || x === useRowSelect);
+			});
+		}
+	}, [hasCheckBox]);
+
+	useEffect(() => {
+		if (inputColumn) {
+			const isEmpty = Object.keys(inputColumn).length === 0;
+			if (isEmpty) {
+				return;
+			}
+
+			setTableHooks((prevState) => {
+				if (prevState.indexOf(inputHook) > -1) return prevState;
+				return [...prevState, inputHook];
+			});
+		} else {
+			setTableHooks((prevState) => {
+				return prevState.filter((x) => x === inputHook);
+			});
+		}
+	}, [inputColumn?.columId, inputColumn?.headerName]);
+
+	useEffect(() => {
+		if (edit.name) {
+			setTableHooks((prevState) => {
+				if (prevState.indexOf(editHook) > -1) return prevState;
+				return [...prevState, editHook];
+			});
+		} else {
+			setTableHooks((prevState) => {
+				return prevState.filter((x) => x === editHook);
+			});
+		}
+	}, [edit.name]);
+
+	// if (hasCheckBox) {
+	// 	tableHooks.push(useRowSelect);
+	// 	tableHooks.push((hooks: any) => useCheckboxes(hooks, setCheckedItems));
+	// }
+	// if (inputColumn) {
+	// 	const isEmpty = Object.keys(inputColumn).length === 0;
+	// 	if (isEmpty) {
+	// 		return;
+	// 	}
+	// 	tableHooks.push((hooks: any) => useInputHooks(hooks, inputColumn.columId, inputColumn.headerName));
+	// }
+	// if (edit.name) {
+	// 	tableHooks.push((hooks: any) => useEditHooks(hooks, editRowHandler));
+	// }
 
 	const getRowId = useCallback((row) => {
 		return row?.original?.id || row?.id;
 	}, []);
-
-	const tableInstance = useTable(
-		{
-			columns,
-			data,
-			autoResetPage: false,
-			autoResetExpanded: false,
-			autoResetGroupBy: false,
-			autoResetSelectedRows: false,
-			autoResetSortBy: false,
-			autoResetFilters: false,
-			autoResetRowState: false,
-			getRowId,
-			initialState,
-			stateReducer: (
-				newState: { stateArr: any },
-				action: { type: any; payload: any },
-				prevState: any
-			) => {
-				switch (action.type) {
-					case "add": {
-						return {
-							...prevState,
-							stateArr: { ...prevState.stateArr, ...action.payload },
-						};
-					}
-					case "remove": {
-						const { [action.payload]: _, ...newData } = prevState.stateArr;
-						return {
-							...prevState,
-							stateArr: { ...newData },
-						};
-					}
-					default:
-						return newState;
-				}
-			},
-		} as any,
-
-		...tableHooks
-	);
-
-	const {
-		getTableProps,
-		getTableBodyProps,
-		headerGroups,
-		prepareRow,
-		state,
-		rows, // Instead of using 'rows', we'll use page,
-	} = tableInstance;
-
-	const inputChange = (e: ChangeEvent<HTMLInputElement>, id: string) => {
-		const { value } = e.target;
-		if (!id || id.length <= 0 || value === undefined) return;
-		setInputData((prevState) => {
-			// value is empty string remove from list
-			if (value.length <= 0) {
-				const { [id]: _, ...newData } = prevState as { [x: string]: number };
-				return { ...newData };
-			}
-			// if value is number add
-			if (!Number.isNaN(Number(value))) {
-				return { ...prevState, [id]: Number(value) };
-			}
-			// if value is not number skip
-			return prevState;
-		});
-	};
 
 	// useEffect(() => {
 	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", checkedItems);
@@ -463,68 +460,17 @@ function usePagination({
 				<>
 					<div className="w-full mb-8 overflow-hidden rounded-lg shadow-lg pt-4">
 						<div className="w-full overflow-x-auto">
-							<table {...getTableProps()} className="w-full">
-								<thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:text-gray-400">
-									{headerGroups.map((headerGroup) => (
-										<tr
-											{...headerGroup.getHeaderGroupProps()}
-											className="text-md font-semibold tracking-wide text-center text-gray-900 bg-gray-100 uppercase border-b border-gray-600"
-										>
-											{headerGroup.headers.map((column: any, idex) => (
-												<th
-													key={idex}
-													{...column.getHeaderProps()}
-													className="px-4 py-3"
-												>
-													<a
-														href="#"
-														onClick={(e) => {
-															if (column.id === "selection") {
-																handleAllCheckChange(e, rows);
-															} else {
-																headerClickHandler(column.id);
-															}
-														}}
-													>
-														{column.render("Header")}
-														{column.id !== "Edit" && (
-															<span>
-																{column.id === currentSortProperty
-																	? isAscending
-																		? " ▲"
-																		: " ▼"
-																	: ""}
-															</span>
-														)}
-													</a>
-												</th>
-											))}
-										</tr>
-									))}
-								</thead>
-
-								<tbody {...getTableBodyProps()} className="bg-white">
-									{rows.map((row) => {
-										prepareRow(row);
-
-										return (
-											<tr {...row.getRowProps()} className="text-gray-700 text-center">
-												{row.cells.map((cell, idx) => {
-													return (
-														<td
-															key={idx}
-															className="px-4 py-3 border"
-															{...cell.getCellProps()}
-														>
-															{cell.render("Cell")}
-														</td>
-													);
-												})}
-											</tr>
-										);
-									})}
-								</tbody>
-							</table>
+							<Table
+								columns={columns}
+								data={data}
+								hooks={tableHooks}
+								initialState={initialState}
+								getRowId={getRowId}
+								currentSortProperty={currentSortProperty}
+								isAscending={isAscending}
+								headerClick={headerClick}
+								setInputData={setInputData}
+							/>
 						</div>
 					</div>
 
@@ -608,12 +554,12 @@ function usePagination({
 				</>
 			);
 		};
-	}, [paginationResult.list]);
+	}, [paginationResult.list, columns]);
 
 	return {
 		PaginatedTable,
 		checkedItems,
-		inputsData: (state as any)?.stateArr,
+		inputsData,
 		refetch: () => gotoFirst({ force: true }),
 	};
 }

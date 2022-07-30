@@ -10,6 +10,7 @@ import AddAttendance from "features/attendanceFeature/AddAttendance";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import useToggle from "customHooks.tsx/useToggle";
 
 const initialData = async (variable: {}) => {
 	const {
@@ -38,6 +39,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 	const [showMainModel, setShowMainModel] = useState(true);
 	const [showAttendancesModel, setShowAttendancesModel] = useState(false);
 	const [showExamsModel, setShowExamsModel] = useState(false);
+	const [value, toggleValue] = useToggle(true);
 
 	const router = useRouter();
 	const rowEditHandler = (row) => {
@@ -49,7 +51,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 		nextCursor,
 		hasCheckBox: true,
 		_count,
-		inputColumn: { columId: "examScore", headerName: "ExamScore" },
+		inputColumn: value ? { columId: "examScore", headerName: "ExamScore" } : undefined,
 		edit: rowEditHandler,
 		queryVariables: { groupId },
 		hiddenColumns: ["id", "avatar", "isActive"],
@@ -72,6 +74,10 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 		setShowMainModel(false);
 		setShowAttendancesModel(false);
 		setShowExamsModel(true);
+	};
+
+	const toggledButtonClick = () => {
+		toggleValue(!value);
 	};
 
 	// reset values on model opened
@@ -135,6 +141,25 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 					</div>
 				)}
 			</Model>
+
+			<label
+				htmlFor="ExamScore-toggle"
+				className="inline-flex relative items-center mb-5 cursor-pointer"
+			>
+				<input
+					type="checkbox"
+					value=""
+					id="ExamScore-toggle"
+					className="sr-only peer"
+					checked={value}
+					onChange={toggledButtonClick}
+				/>
+				<div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+				<span className="ml-3 text-sm font-medium text-gray-400 dark:text-gray-500">
+					Set Exam Score
+				</span>
+			</label>
+
 			<PaginatedTable />
 			<div className="grid grid-row-[auto_1fr] gap-8">
 				{/* <UsersList users={students} /> */}
