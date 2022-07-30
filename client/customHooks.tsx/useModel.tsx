@@ -23,7 +23,6 @@ function useModel(hasEditButton = false) {
 		setItemData({ id: null, name: "" });
 		setIsOpened(true);
 		setEditButtonClicked(false);
-		console.log("🚀 ~ file: useModel.tsx ~ line 27 ~ onAdd ~ onAdd", onAdd);
 	}, []);
 
 	const onEdit = useCallback(() => {
@@ -42,7 +41,7 @@ function useModel(hasEditButton = false) {
 						</AddModel>
 					</Suspense>
 
-					<div className="grid grid-cols-[auto_1fr] gap-8 mbe-4">
+					<div className="grid grid-cols-[auto_1fr] gap-8 py-4">
 						<button
 							onClick={onAdd}
 							className="justify-self-end block w-32 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"

@@ -11,7 +11,7 @@ export interface attendanceInitialProperties {
 	onClose: Function;
 	initialAttendance: attendance;
 	profileIds?: string[] | null;
-	edit: boolean; // Boolean
+	multiEnabled?: boolean; // Boolean
 }
 
 export interface attendanceMutationVariables {

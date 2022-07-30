@@ -1,5 +1,16 @@
 import { Exam as studentExam, Role } from "@prisma/client";
-import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, floatArg, list } from "nexus";
+import {
+	nonNull,
+	objectType,
+	stringArg,
+	extendType,
+	intArg,
+	nullable,
+	arg,
+	floatArg,
+	list,
+	inputObjectType,
+} from "nexus";
 import { PaginationInputType, queryArgs } from "./User";
 
 export interface exam {
@@ -198,24 +209,41 @@ export const createMultipleExamMutation = extendType({
 		t.field("createMultipleExam", {
 			type: "ExamCUResponse",
 			args: {
-				score: nonNull(floatArg()),
+				score: nullable(floatArg()),
 				date: nonNull(arg({ type: "DateTime" })),
 				note: nullable(stringArg()),
-				profileIds: nonNull(list(nonNull(stringArg()))),
+				profileIds: nullable(list(nonNull(stringArg()))),
+				studentsAndScores: nullable(arg({ type: "JSONObject" })),
 			},
-			resolve: async (_parent, { score, note, date, profileIds }, { prisma, user }) => {
+			resolve: async (
+				_parent,
+				{ score, note, date, profileIds, studentsAndScores },
+				{ prisma, user }
+			) => {
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 				const newExams: Omit<exam, "id">[] = [];
-				profileIds.forEach((id) =>
-					newExams.push({
-						score,
-						date,
-						note,
-						profileId: id,
-						createdBy: user.id,
-					})
-				);
-				console.log("🚀 ~ file: Exam.ts ~ line 205 ~ resolve: ~ newExams", newExams);
+				const isEmpty = Object.keys(studentsAndScores).length === 0;
+				if (isEmpty) {
+					profileIds?.forEach((id) =>
+						newExams.push({
+							score: score || 0.001,
+							date,
+							note,
+							profileId: id,
+							createdBy: user.id,
+						})
+					);
+				} else {
+					Object.entries(studentsAndScores).map(([key, value]) => {
+						newExams.push({
+							score: Number(value),
+							date,
+							note,
+							profileId: key,
+							createdBy: user.id,
+						});
+					});
+				}
 
 				return await prisma.exam.createMany({
 					data: newExams,

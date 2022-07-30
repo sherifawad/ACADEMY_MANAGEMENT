@@ -43,7 +43,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 	const rowEditHandler = (row) => {
 		router.push(`/student/${row.values?.id}`);
 	};
-	const { PaginatedTable, refetch, checkedItems } = usePagination({
+	const { PaginatedTable, refetch, checkedItems, inputsData } = usePagination({
 		list,
 		prevCursor,
 		nextCursor,
@@ -57,7 +57,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 	});
 
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel(false);
-    
+
 	const onProceed = () => {
 		router.replace(router.asPath);
 		console.log("Proceed clicked");
@@ -98,7 +98,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 						onProceed={onProceed}
 						onClose={modelProps.onClose}
 						profileIds={checkedItems}
-						edit={modelProps.editButtonClicked}
+						multiEnabled={true}
 						initialAttendance={{
 							profileId: "",
 							id: itemData?.id,
@@ -112,10 +112,10 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 					<AddExam
 						onProceed={onProceed}
 						onClose={modelProps.onClose}
-						profileId=""
-						score={itemData?.score}
-						date={itemData?.date}
-						note={itemData?.note}
+						multiEnabled={true}
+						profileIds={checkedItems}
+						studentsAndScores={inputsData}
+						{...itemData}
 					/>
 				)}
 				{showMainModel && (

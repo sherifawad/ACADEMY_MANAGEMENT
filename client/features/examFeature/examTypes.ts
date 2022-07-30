@@ -11,7 +11,8 @@ export interface examInitialProperties {
 	onClose: Function;
 	initialExam: exam;
 	profileIds?: string[] | null;
-	edit?: boolean; // Boolean
+	studentsAndScores?: { [x: string]: number } | null;
+	multiEnabled?: boolean; // Boolean
 }
 
 export interface examMutationVariables {

@@ -38,7 +38,6 @@ function studentExams({ exams = [], profileId }) {
 				<AddExam
 					onProceed={onProceed}
 					onClose={modelProps.onClose}
-					edit={modelProps.editButtonClicked}
 					initialExam={{ profileId, ...itemData }}
 				/>
 			</Model>

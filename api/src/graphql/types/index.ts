@@ -1,5 +1,5 @@
 import { PrismaClient, User } from "@prisma/client";
-import { DateTimeResolver, TimeResolver } from "graphql-scalars";
+import { DateTimeResolver, GraphQLJSONObject, TimeResolver } from "graphql-scalars";
 import { Jwt } from "jsonwebtoken";
 import { asNexusMethod, enumType } from "nexus";
 import { Request, Response } from "express";
@@ -37,6 +37,7 @@ export type nextAuthToken = Jwt & {
 
 export const DateTime = asNexusMethod(DateTimeResolver, "date");
 export const Time = asNexusMethod(TimeResolver, "date");
+export const JSONObject = asNexusMethod(GraphQLJSONObject, "JSONObject");
 
 // export type request = { req }: { req: NextApiRequest }
 export interface Context {

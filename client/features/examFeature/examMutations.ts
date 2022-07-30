@@ -10,14 +10,14 @@ export const CREATE_EXAM_MUTATION = `
     }
 `;
 export const CREATE_Multiple_EXAM_MUTATION = `
-    mutation CreateMultipleExam($score: Float!, $date: DateTime!, $profileIds: [String!]!, $note: String) {
-        createMultipleExam(score: $score, date: $date, profileIds: $profileIds, note: $note) {
+    mutation Mutation($date: DateTime!, $studentsAndScores: JSONObject, $score: Float, $note: String, $profileIds: [String!]) {
+        createMultipleExam(date: $date, studentsAndScores: $studentsAndScores, score: $score, note: $note, profileIds: $profileIds) {
             count
         }
     }
 `;
 export const UPDATE_EXAM_MUTATION = `
-    mutation Mutation($updateExamId: String!, $score: String, $date: DateTime, $note: String) {
+    mutation Mutation($updateExamId: String!, $score: Float, $date: DateTime, $note: String) {
         updateExam(id: $updateExamId, score: $score, date: $date, note: $note) {
             id
             note

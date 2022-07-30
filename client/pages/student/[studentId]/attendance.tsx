@@ -36,7 +36,6 @@ function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 				<AddAttendance
 					onProceed={onProceed}
 					onClose={modelProps.onClose}
-					edit={modelProps.editButtonClicked}
 					initialAttendance={{
 						profileId,
 						...itemData,
