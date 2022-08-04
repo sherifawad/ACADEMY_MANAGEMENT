@@ -11,6 +11,7 @@ import usePrevious from "./usePrevious";
 
 export interface paginationInputProps {
 	list: any[];
+	tableHooks?: any[];
 	hiddenColumns?: string[] | undefined | null;
 	additionalHiddenColumns?: string[] | undefined | null;
 	formatDate?: string | null;
@@ -41,19 +42,13 @@ function usePagination({
 	tableInitialState,
 	hiddenColumns,
 	additionalHiddenColumns,
+	tableHooks,
 }: paginationInputProps) {
-	const ORDER = {
-		desc: "desc",
-		asc: "asc",
-	};
 	const initialState = { hiddenColumns, stateArr: {}, selectedRowIds: {}, ...tableInitialState };
 
 	const [checkedItems, setCheckedItems] = useState([]);
 	const [inputsData, setInputData] = useState({});
-	const [checkedAllItems, setCheckedAllItems] = useState([]);
 
-	const [tableHooks, setTableHooks] = useState([]);
-	const [hiddenColumnsIds, setHiddenColumnsIds] = useState([]);
 	const [isAscending, setIsAscending] = useState(false);
 	const [currentSortProperty, setCurrentSortProperty] = useState("id");
 
@@ -132,36 +127,6 @@ function usePagination({
 		[list]
 	) as any;
 
-	const [columns, setColumns] = useState(initialColumns);
-
-	const handleAllCheckChange = useCallback(
-		(e, rows) => {
-			const { checked } = e.target;
-			let result = [];
-			if (checked) {
-				rows.map(({ original: { id } }) => result.push(id));
-				setCheckedAllItems(result);
-				setCheckedItems((prevState) => [...prevState, ...result]);
-			} else {
-				result = checkedItems.filter(function (val) {
-					return checkedAllItems.indexOf(val) == -1;
-				});
-				setCheckedAllItems([]);
-			}
-			setCheckedItems(result);
-		},
-		[checkedItems]
-	);
-
-	const editRowHandler = (values: any) => {
-		if (values) {
-			if (setItemsState) {
-				setItemsState(values);
-			}
-			if (edit) edit(values);
-		}
-	};
-
 	const headerClick = useCallback((e, rows, columnId) => {
 		if (columnId === "selection") {
 			return;
@@ -170,63 +135,6 @@ function usePagination({
 			headerClickHandler(columnId);
 		}
 	}, []);
-
-	// Setup table hooks
-
-	const checkBoxHook = (hooks: any) => useCheckboxes(hooks, setCheckedItems);
-	const inputHook = (hooks: any) => useInputHooks(hooks, inputColumn.columId, inputColumn.headerName);
-	const editHook = (hooks: any) => useEditHooks(hooks, editRowHandler);
-
-	// if (hasCheckBox) {
-	// 	setTableHooks((prevState) => {
-	// 		return [...prevState, useRowSelect, checkBoxHook];
-	// 	});
-	// }
-
-	// if (inputColumn) {
-	// 	setTableHooks((prevState) => {
-	// 		return [...prevState, inputHook];
-	// 	});
-	// }
-
-	// if (edit?.name) {
-	// 	setTableHooks((prevState) => {
-	// 		return [...prevState, editHook];
-	// 	});
-	// }
-
-	// useEffect(() => {
-	// 	setTableHooks((prevState) => {
-	// 		const exist = prevState.some((x) => x.name === checkBoxHook.name || x.name === useRowSelect.name);
-	// 		if (hasCheckBox) {
-	// 			return exist ? prevState : [...prevState, useRowSelect, checkBoxHook];
-	// 		} else {
-	// 			return prevState.filter((x) => x.name !== checkBoxHook.name || x.name !== useRowSelect.name);
-	// 		}
-	// 	});
-	// }, [hasCheckBox]);
-
-	// useEffect(() => {
-	// 	setTableHooks((prevState) => {
-	// 		const exist = prevState.some((x) => x.name === inputHook.name);
-	// 		if (inputColumn) {
-	// 			return exist ? prevState : [...prevState, inputHook];
-	// 		} else {
-	// 			return prevState.filter((x) => x.name !== inputHook.name);
-	// 		}
-	// 	});
-	// }, [inputColumn?.columId, inputColumn?.headerName]);
-
-	// useEffect(() => {
-	// 	setTableHooks((prevState) => {
-	// 		const exist = prevState.some((x) => x.name === editHook.name);
-	// 		if (edit?.name) {
-	// 			return exist ? prevState : [...prevState, editHook];
-	// 		} else {
-	// 			return prevState.filter((x) => x.name !== editHook.name);
-	// 		}
-	// 	});
-	// }, [edit?.name]);
 
 	// useEffect(() => {
 	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", checkedItems);
@@ -272,7 +180,7 @@ function usePagination({
 
 	const tableInstance = useTable(
 		{
-			columns,
+			columns: initialColumns,
 			data: paginatedData,
 			initialState,
 			autoResetSelectedRows: false,
@@ -305,10 +213,7 @@ function usePagination({
 				}
 			},
 		} as any,
-		(hooks: any) => useCheckboxes(hooks, setCheckedItems),
-		useRowSelect,
-		(hooks: any) => useInputHooks(hooks, inputColumn?.columId, inputColumn?.headerName),
-		(hooks: any) => useEditHooks(hooks, editRowHandler)
+		...tableHooks
 	);
 
 	const RenderedTable = useMemo(() => {
@@ -321,10 +226,11 @@ function usePagination({
 					headerClick={headerClick}
 					setInputData={setInputData}
 					hiddenColumnsIds={additionalHiddenColumns}
+					hiddenColumns={hiddenColumns}
 				/>
 			);
 		};
-	}, [paginatedData, tableHooks]);
+	}, [paginatedData, tableHooks, additionalHiddenColumns]);
 
 	const PaginatedTable = useMemo(() => {
 		return () => {
@@ -338,7 +244,7 @@ function usePagination({
 				</div>
 			);
 		};
-	}, [paginatedData, tableHooks]);
+	}, [paginatedData, tableHooks, additionalHiddenColumns]);
 
 	return {
 		PaginatedTable,

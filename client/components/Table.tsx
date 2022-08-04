@@ -9,6 +9,7 @@ function Table({
 	headerClick,
 	setInputData,
 	hiddenColumnsIds = [],
+	hiddenColumns = [],
 }) {
 	const {
 		getTableProps,
@@ -35,10 +36,14 @@ function Table({
 	}, [state.selectedRowIds]);
 
 	useEffect(() => {
-		setHiddenColumns((prevState) => {
-			return _.difference(prevState, hiddenColumnsIds);
-		});
-	}, [setHiddenColumns]);
+		if (hiddenColumnsIds.length > 0) {
+			setHiddenColumns((prevState) => {
+				return [...prevState, ...hiddenColumnsIds];
+			});
+		} else {
+			setHiddenColumns(hiddenColumns);
+		}
+	}, []);
 
 	return (
 		<>

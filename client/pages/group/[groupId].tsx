@@ -11,6 +11,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import useToggle from "customHooks/useToggle";
+import { useCheckboxes, useInputHooks } from "customHooks/reactTableHooks";
+import { useRowSelect } from "react-table";
 
 const initialData = async (variable: {}) => {
 	const {
@@ -35,28 +37,43 @@ const initialData = async (variable: {}) => {
 };
 
 function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupId }) {
+	const checkBoxHook = (hooks: any) => useCheckboxes(hooks);
+	const inputHook = (hooks: any) => useInputHooks(hooks, "examScore", "ExamScore");
+
+	const [tableHooks, setTableHooks] = useState([checkBoxHook, useRowSelect, inputHook]);
+	const [additionalHiddenColumns, setAdditionalHiddenColumns] = useState([]);
 	const [flatRows, setFlatRows] = useState([]);
 	const [showMainModel, setShowMainModel] = useState(true);
 	const [showAttendancesModel, setShowAttendancesModel] = useState(false);
 	const [showExamsModel, setShowExamsModel] = useState(false);
-	const [value, toggleValue] = useToggle(false);
+	const [value, toggleValue] = useToggle(true);
 
 	const router = useRouter();
 	const rowEditHandler = (row) => {
 		router.push(`/student/${row.values?.id}`);
 	};
+
+	const toggledButtonClick = () => {
+		toggleValue(!value);
+		if (value) {
+			setAdditionalHiddenColumns(["examScore"]);
+		} else {
+			setAdditionalHiddenColumns([]);
+		}
+	};
+
 	const { PaginatedTable, refetch, checkedItems, inputsData } = usePagination({
 		list,
 		prevCursor,
 		nextCursor,
 		hasCheckBox: true,
 		_count,
-		inputColumn: value ? { columId: "examScore", headerName: "ExamScore" } : undefined,
-		additionalHiddenColumns: value ? ["examScore"] : undefined,
 		edit: rowEditHandler,
 		queryVariables: { groupId },
 		hiddenColumns: ["id", "avatar", "isActive"],
 		query: initialData,
+		tableHooks,
+		additionalHiddenColumns,
 	});
 
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel(false);
@@ -75,10 +92,6 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 		setShowMainModel(false);
 		setShowAttendancesModel(false);
 		setShowExamsModel(true);
-	};
-
-	const toggledButtonClick = () => {
-		toggleValue(!value);
 	};
 
 	// reset values on model opened

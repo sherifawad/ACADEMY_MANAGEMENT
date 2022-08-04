@@ -7,86 +7,24 @@ export interface inputHooks {
 	headerName: string;
 }
 
-export const useCheckboxes = (hooks: Hooks, setCheckedItems: Dispatch<SetStateAction<string[]>>) => {
-	const [checkedAllItems, setCheckedAllItems] = useState([]);
-	const [selectedItems, setSelectedItems] = useState([]);
+export const useCheckboxes = (hooks: Hooks) => {
 	return useMemo(() => {
 		return hooks.visibleColumns.push((columns: Column[]) => [
 			{
 				id: "selection",
 				width: "50px",
 				className: "checkbox",
-				Header: ({ getToggleAllRowsSelectedProps, rows, toggleAllRowsSelected }: any) => {
-					const { onChange, ...restProps } = getToggleAllRowsSelectedProps();
-					const handleChange = (e) => {
-						const { value, checked } = (e as ChangeEvent<HTMLInputElement>).target;
-						if (checked) {
-							let result = [];
-							rows.map(({ original: { id } }) => result.push(id));
-							setCheckedAllItems(result);
-							setCheckedItems((prevState) => [...prevState, ...result]);
-							setSelectedItems((prevState) => [...prevState, ...result]);
-						} else {
-							setCheckedItems((prevState) => {
-								return prevState.filter(function (val) {
-									return checkedAllItems.indexOf(val) == -1;
-								});
-							});
-							setSelectedItems((prevState) => {
-								return prevState.filter(function (val) {
-									return checkedAllItems.indexOf(val) == -1;
-								});
-							});
-							setCheckedAllItems([]);
-						}
-					};
+				Header: ({ getToggleAllRowsSelectedProps }: any) => {
 					return (
 						<div>
 							<IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
 						</div>
 					);
 				},
-				Cell: ({
-					state,
-					row: {
-						getToggleRowSelectedProps,
-						original: { id },
-						toggleRowSelected,
-						isSelected,
-					},
-				}: any) => {
-					const { onChange, ...restProps } = getToggleRowSelectedProps();
-
+				Cell: ({ row: { getToggleRowSelectedProps } }: any) => {
 					return (
 						<div>
-							<IndeterminateCheckbox
-								// value={id}
-								// onChange={(e) => {
-								// 	const { value, checked } = (e as ChangeEvent<HTMLInputElement>).target;
-
-								// 	if (checked) {
-								// 		setCheckedItems((prevState) => {
-								// 			if (prevState.indexOf(value) == -1) {
-								// 				return [...prevState, value];
-								// 			} else {
-								// 				return prevState;
-								// 			}
-								// 		});
-								// 		setSelectedItems((prevState) => {
-								// 			if (prevState.indexOf(value) == -1) {
-								// 				return [...prevState, value];
-								// 			} else {
-								// 				return prevState;
-								// 			}
-								// 		});
-								// 	} else {
-								// 		setSelectedItems((prevState) => prevState.filter((x) => x !== value));
-								// 		setCheckedItems((prevState) => prevState.filter((x) => x !== value));
-								// 	}
-								// 	toggleRowSelected(!isSelected);
-								// }}
-								{...getToggleRowSelectedProps()}
-							/>
+							<IndeterminateCheckbox {...getToggleRowSelectedProps()} />
 						</div>
 					);
 				},
