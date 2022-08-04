@@ -3,6 +3,7 @@ import Table from "components/Table";
 import { createAxiosService, getDayNames } from "core/utils";
 import { format } from "date-fns";
 import Image from "next/image";
+import Link from "next/link";
 import { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Column, Hooks, useRowSelect, useTable } from "react-table";
 import { inputHooks, newInputColumn, useCheckboxes, useEditHooks, useInputHooks } from "./reactTableHooks";
@@ -81,43 +82,45 @@ function usePagination({
 								accessor: key,
 								Cell: ({
 									row: {
-										original: { avatar },
+										original: { avatar, id },
 									},
 									value,
 								}) =>
 									value === null ? (
 										""
 									) : (
-										<div className="flex items-center gap-2">
-											{avatar && (
-												<Image
-													className="rounded-full self-center place-self-center"
-													src={`/${avatar}`}
-													alt="student image"
-													width="60"
-													height="60"
-												/>
-											)}
-											{!avatar && (
-												<div className="p-2 rounded-full bg-blue-50 relative flex justify-center self-center place-self-center">
-													<svg
-														xmlns="http://www.w3.org/2000/svg"
-														className="w-8 h-8 text-gray-200"
-														fill="none"
-														viewBox="0 0 24 24"
-														stroke="currentColor"
-													>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															strokeWidth="2"
-															d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-														/>
-													</svg>
-												</div>
-											)}
-											<p>{value}</p>
-										</div>
+										<Link href={`/student/${id}`}>
+											<a className="flex items-center gap-2">
+												{avatar && (
+													<Image
+														className="rounded-full self-center place-self-center"
+														src={`/${avatar}`}
+														alt="student image"
+														width="60"
+														height="60"
+													/>
+												)}
+												{!avatar && (
+													<div className="p-2 rounded-full bg-blue-50 relative flex justify-center self-center place-self-center">
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															className="w-8 h-8 text-gray-200"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth="2"
+																d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+															/>
+														</svg>
+													</div>
+												)}
+												<p>{value}</p>
+											</a>
+										</Link>
 									),
 							};
 						}

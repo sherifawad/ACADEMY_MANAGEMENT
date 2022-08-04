@@ -129,9 +129,8 @@ function AddExam({
 						>
 							<span>Edit Multiple Student</span>
 							<svg
-								style={{ transform: value ? "rotate(180deg)" : "" }}
 								data-accordion-icon
-								className="w-6 h-6 shrink-0 transform rotate-180"
+								className={`w-6 h-6 shrink-0 transform ${value ? "rotate-180" : ""}`}
 								fill="currentColor"
 								viewBox="0 0 20 20"
 								xmlns="http://www.w3.org/2000/svg"
