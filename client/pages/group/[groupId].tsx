@@ -4,13 +4,13 @@ import UsersList from "components/UsersList";
 import { GROUPS_IDS_QUERY, GROUP_NAME_QUERY } from "core/queries/groupQueries";
 import { GROUP_STUDENTS } from "core/queries/studentQueries";
 import { createAxiosService } from "core/utils";
-import useModel from "customHooks.tsx/useModel";
-import usePagination from "customHooks.tsx/usePagination";
+import useModel from "customHooks/useModel";
+import usePagination from "customHooks/usePagination";
 import AddAttendance from "features/attendanceFeature/AddAttendance";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import useToggle from "customHooks.tsx/useToggle";
+import useToggle from "customHooks/useToggle";
 
 const initialData = async (variable: {}) => {
 	const {
@@ -39,7 +39,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 	const [showMainModel, setShowMainModel] = useState(true);
 	const [showAttendancesModel, setShowAttendancesModel] = useState(false);
 	const [showExamsModel, setShowExamsModel] = useState(false);
-	const [value, toggleValue] = useToggle(true);
+	const [value, toggleValue] = useToggle(false);
 
 	const router = useRouter();
 	const rowEditHandler = (row) => {
@@ -52,6 +52,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 		hasCheckBox: true,
 		_count,
 		inputColumn: value ? { columId: "examScore", headerName: "ExamScore" } : undefined,
+		additionalHiddenColumns: value ? ["examScore"] : undefined,
 		edit: rowEditHandler,
 		queryVariables: { groupId },
 		hiddenColumns: ["id", "avatar", "isActive"],

@@ -8,13 +8,38 @@ export interface inputHooks {
 }
 
 export const useCheckboxes = (hooks: Hooks, setCheckedItems: Dispatch<SetStateAction<string[]>>) => {
+	const [checkedAllItems, setCheckedAllItems] = useState([]);
+	const [selectedItems, setSelectedItems] = useState([]);
 	return useMemo(() => {
 		return hooks.visibleColumns.push((columns: Column[]) => [
 			{
 				id: "selection",
 				width: "50px",
 				className: "checkbox",
-				Header: ({ getToggleAllRowsSelectedProps }: any) => {
+				Header: ({ getToggleAllRowsSelectedProps, rows, toggleAllRowsSelected }: any) => {
+					const { onChange, ...restProps } = getToggleAllRowsSelectedProps();
+					const handleChange = (e) => {
+						const { value, checked } = (e as ChangeEvent<HTMLInputElement>).target;
+						if (checked) {
+							let result = [];
+							rows.map(({ original: { id } }) => result.push(id));
+							setCheckedAllItems(result);
+							setCheckedItems((prevState) => [...prevState, ...result]);
+							setSelectedItems((prevState) => [...prevState, ...result]);
+						} else {
+							setCheckedItems((prevState) => {
+								return prevState.filter(function (val) {
+									return checkedAllItems.indexOf(val) == -1;
+								});
+							});
+							setSelectedItems((prevState) => {
+								return prevState.filter(function (val) {
+									return checkedAllItems.indexOf(val) == -1;
+								});
+							});
+							setCheckedAllItems([]);
+						}
+					};
 					return (
 						<div>
 							<IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
@@ -22,6 +47,7 @@ export const useCheckboxes = (hooks: Hooks, setCheckedItems: Dispatch<SetStateAc
 					);
 				},
 				Cell: ({
+					state,
 					row: {
 						getToggleRowSelectedProps,
 						original: { id },
@@ -34,23 +60,32 @@ export const useCheckboxes = (hooks: Hooks, setCheckedItems: Dispatch<SetStateAc
 					return (
 						<div>
 							<IndeterminateCheckbox
-								value={id}
-								onChange={(e) => {
-									const { value, checked } = (e as ChangeEvent<HTMLInputElement>).target;
+								// value={id}
+								// onChange={(e) => {
+								// 	const { value, checked } = (e as ChangeEvent<HTMLInputElement>).target;
 
-									if (checked) {
-										setCheckedItems((prevState) => {
-											if (prevState.indexOf(value) == -1) return [...prevState, value];
-											else {
-												return prevState;
-											}
-										});
-									} else {
-										setCheckedItems((prevState) => prevState.filter((x) => x !== value));
-									}
-									toggleRowSelected(!isSelected);
-								}}
-								{...restProps}
+								// 	if (checked) {
+								// 		setCheckedItems((prevState) => {
+								// 			if (prevState.indexOf(value) == -1) {
+								// 				return [...prevState, value];
+								// 			} else {
+								// 				return prevState;
+								// 			}
+								// 		});
+								// 		setSelectedItems((prevState) => {
+								// 			if (prevState.indexOf(value) == -1) {
+								// 				return [...prevState, value];
+								// 			} else {
+								// 				return prevState;
+								// 			}
+								// 		});
+								// 	} else {
+								// 		setSelectedItems((prevState) => prevState.filter((x) => x !== value));
+								// 		setCheckedItems((prevState) => prevState.filter((x) => x !== value));
+								// 	}
+								// 	toggleRowSelected(!isSelected);
+								// }}
+								{...getToggleRowSelectedProps()}
 							/>
 						</div>
 					);
@@ -58,7 +93,7 @@ export const useCheckboxes = (hooks: Hooks, setCheckedItems: Dispatch<SetStateAc
 			},
 			...columns,
 		]);
-	}, [hooks, setCheckedItems]);
+	}, [hooks]);
 };
 
 export const useEditHooks = (hooks: any, edit: Function) => {
@@ -79,7 +114,7 @@ export const useEditHooks = (hooks: any, edit: Function) => {
 	]);
 };
 
-export const useInputHooks = (hooks: any, columId: string, HeaderName: string) => {
+export const useInputHooks = (hooks: any, columId: string = "inputId", HeaderName: string = "Input") => {
 	return hooks.visibleColumns.push((columns: Column[]) => [
 		...columns,
 		newInputColumn(columId, HeaderName),

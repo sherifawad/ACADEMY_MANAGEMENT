@@ -1,4 +1,4 @@
-import useToggle from "customHooks.tsx/useToggle";
+import useToggle from "customHooks/useToggle";
 import { arEG } from "date-fns/locale";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTimePicker } from "react-next-dates";

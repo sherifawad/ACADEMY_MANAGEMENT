@@ -1,6 +1,6 @@
 import CardContainer from "components/layout/CardContainer";
 import { getDayNames } from "core/utils";
-import useModel from "customHooks.tsx/useModel";
+import useModel from "customHooks/useModel";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import AddAttendance from "./AddAttendance";

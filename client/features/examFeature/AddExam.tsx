@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { DatePicker } from "react-next-dates";
 import { useMutation } from "react-query";
 import { examInitialProperties } from "./examTypes";
-import useToggle from "customHooks.tsx/useToggle";
+import useToggle from "customHooks/useToggle";
 
 function AddExam({
 	onProceed,

@@ -7,8 +7,8 @@ import { format } from "date-fns";
 import AddModel from "components/AddModel";
 import AddExam from "features/examFeature/AddExam";
 import { useRouter } from "next/router";
-import useReactTable from "customHooks.tsx/useReactTable";
-import useModel from "customHooks.tsx/useModel";
+import useReactTable from "customHooks/useReactTable";
+import useModel from "customHooks/useModel";
 
 function studentExams({ exams = [], profileId }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
