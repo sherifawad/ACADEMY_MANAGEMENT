@@ -8,6 +8,7 @@ function Table({
 	isAscending,
 	headerClick,
 	setInputData,
+	setCheckedItems,
 	hiddenColumnsIds = [],
 	hiddenColumns = [],
 }) {
@@ -32,7 +33,7 @@ function Table({
 	}, [selectedFlatRows]);
 
 	useEffect(() => {
-		console.log("🚀 ~ file: Table.tsx ~ line 74 ~ useEffect ~ selectedRowIds", state.selectedRowIds);
+		setCheckedItems(Object.keys(state.selectedRowIds));
 	}, [state.selectedRowIds]);
 
 	useEffect(() => {

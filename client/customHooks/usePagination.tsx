@@ -145,8 +145,8 @@ function usePagination({
 	// }, [inputsData]);
 
 	// useEffect(() => {
-	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ stateArr", (state as any).stateArr);
-	// }, [state]);
+	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ inputsData", inputsData);
+	// }, [inputsData]);
 
 	const sortColumn = useCallback(
 		(sortProperty: string, isAsc: boolean = false) => {
@@ -225,6 +225,7 @@ function usePagination({
 					isAscending={isAscending}
 					headerClick={headerClick}
 					setInputData={setInputData}
+					setCheckedItems={setCheckedItems}
 					hiddenColumnsIds={additionalHiddenColumns}
 					hiddenColumns={hiddenColumns}
 				/>
