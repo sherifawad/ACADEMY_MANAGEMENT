@@ -14,7 +14,7 @@ function ExamsCard({ id = "", exams = [] }) {
 	};
 	return (
 		<>
-			<CardContainer>
+			<CardContainer width="w-full">
 				<div>
 					<div className="flex justify-between items-center">
 						<Link href={`/student/${id}/exam`}>

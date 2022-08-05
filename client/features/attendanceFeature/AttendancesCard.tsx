@@ -14,7 +14,7 @@ function AttendancesCard({ id = "", attendances = [] }) {
 	};
 	return (
 		<>
-			<CardContainer>
+			<CardContainer width="w-full">
 				<div>
 					<div className="flex justify-between items-center">
 						<Link href={`/student/${id}/attendance`}>
@@ -26,7 +26,6 @@ function AttendancesCard({ id = "", attendances = [] }) {
 							<AddAttendance
 								onProceed={onProceed}
 								onClose={modelProps.onClose}
-								edit={modelProps.editButtonClicked}
 								initialAttendance={{
 									profileId: id,
 									id: itemData?.id,

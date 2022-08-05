@@ -18,10 +18,15 @@ export const GET_STUDENT_DETAILS = `
             profile {
                 bio
                 group {
+                    id
                     name
                     isActive
                     startAt
                     endAt
+                    grade {
+                        id
+                        name
+                    }
                 }
                 attendances(take: $attendancesTake2) {
                     startAt

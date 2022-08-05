@@ -13,9 +13,9 @@ function Student({ user }) {
 
 	return (
 		<div className="container w-full">
-			<div className="flex flex-col md:flex-row gap-4">
+			<div className="w-full">
 				<StudentCard name={name} bio={bio} contact={contact} group={group} />
-				<div className="flex flex-col justify-between  flex-wrap md:w-3/5 gap-4">
+				<div className="flex flex-wrap md:flex-nowrap w-full gap-4 items-start justify-between pt-8">
 					<AttendancesCard attendances={attendances} id={id} />
 					<ExamsCard exams={exams} id={id} />
 				</div>
