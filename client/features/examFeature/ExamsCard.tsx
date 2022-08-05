@@ -26,7 +26,6 @@ function ExamsCard({ id = "", exams = [] }) {
 							<AddExam
 								onProceed={onProceed}
 								onClose={modelProps.onClose}
-								edit={modelProps.editButtonClicked}
 								initialExam={{
 									profileId: id,
 									...itemData,

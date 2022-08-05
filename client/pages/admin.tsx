@@ -3,7 +3,7 @@ import { GetServerSideProps } from "next";
 import UsersList from "components/UsersList";
 import { useState } from "react";
 import AddModel from "components/AddModel";
-import AddStudent from "components/AddStudent";
+import AddStudent from "features/studentFeature/AddStudent";
 import { createAxiosService } from "core/utils";
 import { GET_USERS } from "core/queries/userQueries";
 import { useRouter } from "next/router";

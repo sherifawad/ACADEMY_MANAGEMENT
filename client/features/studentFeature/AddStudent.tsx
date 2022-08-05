@@ -1,45 +1,50 @@
-import { STUDENT_REGISTER_MUTATION } from "core/mutations/userMutations";
-import { createAxiosService } from "core/utils";
-import React, { useState } from "react";
-import { useMutation } from "react-query";
-import GradeGroupSelect from "./GradeGroupSelect";
+import { useEffect, useState } from "react";
+import GradeGroupSelect from "../../components/GradeGroupSelect";
+import { createStudentMutation } from "./studentMutations";
+import { studentInitialProperties } from "./studentTypes";
 
-function AddStudent({ onProceed, onClose }) {
-	const [groupId, setGroupId] = useState("");
+function AddStudent({ onProceed, onClose, initialStudent }: studentInitialProperties) {
+	const { profile, isActive, contact, avatar, name, id, password, groupId } = initialStudent || {};
 
+	const [_, setGroupId] = useState(groupId);
 	const [formState, setFormState] = useState({
-		email: "",
-		password: "",
-		name: "",
-		phone: "",
-		parentsPhones: "",
-		address: "",
+		id,
+		isActive,
+		avatar,
+		email: contact?.email,
+		password,
+		name,
+		phone: contact?.phone,
+		parentsPhones: contact?.parentsPhones,
+		address: contact?.address,
 		error: "",
 	});
 
-	const mutation = useMutation(
-		"AddStudent",
-		() =>
-			createAxiosService(STUDENT_REGISTER_MUTATION, { ...formState, groupId }).then(
-				(response) => response.data.data
-			),
-		{
-			onSuccess: () => {
-				console.log("Student Created Successfully");
-				onProceed();
-				onClose();
-			},
-		}
-	);
+	useEffect(() => {
+		setFormState({
+			...formState,
+			name: name || "",
+			email: contact?.email || "",
+			phone: contact?.phone || "",
+			parentsPhones: contact?.parentsPhones || "",
+			address: contact?.address || "",
+			isActive,
+			avatar,
+		});
+	}, [contact, name, groupId, isActive, avatar]);
+
+	const createMutation = createStudentMutation({ ...formState, groupId });
 
 	const submitContact = async (e) => {
 		e.preventDefault();
-		if (mutation.isLoading) return;
-		await mutation.mutateAsync();
+		if (createMutation.isLoading) return;
+		await createMutation.mutateAsync();
 	};
 
 	const proceedAndClose = async (e) => {
 		await submitContact(e);
+		onProceed();
+		onClose();
 	};
 
 	return (

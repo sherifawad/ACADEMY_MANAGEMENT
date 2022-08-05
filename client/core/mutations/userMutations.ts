@@ -39,11 +39,3 @@ export const SIGN_UP_MUTATION = `
 		}
 	}
 `;
-
-export const STUDENT_REGISTER_MUTATION = `
-    mutation Mutation($email: String!, $password: String!, $address: String!, $phone: String!, $groupId: String!, $name: String, $parentsPhones: String) {
-        studentRegister(email: $email, password: $password, address: $address, phone: $phone, groupId: $groupId, name: $name, parentsPhones: $parentsPhones) {
-            id
-        }
-    }
-`;
