@@ -3,10 +3,11 @@ import GradeGroupSelect from "../../components/GradeGroupSelect";
 import { createStudentMutation } from "./studentMutations";
 import { studentInitialProperties } from "./studentTypes";
 
-function AddStudent({ onProceed, onClose, initialStudent }: studentInitialProperties) {
+function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInitialProperties) {
 	const { profile, isActive, contact, avatar, name, id, password, groupId } = initialStudent || {};
 
-	const [_, setGroupId] = useState(groupId);
+	const [_groupId, setGroupId] = useState();
+	const [_gradeId, setGradeId] = useState();
 	const [formState, setFormState] = useState({
 		id,
 		isActive,
@@ -198,7 +199,12 @@ function AddStudent({ onProceed, onClose, initialStudent }: studentInitialProper
 				/>
 			</div>
 
-			<GradeGroupSelect setGroupId={setGroupId} />
+			<GradeGroupSelect
+				setGroupId={setGroupId}
+				setGradeId={setGradeId}
+				groupId={groupId}
+				gradeId={gradeId}
+			/>
 			{formState.error?.length > 0 && <p className="text-red-600">{formState.error}</p>}
 
 			<button
@@ -206,7 +212,7 @@ function AddStudent({ onProceed, onClose, initialStudent }: studentInitialProper
 				type="submit"
 				className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
 			>
-				Add Student
+				{id ? "Edit" : "Add"}
 			</button>
 		</form>
 	);

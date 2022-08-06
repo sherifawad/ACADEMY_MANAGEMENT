@@ -15,7 +15,7 @@ import {
 } from "react-icons/ai";
 import { GiUpgrade, GiTeamDowngrade } from "react-icons/gi";
 
-function StudentCard({ name = "", bio = "", contact = {}, group = {} }) {
+function StudentCard({ name = "", bio = "", contact = {}, group = {}, id, isActive, avatar }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 	const router = useRouter();
 	const onProceed = () => {
@@ -34,6 +34,24 @@ function StudentCard({ name = "", bio = "", contact = {}, group = {} }) {
 						height="512"
 					/>
 					<div className="pt-6 md:pis-8 text-center md:text-left space-y-4 w-full">
+						<div className="flex flex-col md:flex-row-reverse flex-nowrap md:justify-between justify-center items-center">
+							<Model title="Student">
+								<AddStudent
+									onProceed={onProceed}
+									onClose={modelProps.onClose}
+									gradeId={(group as any)?.grade?.id}
+									initialStudent={{
+										name,
+										contact,
+										groupId: (group as any)?.id,
+										id,
+										isActive,
+										avatar,
+									}}
+								/>
+							</Model>
+							<div className="text-sky-500 dark:text-sky-400 font-bold">{name}</div>
+						</div>
 						<blockquote>
 							<p className="text-lg font-medium">“{bio}”</p>
 						</blockquote>
@@ -100,8 +118,6 @@ function StudentCard({ name = "", bio = "", contact = {}, group = {} }) {
 							</div>
 						</div>
 						<figcaption className="font-medium">
-							<div className="text-sky-500 dark:text-sky-400">{name}</div>
-
 							<div className="flex gap-2 p-2">
 								<AiOutlineHome />
 								<p className="text-slate-700 dark:text-slate-500">

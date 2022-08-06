@@ -3,14 +3,23 @@ import { createAxiosService } from "core/utils";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 
-function GradeGroupSelect({ setGroupId }) {
+function GradeGroupSelect({ setGroupId, setGradeId, gradeId, groupId }) {
 	const [groups, setGroups] = useState([]);
 	const [selectedGrade, setSelectedGrade] = useState("");
 	const [selectedGroup, setSelectedGroup] = useState("");
 
 	useEffect(() => {
+		setSelectedGrade(gradeId);
+		refetch;
+	}, [gradeId]);
+
+	useEffect(() => {
 		setGroupId(selectedGroup);
 	}, [selectedGroup]);
+
+	useEffect(() => {
+		setGradeId(selectedGrade);
+	}, [selectedGrade, gradeId]);
 
 	const { data } = useQuery("ActiveGrades", () =>
 		createAxiosService(ACTIVE_GRADES_QUERY).then((response) => response.data.data)
@@ -26,6 +35,7 @@ function GradeGroupSelect({ setGroupId }) {
 			enabled: selectedGrade?.length > 0 && selectedGroup?.length < 1,
 			onSuccess: (data) => {
 				setGroups(data?.Grade?.groups);
+				setSelectedGroup(groupId);
 			},
 			onError: () => {
 				setGroups([]);

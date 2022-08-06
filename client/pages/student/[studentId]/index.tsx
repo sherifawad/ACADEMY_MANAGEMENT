@@ -7,6 +7,8 @@ function Student({ user }) {
 	const {
 		id,
 		name,
+		isActive,
+		avatar,
 		profile: { attendances, exams, bio, group },
 		contact,
 	} = user || {};
@@ -14,7 +16,15 @@ function Student({ user }) {
 	return (
 		<div className="container w-full">
 			<div className="w-full">
-				<StudentCard name={name} bio={bio} contact={contact} group={group} />
+				<StudentCard
+					name={name}
+					bio={bio}
+					contact={contact}
+					group={group}
+					id={id}
+					isActive={isActive}
+					avatar={avatar}
+				/>
 				<div className="flex flex-wrap md:flex-nowrap w-full gap-4 items-start justify-between pt-8">
 					<AttendancesCard attendances={attendances} id={id} />
 					<ExamsCard exams={exams} id={id} />
