@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { nonNull, objectType, stringArg, extendType, intArg, nullable } from "nexus";
+import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg } from "nexus";
 import { Attendance } from "./Attendance";
 import { Exam } from "./Exam";
 import { queryArgs, User } from "./User";
@@ -16,15 +16,33 @@ export const Profile = objectType({
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("exams", {
 			type: Exam,
-			args: { take: nullable(intArg()) },
-			async resolve(_parent, { take }, ctx) {
+			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
+			async resolve(_parent, { take, orderByList }, ctx) {
+				const isEmpty = Object.keys(orderByList).length === 0;
+				let orderList: { [x: string]: string }[];
+				if (isEmpty) {
+					orderList = [{ date: "desc" }, { createdAt: "desc" }, { updatedAt: "desc" }];
+				} else {
+					orderList = Object.entries(orderByList).reduce<{ [x: string]: string }[]>(
+						(acc, [key, value]) => {
+							if (typeof value === "string" || value instanceof String) {
+								return [...acc, { [key]: String(value) }];
+							}
+							return acc;
+						},
+						[]
+					);
+				}
 				return await ctx.prisma.profile
 					.findUnique({
 						where: {
 							id: _parent.id,
 						},
 					})
-					.exams({ take, orderBy: { date: "desc" } });
+					.exams({
+						take,
+						orderBy: orderList,
+					});
 			},
 		});
 		t.field("user", {
@@ -41,15 +59,33 @@ export const Profile = objectType({
 		});
 		t.list.field("attendances", {
 			type: Attendance,
-			args: { take: nullable(intArg()) },
-			async resolve(_parent, { take }, ctx) {
+			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
+			async resolve(_parent, { take, orderByList }, ctx) {
+				const isEmpty = Object.keys(orderByList).length === 0;
+				let orderList: { [x: string]: string }[];
+				if (isEmpty) {
+					orderList = [{ date: "desc" }, { createdAt: "desc" }, { updatedAt: "desc" }];
+				} else {
+					orderList = Object.entries(orderByList).reduce<{ [x: string]: string }[]>(
+						(acc, [key, value]) => {
+							if (typeof value === "string" || value instanceof String) {
+								return [...acc, { [key]: String(value) }];
+							}
+							return acc;
+						},
+						[]
+					);
+				}
 				return await ctx.prisma.profile
 					.findUnique({
 						where: {
 							id: _parent.id,
 						},
 					})
-					.attendances({ take, orderBy: { startAt: "desc" } });
+					.attendances({
+						take,
+						orderBy: orderList,
+					});
 			},
 		});
 		t.field("group", {

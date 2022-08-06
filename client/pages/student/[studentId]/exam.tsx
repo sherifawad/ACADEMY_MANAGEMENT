@@ -1,5 +1,4 @@
 import { GET_STUDENT_EXAMS, studentExamsQuery } from "features/examFeature/examsQueries";
-import { GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService } from "core/utils";
 import { useEffect, useMemo, useState } from "react";
 import { usePagination, useSortBy, useTable } from "react-table";
@@ -9,6 +8,7 @@ import AddExam from "features/examFeature/AddExam";
 import { useRouter } from "next/router";
 import useReactTable from "customHooks/useReactTable";
 import useModel from "customHooks/useModel";
+import { GET_USERS_IDS } from "features/studentFeature/studentsQueries";
 
 function studentExams({ exams = [], profileId }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
@@ -75,7 +75,7 @@ export async function getStaticProps({ params }) {
 		return { props: { exams: list, profileId: params.studentId } };
 	} catch (error) {
 		return {
-			props: null,
+			props: {},
 		};
 	}
 }

@@ -158,11 +158,11 @@ input PaginationInputType {
 }
 
 type Profile {
-  attendances(take: Int): [Attendance]
+  attendances(orderByList: JSONObject, take: Int): [Attendance]
   bio: String
   createdAt: DateTime
   createdBy: String
-  exams(take: Int): [Exam]
+  exams(orderByList: JSONObject, take: Int): [Exam]
   group: Group
   id: String
   updatedAt: DateTime
