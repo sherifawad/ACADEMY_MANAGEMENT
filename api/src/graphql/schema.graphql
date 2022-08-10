@@ -151,9 +151,10 @@ type PageCursor {
 
 input PaginationInputType {
   myCursor: String
-  orderByKey: String!
-  orderDirection: String!
+  orderByKey: String
+  orderDirection: String
   skip: Int
+  sort: [JSONObject]
   take: Int!
 }
 
@@ -186,6 +187,7 @@ type Query {
   Profile(id: String!): Profile!
   Profiles: [Profile]!
   SExams(data: PaginationInputType, studentId: String!): ExamsResponse
+  StudentsQuery(data: PaginationInputType): UsersResponse
   User(id: String!, take: Int): User!
   Users: [User]
   studentAttendances(data: PaginationInputType, studentId: String!): AttendanceResponse

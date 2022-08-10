@@ -16,6 +16,8 @@ export interface dataPaginationProps {
 	nextCursor?: string | null;
 	queryVariables?: {} | null;
 	query?: Function | null;
+	setPageSize: Function;
+	pageSize: number;
 }
 
 function useDataPagination({
@@ -27,20 +29,22 @@ function useDataPagination({
 	query,
 	currentOrder = "asc",
 	currentSortProperty,
+	setPageSize,
+	pageSize,
 }: dataPaginationProps) {
+	const currentPageSize = useMemo(() => pageSize, [pageSize]);
 	const [isLastPage, setIsLastPage] = useState(false);
 	const [isFirstPage, setIsFirstPage] = useState(true);
 	const [canGoNext, setCanGoNext] = useState(true);
 	const [canGoPrevious, setCanPrevious] = useState(false);
 	const [currentPageNumber, setCurrentPageNumber] = useState(1);
-	const [pageSize, setPageSize] = useState(5);
 	const [paginationOption, setPaginationOption] = useState({
 		...queryVariables,
 		data: {
 			myCursor: nextCursor,
 			orderByKey: currentSortProperty,
 			orderDirection: currentOrder,
-			take: pageSize,
+			take: currentPageSize,
 			skip: null,
 		},
 	});
@@ -52,15 +56,18 @@ function useDataPagination({
 	});
 
 	useEffect(() => {
-		setPaginationOption({ ...paginationOption, data: { ...paginationOption.data, take: pageSize } });
-		gotoFirst({ force: true, take: pageSize });
-	}, [pageSize]);
+		setPaginationOption({
+			...paginationOption,
+			data: { ...paginationOption.data, take: currentPageSize },
+		});
+		gotoFirst({ force: true, take: currentPageSize });
+	}, [currentPageSize]);
 
 	const gotoLast = async () => {
 		if (isLastPage) return;
 		const options = {
 			...paginationOption,
-			data: { ...paginationOption.data, myCursor: null, take: -pageSize, skip: null },
+			data: { ...paginationOption.data, myCursor: null, take: -currentPageSize, skip: null },
 		};
 		const { list, prevCursor, nextCursor } = await query(options);
 		if (list && list.length > 0) {
@@ -77,7 +84,7 @@ function useDataPagination({
 			setIsFirstPage(false);
 			setCanGoNext(false);
 			setCanPrevious(true);
-			setCurrentPageNumber(Math.abs(Math.ceil(_count / pageSize)));
+			setCurrentPageNumber(Math.abs(Math.ceil(_count / currentPageSize)));
 		}
 	};
 
@@ -85,7 +92,7 @@ function useDataPagination({
 		force = false,
 		currentSortProperty = null,
 		currentOrder = null,
-		take = pageSize,
+		take = currentPageSize,
 	}: goFirstInputProps) => {
 		if (isFirstPage) {
 			if (!force) return;
@@ -122,7 +129,7 @@ function useDataPagination({
 			setIsLastPage(false);
 			setCanPrevious(false);
 			setCurrentPageNumber(1);
-			if (pageSize >= _count) {
+			if (currentPageSize >= _count) {
 				setIsFirstPage(true);
 				setIsLastPage(true);
 				setCanGoNext(false);
@@ -135,7 +142,7 @@ function useDataPagination({
 		if (!canGoNext) return;
 		const options = {
 			...paginationOption,
-			data: { ...paginationOption.data, take: pageSize },
+			data: { ...paginationOption.data, take: currentPageSize },
 		};
 		const { list, prevCursor, nextCursor } = await query(options);
 		if (list && list.length > 0) {
@@ -148,7 +155,7 @@ function useDataPagination({
 				...paginationOption,
 				data: { ...paginationOption.data, myCursor: nextCursor },
 			});
-			if (currentPageNumber + 1 === Math.abs(Math.ceil(_count / pageSize))) {
+			if (currentPageNumber + 1 === Math.abs(Math.ceil(_count / currentPageSize))) {
 				setCanGoNext(false);
 				setIsLastPage(true);
 			}
@@ -165,21 +172,21 @@ function useDataPagination({
 			data: {
 				...paginationOption.data,
 				myCursor: paginationResult.prevCursor,
-				take: -pageSize,
+				take: -currentPageSize,
 			},
 		};
 		let resultList;
 		let result = await query(options);
 		resultList = result.list;
 		if (resultList && resultList.length > 0) {
-			if (isLastPage && resultList.length < pageSize) {
-				const newSize = pageSize - resultList.length - pageSize;
+			if (isLastPage && resultList.length < currentPageSize) {
+				const newSize = currentPageSize - resultList.length - currentPageSize;
 				options = {
 					...options,
 					data: {
 						...options.data,
 						myCursor: null,
-						take: pageSize,
+						take: currentPageSize,
 					},
 				};
 				result = await query(options);
@@ -256,7 +263,8 @@ function useDataPagination({
 							<span>
 								Page{" "}
 								<strong>
-									{Math.abs(currentPageNumber)} of {Math.abs(Math.ceil(_count / pageSize))}
+									{Math.abs(currentPageNumber)} of{" "}
+									{Math.abs(Math.ceil(_count / currentPageSize))}
 								</strong>{" "}
 							</span>
 							{/*<span>
@@ -272,14 +280,14 @@ function useDataPagination({
 							/>
 						</span>*/}
 							<select
-								value={pageSize}
+								value={currentPageSize}
 								onChange={(e) => {
 									setPageSize(Number(e.target.value));
 								}}
 							>
-								{[1, 2, 5, 10, 15].map((pageSize) => (
-									<option key={pageSize} value={pageSize}>
-										Show {pageSize}
+								{[1, 2, 5, 10, 15].map((currentPageSize) => (
+									<option key={currentPageSize} value={currentPageSize}>
+										Show {currentPageSize}
 									</option>
 								))}
 							</select>
@@ -294,7 +302,7 @@ function useDataPagination({
 		RenderedPagination,
 		paginatedData: paginationResult.list,
 		gotoFirst,
-		pageSize,
+		currentPageSize,
 	};
 }
 

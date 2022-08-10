@@ -64,7 +64,7 @@ export const Profile = objectType({
 				const isEmpty = Object.keys(orderByList).length === 0;
 				let orderList: { [x: string]: string }[];
 				if (isEmpty) {
-					orderList = [{ date: "desc" }, { createdAt: "desc" }, { updatedAt: "desc" }];
+					orderList = [{ startAt: "desc" }, { endAt: "desc" }];
 				} else {
 					orderList = Object.entries(orderByList).reduce<{ [x: string]: string }[]>(
 						(acc, [key, value]) => {

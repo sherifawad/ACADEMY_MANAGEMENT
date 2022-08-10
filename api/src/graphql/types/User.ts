@@ -44,6 +44,7 @@ export interface CursorPaginationInput {
 	myCursor?: string | null;
 	orderByKey?: string | null;
 	orderDirection?: string | null;
+	sort?: any[] | null;
 }
 export interface CursorPagination {
 	take?: number;
@@ -105,10 +106,11 @@ export const PaginationInputType = inputObjectType({
 
 	definition(t) {
 		t.nullable.string("myCursor");
-		t.nonNull.string("orderByKey");
-		t.nonNull.string("orderDirection");
+		t.nullable.string("orderByKey");
+		t.nullable.string("orderDirection");
 		t.nonNull.int("take");
 		t.nullable.int("skip");
+		t.list.nullable.field("sort", { type: "JSONObject" });
 	},
 });
 
@@ -166,8 +168,18 @@ export const UsersQuery = extendType({
 	},
 });
 
+export function getKeys(obj: any) {
+	let keyName;
+	return Object.entries(obj).reduce((acc, [key, value]) => {
+		if (typeof value === "object") {
+			return { ...acc, [key]: value };
+		}
+		return acc;
+	}, {});
+}
+
 export const queryArgs = (args: CursorPaginationInput, filter = {}): UserFilterPagination => {
-	const { take, skip, myCursor, orderByKey, orderDirection } = args || {};
+	const { take, skip, myCursor, orderByKey, orderDirection, sort } = args || {};
 
 	let data = {};
 	if (myCursor) {
@@ -187,8 +199,45 @@ export const queryArgs = (args: CursorPaginationInput, filter = {}): UserFilterP
 		};
 	}
 
+	if (sort) {
+		data = {
+			...data,
+			orderBy: sort,
+		};
+	}
+
 	if (orderByKey && orderDirection) {
-		data = { ...data, orderBy: { [orderByKey]: orderDirection } };
+		if (orderByKey.toLocaleLowerCase() === "exams" || orderByKey.toLocaleLowerCase() === "score") {
+			data = {
+				...data,
+				orderBy: [
+					{
+						profile: {
+							exams: {
+								_count: orderDirection,
+							},
+						},
+					},
+				],
+			};
+		} else if (
+			orderByKey.toLocaleLowerCase() === "attendances" ||
+			orderByKey.toLocaleLowerCase() === "startat" ||
+			orderByKey.toLocaleLowerCase() === "endat"
+		) {
+			data = {
+				...data,
+				orderBy: {
+					profile: {
+						attendances: {
+							_count: orderDirection,
+						},
+					},
+				},
+			};
+		} else {
+			data = { ...data, orderBy: { [orderByKey]: orderDirection } };
+		}
 	}
 
 	if (take) {
@@ -212,34 +261,149 @@ export const FilteredUsersQuery = extendType({
 				role: nullable(arg({ type: "Role" })),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
+					// return await prisma.user.findMany({
+					// 	where: {
+					// 		role: args.data?.role,
+					// 		isActive: args.data?.isActive,
+					// 	},
+					// });
+					const { data, isActive, role } = args;
+					let where = {};
+					if (role) {
+						where = { ...where, role };
+					}
+					if (isActive) {
+						where = { ...where, isActive };
+					}
+					let result: prismaUser[];
+					let totalCount: { _count: number } | undefined | null;
+					let prevCursor: string | undefined | null;
+					let nextCursor: string | undefined | null;
+					let groupName: { name: string } | undefined | null;
+
+					if (data) {
+						result = await prisma.user.findMany(queryArgs(data, where));
+
+						nextCursor = result[result?.length - 1]?.id;
+						prevCursor = result[0]?.id;
+
+						if (!data?.myCursor) {
+							totalCount = await prisma.user.aggregate({
+								where,
+								_count: true,
+							});
+						}
+					} else {
+						result = await prisma.user.findMany({
+							where,
+						});
+					}
+
+					return {
+						list: result,
+						prevCursor,
+						nextCursor,
+						totalCount,
+						groupName: groupName?.name,
+					};
+				} catch (error) {
+					return Promise.reject(error);
+				}
+			},
+		});
+	},
+});
+
+export const StudentsQuery = extendType({
+	type: "Query",
+	definition(t) {
+		t.field("StudentsQuery", {
+			type: "UsersResponse",
+			args: {
+				data: PaginationInputType,
+			},
+			resolve: async (_parent, args, { prisma, user }) => {
 				if (!user || user.role !== Role.ADMIN) return null;
-				// return await prisma.user.findMany({
-				// 	where: {
-				// 		role: args.data?.role,
-				// 		isActive: args.data?.isActive,
-				// 	},
-				// });
-				const { data, isActive, role } = args;
+
 				let where = {};
-				if (role) {
-					where = { ...where, role };
+				where = { ...where, role: Role.Student };
+
+				const { take, skip, myCursor, orderByKey, orderDirection } = args?.data || {};
+
+				let data = {};
+				if (myCursor) {
+					data = {
+						...data,
+						skip: 1, // Skip the cursor
+						cursor: {
+							id: myCursor,
+						},
+					};
 				}
-				if (isActive) {
-					where = { ...where, isActive };
+
+				if (skip) {
+					data = {
+						...data,
+						skip,
+					};
 				}
+
+				if (take) {
+					data = { ...data, take: Number(take) };
+				}
+
+				data = { ...data, where: { role: Role.Student } };
+
 				let result: prismaUser[];
 				let totalCount: { _count: number } | undefined | null;
 				let prevCursor: string | undefined | null;
 				let nextCursor: string | undefined | null;
-				let groupName: { name: string } | undefined | null;
 
 				if (data) {
-					result = await prisma.user.findMany(queryArgs(data, where));
+					result = await prisma.user.findMany({
+						...data,
+						select: {
+							id: true,
+							name: true,
+							isActive: true,
+							avatar: true,
 
+							profile: {
+								select: {
+									exams: {
+										take: 1,
+										orderBy: [
+											{ date: "desc" },
+											{ createdAt: "desc" },
+											{ updatedAt: "desc" },
+										],
+										select: {
+											score: true,
+										},
+									},
+									attendances: {
+										take: 1,
+										orderBy: [{ startAt: "desc" }, { endAt: "desc" }],
+										select: {
+											startAt: true,
+											endAt: true,
+										},
+									},
+								},
+							},
+						},
+					});
+
+					console.log(
+						"🚀 ~ file: User.ts ~ line 382 ~ resolve: ~ result",
+						JSON.stringify(result, null, 2)
+					);
 					nextCursor = result[result?.length - 1]?.id;
 					prevCursor = result[0]?.id;
 
-					if (!data?.myCursor) {
+					if (!myCursor) {
 						totalCount = await prisma.user.aggregate({
 							where,
 							_count: true,
@@ -256,7 +420,6 @@ export const FilteredUsersQuery = extendType({
 					prevCursor,
 					nextCursor,
 					totalCount,
-					groupName: groupName?.name,
 				};
 			},
 		});

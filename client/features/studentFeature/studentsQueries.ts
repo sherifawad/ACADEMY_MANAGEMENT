@@ -57,6 +57,63 @@ export const GET_USERS_IDS = `
         }
     }
 `;
+export const GET_STUDENTS_paginated_LIST = `
+    query FilteredUsers($role: Role, $data: PaginationInputType, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
+        FilteredUsers(role: $role, data: $data) {
+            totalCount {
+                _count
+            }
+            prevCursor
+            nextCursor
+            list {
+                id
+                name
+                isActive
+                avatar
+                profile {
+                    exams(take: $take, orderByList: $orderByList) {
+                        score
+                    }
+                    attendances(take: $attendancesTake2, orderByList: $attendancesOrderByList2) {
+                        startAt
+                        endAt
+                    }
+                }
+            }
+        }
+    }
+`;
+export const GET_STUDENTS_LIST = `
+    query FilteredUsers($role: Role, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
+        FilteredUsers(role: $role) {
+            list {
+                id
+                name
+                isActive
+                avatar
+                profile {
+                    exams(take: $take, orderByList: $orderByList) {
+                        score
+                    }
+                    attendances(take: $attendancesTake2, orderByList: $attendancesOrderByList2) {
+                        startAt
+                        endAt
+                    }
+                }
+            }
+        }
+    }
+`;
+
+export const studentsListQuery = async (variable: studentMutationVariables) => {
+	const {
+		data: {
+			data: { FilteredUsers },
+		},
+	} = await createAxiosService(GET_STUDENTS_LIST, variable);
+
+	return { ...FilteredUsers };
+};
 
 export const studentsIdsQuery = async (variable: studentMutationVariables) => {
 	const {

@@ -1,9 +1,9 @@
 import AddAttendance from "features/attendanceFeature/AddAttendance";
 import { studentAttendancesQuery } from "features/attendanceFeature/attendancesQueries";
-import { GET_USERS_IDS } from "core/queries/userQueries";
 import { createAxiosService } from "core/utils";
 import useModel from "customHooks/useModel";
 import usePagination from "customHooks/usePagination";
+import { GET_USERS_IDS } from "features/studentFeature/studentsQueries";
 
 function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
@@ -93,7 +93,7 @@ export async function getStaticProps({ params }) {
 		};
 	} catch (error) {
 		return {
-			props: null,
+			props: {},
 		};
 	}
 }

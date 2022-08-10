@@ -74,3 +74,31 @@ const objectReset = function (obj) {
 		{}
 	);
 };
+
+export function flatten(arr) {
+	return arr.reduce(function (flat, toFlatten) {
+		return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+	}, []);
+}
+
+export function ObjectFlatten(data) {
+	var result = {};
+	function recurse(cur, prop) {
+		if (Object(cur) !== cur) {
+			result[prop] = cur;
+		} else if (Array.isArray(cur)) {
+			for (var i = 0, l = cur.length; i < l; i++) recurse(cur[i], prop);
+			if (l == 0) result[prop] = null;
+		} else {
+			var isEmpty = true;
+			for (var p in cur) {
+				isEmpty = false;
+				// recurse(cur[p], prop ? prop + "_" + p : p);
+				recurse(cur[p], p);
+			}
+			if (isEmpty && prop) result[prop] = {};
+		}
+	}
+	recurse(data, "");
+	return result;
+}

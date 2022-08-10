@@ -1,32 +1,36 @@
 import { format } from "date-fns";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Hooks, usePagination, useSortBy, useTable } from "react-table";
 import { useEditHooks } from "./reactTableHooks";
 
 export interface tableInputs {
 	tableData: any[];
+	tableColumns?: any[];
 	hiddenColumns?: string[];
 	tableInitialStates?: any;
-	hasPagination: boolean;
-	hasEditColumn: boolean;
-	canSort: boolean;
+	hasPagination?: boolean;
+	hasEditColumn?: boolean;
+	canSort?: boolean;
 	editRow?: Function | null;
 	setItemData?: Function | null;
 }
 
 function useReactTable({
 	tableData,
-	hasPagination,
-	hasEditColumn,
+	hasPagination = false,
+	hasEditColumn = false,
 	editRow,
 	setItemData,
-	canSort,
+	canSort = false,
 	hiddenColumns = [],
+	tableColumns,
 	tableInitialStates = {},
 }: tableInputs) {
 	const initialState = useMemo(() => {
 		return {
 			pageIndex: 0,
+			pageSize: 5,
+			...tableInitialStates,
 			hiddenColumns,
 		};
 	}, [tableInitialStates, hiddenColumns]);
@@ -58,26 +62,19 @@ function useReactTable({
 
 	const examsColumns = useMemo(
 		() =>
-			tableData[0]
-				? Object.keys(tableData[0])
-						.filter((key) => key !== "id")
-						.map((key) => {
-							if (key === "date") {
-								return {
-									Header: key,
-									accessor: key,
-									Cell: ({ value }) => format(new Date(value), "dd/MM/yyyy"),
-								};
-							}
-							return { Header: key, accessor: key };
-						})
+			tableColumns?.length > 0
+				? tableColumns
+				: tableData[0]
+				? Object.keys(tableData[0]).map((key) => {
+						return { Header: key, accessor: key };
+				  })
 				: [],
-		[tableData]
+		[tableData, tableColumns?.length > 0 ? tableColumns : undefined]
 	);
 
 	const data = useMemo(() => tableData, [tableData]);
 
-	const tableInstance = useTable({ columns: examsColumns, data, initialState } as any, ...tableHooks);
+	const tableInstance = useTable({ columns: examsColumns ?? [], data, initialState } as any, ...tableHooks);
 
 	const {
 		getTableProps,
@@ -110,21 +107,27 @@ function useReactTable({
 											{...headerGroup.getHeaderGroupProps()}
 											className="text-md font-semibold tracking-wide text-left text-gray-900 bg-gray-100 uppercase border-b border-gray-600"
 										>
-											{headerGroup.headers.map((column) => (
-												<th
-													{...column.getHeaderProps(column.getSortByToggleProps())}
-													className="px-4 py-3"
-												>
-													{column.render("Header")}
-													<span>
-														{column.isSorted
-															? column.isSortedDesc
-																? " ▼"
-																: " ▲"
-															: ""}
-													</span>
-												</th>
-											))}
+											{headerGroup.headers.map((column) => {
+												return (
+													<th
+														{...column.getHeaderProps(
+															column.getSortByToggleProps()
+														)}
+														className="px-4 py-3"
+													>
+														<div className="flex items-center justify-center flex-wrap">
+															{column.render("Header")}
+															<span>
+																{column.isSorted
+																	? column.isSortedDesc
+																		? " ▼"
+																		: " ▲"
+																	: ""}
+															</span>
+														</div>
+													</th>
+												);
+											})}
 										</tr>
 									))}
 								</thead>
@@ -215,7 +218,7 @@ function useReactTable({
 										setPageSize(Number(e.target.value));
 									}}
 								>
-									{[1, 2, 30, 40, 50].map((pageSize) => (
+									{[1, 2, 3, 5, 10, 15, 30].map((pageSize) => (
 										<option key={pageSize} value={pageSize}>
 											Show {pageSize}
 										</option>
@@ -227,7 +230,7 @@ function useReactTable({
 				</>
 			);
 		};
-	}, [tableData]);
+	}, [tableData, page, row]);
 
 	return {
 		RenderedTable,

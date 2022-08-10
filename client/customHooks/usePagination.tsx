@@ -12,8 +12,9 @@ import usePrevious from "./usePrevious";
 
 export interface paginationInputProps {
 	list: any[];
-	tableHooks?: any[];
+	tableHooks?: any[] | null;
 	hiddenColumns?: string[] | undefined | null;
+	tableColumns?: any[] | undefined | null;
 	additionalHiddenColumns?: string[] | undefined | null;
 	formatDate?: string | null;
 	_count?: number | null;
@@ -38,22 +39,24 @@ function usePagination({
 	inputColumn,
 	setItemsState,
 	formatDate = "dd MMM hh:mm a",
+	tableColumns,
 	query,
 	queryVariables,
 	tableInitialState,
-	hiddenColumns,
+	hiddenColumns = [],
 	additionalHiddenColumns,
-	tableHooks,
+	tableHooks = [],
 }: paginationInputProps) {
 	const initialState = { hiddenColumns, stateArr: {}, selectedRowIds: {}, ...tableInitialState };
 
 	const [checkedItems, setCheckedItems] = useState([]);
 	const [inputsData, setInputData] = useState({});
+	const [pageSize, setPageSize] = useState(5);
 
 	const [isAscending, setIsAscending] = useState(false);
 	const [currentSortProperty, setCurrentSortProperty] = useState("id");
 
-	const { RenderedPagination, gotoFirst, paginatedData, pageSize } = useDataPagination({
+	const { RenderedPagination, gotoFirst, paginatedData } = useDataPagination({
 		list,
 		_count,
 		prevCursor,
@@ -61,11 +64,15 @@ function usePagination({
 		queryVariables,
 		query,
 		currentSortProperty,
+		setPageSize,
+		pageSize,
 	});
 
 	const initialColumns = useMemo(
 		() =>
-			paginatedData[0]
+			tableColumns?.length > 0
+				? tableColumns
+				: paginatedData[0]
 				? Object.keys(paginatedData[0]).map((key) => {
 						if (key === "startAt" || key === "endAt") {
 							return {
@@ -139,30 +146,14 @@ function usePagination({
 		}
 	}, []);
 
-	// useEffect(() => {
-	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", checkedItems);
-	// }, [checkedItems]);
-
-	// useEffect(() => {
-	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ checkedItems", inputsData);
-	// }, [inputsData]);
-
-	// useEffect(() => {
-	// 	console.log("🚀 ~ file: usePagination.tsx ~ line 288 ~ inputsData", inputsData);
-	// }, [inputsData]);
-
-	const sortColumn = useCallback(
-		(sortProperty: string, isAsc: boolean = false) => {
-			const sortDirection = isAsc ? "asc" : "desc";
-			gotoFirst({
-				force: true,
-				currentSortProperty: sortProperty,
-				currentOrder: sortDirection,
-				take: pageSize,
-			});
-		},
-		[pageSize]
-	);
+	const sortColumn = useCallback((sortProperty: string, isAsc: boolean = false) => {
+		const sortDirection = isAsc ? "asc" : "desc";
+		gotoFirst({
+			force: true,
+			currentSortProperty: sortProperty,
+			currentOrder: sortDirection,
+		});
+	}, []);
 
 	const headerClickHandler = useCallback(
 		(headerName: string) => {
@@ -174,7 +165,7 @@ function usePagination({
 				return !prevState;
 			});
 		},
-		[isAscending, currentSortProperty, pageSize]
+		[isAscending, currentSortProperty]
 	);
 
 	const getRowId = useCallback((row) => {
@@ -234,7 +225,12 @@ function usePagination({
 				/>
 			);
 		};
-	}, [paginatedData, tableHooks, additionalHiddenColumns]);
+	}, [
+		paginatedData,
+		pageSize,
+		tableHooks?.length > 1 ? tableHooks : undefined,
+		additionalHiddenColumns?.length > 1 ? additionalHiddenColumns : undefined,
+	]);
 
 	const PaginatedTable = useMemo(() => {
 		return () => {
@@ -248,7 +244,12 @@ function usePagination({
 				</div>
 			);
 		};
-	}, [paginatedData, tableHooks, additionalHiddenColumns]);
+	}, [
+		paginatedData,
+		pageSize,
+		tableHooks?.length > 1 ? tableHooks : undefined,
+		additionalHiddenColumns?.length > 1 ? additionalHiddenColumns : undefined,
+	]);
 
 	return {
 		PaginatedTable,
