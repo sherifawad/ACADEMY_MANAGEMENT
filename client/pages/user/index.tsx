@@ -1,18 +1,15 @@
 import Head from "next/head";
 import { GetServerSideProps } from "next";
-import UsersList from "components/UsersList";
 import { useMemo, useState } from "react";
-import AddModel from "components/AddModel";
-import AddStudent from "features/studentFeature/AddStudent";
-import { usersByRolesListQuery } from "core/queries/userQueries";
 import { useRouter } from "next/router";
 import useReactTable from "customHooks/useReactTable";
 import { ObjectFlatten } from "core/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
+import { usersByRolesListQuery } from "features/userFeature/usersQueries";
 
-export default function Admin({ flattenedList }) {
+export default function Index({ flattenedList }) {
 	const tableColumns = useMemo(
 		() => [
 			{
@@ -27,7 +24,7 @@ export default function Admin({ flattenedList }) {
 					value === null ? (
 						""
 					) : (
-						<Link href={`/admin/${id}`}>
+						<Link href={`/user/${id}`}>
 							<a className="flex items-center gap-2">
 								{avatar && (
 									<Image

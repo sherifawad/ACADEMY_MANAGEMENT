@@ -1,6 +1,6 @@
-import { REVOKE_TOKEN_MUTATION } from "core/mutations/authPayloadMutations";
 import Paths from "core/paths";
 import { createAxiosService } from "core/utils";
+import { REVOKE_TOKEN_MUTATION } from "features/authFeature/authMutations";
 import { User } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
@@ -58,8 +58,8 @@ const Navbar = () => {
 					<a className="md:mx-0 mx-8 menu-line">Home</a>
 				</Link>
 
-				<Link href="/admin">
-					<a className="menu-line">Admin</a>
+				<Link href="/user">
+					<a className="menu-line">Users</a>
 				</Link>
 
 				<Link href="/student">

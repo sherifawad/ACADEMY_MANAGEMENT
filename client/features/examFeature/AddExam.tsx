@@ -13,6 +13,7 @@ import { DatePicker } from "react-next-dates";
 import { useMutation } from "react-query";
 import { examInitialProperties } from "./examTypes";
 import useToggle from "customHooks/useToggle";
+import LabelInput from "components/inputs/LabelInput";
 
 function AddExam({
 	onProceed,
@@ -151,16 +152,11 @@ function AddExam({
 						<div className="py-5 font-light">
 							<div className="flex flex-col gap-4">
 								<div className="row-span-full">
-									<label
-										htmlFor="score"
-										className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-									>
-										Change Exam where Score was:
-									</label>
-									<input
-										type="number"
-										name="score"
-										id="score"
+									<LabelInput
+										name={"conditionalScore"}
+										label={"Change Exam where Score was:"}
+										type={"number"}
+										placeholder={"Old Score"}
 										value={String(examState.score)}
 										onChange={(e) =>
 											setExamState({
@@ -169,23 +165,15 @@ function AddExam({
 												score: Number(e.target.value),
 											})
 										}
-										className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-										placeholder="Old Score"
-										required
 									/>
 								</div>
 
 								<div className="row-span-full">
-									<label
-										htmlFor="date"
-										className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-									>
-										Change Exam where Date was:
-									</label>
-									<input
-										type="date"
-										name="date"
-										id="date"
+									<LabelInput
+										name={"conditionalDate"}
+										label={"Change Exam where Date was:"}
+										type={"date"}
+										placeholder={"Old Date"}
 										value={examState?.date ? format(examState?.date, "yyyy-mm-dd") : ""}
 										onChange={({ target: { value } }) =>
 											setExamState({
@@ -197,26 +185,15 @@ function AddExam({
 														: null,
 											})
 										}
-										className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-										placeholder="date"
-										required
 									/>
 								</div>
 								<div className="row-span-full">
-									<label
-										htmlFor="note"
-										className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-									>
-										change Exam where Note contains:
-									</label>
-									<input
-										type="text"
-										name="note"
-										id="note"
+									<LabelInput
+										name={"conditionalNote"}
+										label={"Change Exam where Note contains:"}
+										placeholder={"Old Note"}
 										value={noteCondition}
 										onChange={(e) => setNoteCondition(e.target.value)}
-										className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-										placeholder="Old Note"
 									/>
 								</div>
 							</div>
@@ -226,7 +203,22 @@ function AddExam({
 			)}
 
 			<div className="row-span-full">
-				<label
+				<LabelInput
+					name={"score"}
+					label={value ? "New Score" : "Score"}
+					type={"number"}
+					placeholder={value ? "New Score" : "Score"}
+					value={Number.isNaN(Number(examState.score)) ? "" : Number(examState.score)}
+					onChange={(e) =>
+						setExamState({
+							...examState,
+							error: "",
+							score: Number(e.target.value),
+						})
+					}
+				/>
+
+				{/* <label
 					htmlFor="score"
 					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
 				>
@@ -247,11 +239,26 @@ function AddExam({
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
 					placeholder={value ? "New Score" : "Score"}
 					required
-				/>
+				/> */}
 			</div>
 
 			<div className="row-span-full">
-				<label
+				<LabelInput
+					name={"date"}
+					label={"Date"}
+					type={"date"}
+					placeholder={"date"}
+					value={examState?.date ? format(examState?.date, "yyyy-mm-dd") : ""}
+					onChange={({ target: { value } }) =>
+						setExamState({
+							...examState,
+							error: "",
+							date: value && value.length > 1 ? parse(value, "yyyy-mm-dd", new Date()) : null,
+						})
+					}
+				/>
+
+				{/* <label
 					htmlFor="date"
 					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
 				>
@@ -272,7 +279,7 @@ function AddExam({
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
 					placeholder="date"
 					required
-				/>
+				/> */}
 			</div>
 
 			<div className="row-span-full">

@@ -1,5 +1,5 @@
-import { ACTIVE_GRADES_QUERY, GRADE_GROUPS_QUERY } from "core/queries/gradeQueries";
 import { createAxiosService } from "core/utils";
+import { ACTIVE_GRADES_QUERY, GRADE_GROUPS_QUERY } from "features/gradeFeature/gradeQueries";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 
