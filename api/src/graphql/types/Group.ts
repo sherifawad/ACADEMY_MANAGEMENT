@@ -1,8 +1,25 @@
 import { Role } from "@prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, booleanArg } from "nexus";
 import { Attendance } from "./Attendance";
-import { Profile } from "./Profile";
-import { PaginationInputType, queryArgs } from "./User";
+import { Profile, ProfilesResponse } from "./Profile";
+import { CursorPaginationInput, PaginationInputType, queryArgs } from "./User";
+
+export const paginationResult = async (query: any) => {
+	let prevCursor: string | undefined | null;
+	let nextCursor: string | undefined | null;
+
+	const result = query;
+	if (result && result.length > 0) {
+		nextCursor = result[result?.length - 1]?.id;
+		prevCursor = result[0]?.id;
+	}
+
+	return {
+		list: result,
+		prevCursor,
+		nextCursor,
+	};
+};
 
 //generates Group type at schema.graphql
 export const Group = objectType({
@@ -17,19 +34,37 @@ export const Group = objectType({
 		t.field("updatedAt", { type: "DateTime" });
 		t.field("startAt", { type: "DateTime" });
 		t.field("endAt", { type: "DateTime" });
-		t.list.field("profiles", {
-			type: Profile,
+		t.field("profiles", {
+			type: ProfilesResponse,
 			args: { data: PaginationInputType },
 			async resolve(_parent, args, ctx) {
 				const { data } = args;
+
 				if (data) {
-					return await ctx.prisma.group
+					const query = await ctx.prisma.group
 						.findUnique({
 							where: {
 								id: _parent.id,
 							},
 						})
 						.profiles(queryArgs(data));
+
+					const result = await paginationResult(query);
+
+					if (!data?.myCursor) {
+						const {
+							_count: { profiles },
+						} = await ctx.prisma.group.findUnique({
+							where: {
+								id: _parent.id,
+							},
+							include: {
+								_count: { select: { profiles: true } },
+							},
+						});
+						return { ...result, totalCount: profiles ? { _count: profiles } : undefined };
+					}
+					return result;
 				}
 				return await ctx.prisma.group
 					.findUnique({

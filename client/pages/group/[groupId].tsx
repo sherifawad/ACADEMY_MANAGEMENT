@@ -1,9 +1,7 @@
 import AddExam from "features/examFeature/AddExam";
 import StudentsGroupList from "components/StudentsGroupList";
 import UsersList from "components/UsersList";
-import { GROUPS_IDS_QUERY, GROUP_NAME_QUERY } from "core/queries/groupQueries";
-import { GROUP_STUDENTS } from "core/queries/studentQueries";
-import { createAxiosService } from "core/utils";
+import { createAxiosService, ObjectFlatten } from "core/utils";
 import useModel from "customHooks/useModel";
 import usePagination from "customHooks/usePagination";
 import AddAttendance from "features/attendanceFeature/AddAttendance";
@@ -13,30 +11,9 @@ import { useEffect, useState } from "react";
 import useToggle from "customHooks/useToggle";
 import { useCheckboxes, useInputHooks } from "customHooks/reactTableHooks";
 import { useRowSelect } from "react-table";
+import { getGroupsIds, getGroupStudents, GROUPS_IDS_QUERY } from "features/groupFeature/groupQueries";
 
-const initialData = async (variable: {}) => {
-	const {
-		data: {
-			data: { studentsGroup },
-		},
-	} = await createAxiosService(GROUP_STUDENTS, variable);
-	if (studentsGroup) {
-		const {
-			students: { list, nextCursor, prevCursor, totalCount },
-			groupName,
-		} = studentsGroup;
-		if (totalCount) {
-			const { _count } = totalCount;
-			return { list, nextCursor, prevCursor, _count, groupName };
-		} else {
-			return { list, nextCursor, prevCursor, groupName };
-		}
-	} else {
-		return {};
-	}
-};
-
-function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupId }) {
+function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId }) {
 	const checkBoxHook = (hooks: any) => useCheckboxes(hooks);
 	const inputHook = (hooks: any) => useInputHooks(hooks, "examScore", "ExamScore");
 
@@ -71,7 +48,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 		edit: rowEditHandler,
 		queryVariables: { groupId },
 		hiddenColumns: ["id", "avatar", "isActive"],
-		query: initialData,
+		query: getGroupStudents,
 		tableHooks,
 		additionalHiddenColumns,
 	});
@@ -108,7 +85,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 	return (
 		<div className="container">
 			<Head>
-				<title>{groupName || "Group"}</title>
+				<title>{name || "Group"}</title>
 				<meta name="description" content="Group students" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
@@ -195,11 +172,7 @@ function groupItemData({ list, _count, groupName, nextCursor, prevCursor, groupI
 }
 
 export async function getStaticPaths() {
-	const {
-		data: {
-			data: { Groups },
-		},
-	} = await createAxiosService(GROUPS_IDS_QUERY);
+	const { Groups } = await getGroupsIds();
 
 	if (Groups) {
 		const paths = Groups?.map((group) => ({
@@ -219,18 +192,24 @@ export async function getStaticProps({ params }) {
 			role: "Student",
 			data: {
 				myCursor: null,
-				orderByKey: "id",
+				orderByKey: null,
 				orderDirection: "asc",
 				take: 5,
 				skip: null,
+				sort: [{ user: { name: "asc" } }],
 			},
 		};
-		const { groupName, list, nextCursor, prevCursor, _count } = (await initialData(variables)) || {};
+		const { name, list, nextCursor, prevCursor, totalCount } = (await getGroupStudents(variables)) || {};
+		const { _count } = totalCount || {};
+		let flattenedList = [];
+		if (list?.length > 0) {
+			flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
+		}
 		return {
 			props: {
-				list,
+				list: flattenedList,
 				_count,
-				groupName,
+				name,
 				prevCursor,
 				nextCursor,
 				groupId,

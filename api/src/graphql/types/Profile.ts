@@ -101,6 +101,25 @@ export const Profile = objectType({
 	},
 });
 
+export const Count = objectType({
+	name: "Count",
+	definition(t) {
+		t.int("_count");
+	},
+});
+
+export const ProfilesResponse = objectType({
+	name: "ProfilesResponse",
+	definition(t) {
+		t.list.field("list", {
+			type: Profile,
+		});
+		t.string("prevCursor");
+		t.nullable.string("nextCursor");
+		t.nullable.field("totalCount", { type: Count });
+	},
+});
+
 //get all Profiles
 export const ProfilesQuery = extendType({
 	type: "Query",

@@ -1,10 +1,9 @@
-import AddGroup from "components/AddGroup";
+import AddGroup from "features/groupFeature/AddGroup";
 import GroupsList from "components/GroupsList";
 import useModel from "customHooks/useModel";
 
 function GroupContents({ groups = [] }) {
 	const { Model, modelProps, itemData, setItemData } = useModel();
-
 	return (
 		<>
 			<Model title="Add Group">

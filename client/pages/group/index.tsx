@@ -1,15 +1,11 @@
-import AddGroup from "components/AddGroup";
-import AddModel from "components/AddModel";
-import GroupsList from "components/GroupsList";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { GROUPS_QUERY } from "core/queries/groupQueries";
 
-import { createAxiosService } from "core/utils";
-import useModel from "customHooks/useModel";
-import GroupContents from "components/pageContents/GroupContents";
+import { getGroups } from "features/groupFeature/groupQueries";
+import GroupContents from "features/groupFeature/GroupContents";
 
 function group({ groups = [] }) {
+
 	return (
 		<div className="container">
 			<Head>
@@ -35,20 +31,13 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 		// 	};
 		// }
 
-		const result = await createAxiosService(GROUPS_QUERY);
-		if (result?.data?.data) {
-			return {
-				props: {
-					groups: result.data?.data.Groups,
-				},
-			};
-		}
+		const { Groups } = await getGroups();
+		return {
+			props: {
+				groups: Groups,
+			},
+		};
 	} catch (error) {
-		// console.error(
-		// 	"🚀 ~ file: group.tsx ~ line 73 ~ constgetServerSideProps:GetServerSideProps= ~ error",
-		// 	error
-		// );
-
 		return {
 			props: {
 				session: null,

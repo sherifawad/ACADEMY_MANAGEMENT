@@ -1,9 +1,9 @@
-import AddGrade from "components/AddGrade";
+import AddGrade from "features/gradeFeature/AddGrade";
 import AddModel from "components/AddModel";
 import GradesList from "components/GradesList";
 import constants from "core/constants";
-import { GRADES_QUERY } from "core/queries/gradeQueries";
 import { createAxiosService } from "core/utils";
+import { GRADES_QUERY } from "features/gradeFeature/gradeQueries";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import Head from "next/head";

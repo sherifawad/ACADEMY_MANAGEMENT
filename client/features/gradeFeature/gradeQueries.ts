@@ -1,3 +1,6 @@
+import { createAxiosService } from "core/utils";
+import { gradeVariables } from "./gradeTypes";
+
 export const GRADES_QUERY = `
     query Query {
         Grades {
@@ -41,3 +44,28 @@ export const GRADE_GROUPS_QUERY = `
         }
     }
 `;
+
+export const getGradeIds = async () => {
+	try {
+		const {
+			data: {
+				data: { Grades },
+			},
+		} = await createAxiosService(GRADES_IDS);
+		return { Grades };
+	} catch (error) {
+		return {};
+	}
+};
+export const getGradeGroups = async (variables: gradeVariables) => {
+	try {
+		const {
+			data: {
+				data: { Grade },
+			},
+		} = await createAxiosService(GRADE_GROUPS_QUERY, variables);
+		return { ...Grade };
+	} catch (error) {
+		return {};
+	}
+};

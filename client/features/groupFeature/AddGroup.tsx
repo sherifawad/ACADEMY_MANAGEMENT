@@ -1,11 +1,11 @@
-import { ADD_GROUP_MUTATION, UPDATE_GROUP_MUTATION } from "core/mutations/groupMutations";
-import { ACTIVE_GRADES_QUERY } from "core/queries/gradeQueries";
 import { createAxiosService } from "core/utils";
 import { arEG } from "date-fns/locale";
+import { ACTIVE_GRADES_QUERY } from "features/gradeFeature/gradeQueries";
+import { ADD_GROUP_MUTATION, UPDATE_GROUP_MUTATION } from "features/groupFeature/groupMutations";
 import { useEffect, useRef, useState } from "react";
 import { TimePicker } from "react-next-dates";
 import { useMutation, useQuery } from "react-query";
-import { Group } from "./GroupsListItem";
+import { Group } from "../../components/GroupsListItem";
 
 export interface GroupInitials extends Group {
 	onProceed: Function;

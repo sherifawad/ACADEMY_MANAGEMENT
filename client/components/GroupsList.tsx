@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { Suspense, useState } from "react";
-import AddGroup from "./AddGroup";
+import AddGroup from "../features/groupFeature/AddGroup";
 import AddModel from "./AddModel";
 import GroupsListItem, { Group } from "./GroupsListItem";
 

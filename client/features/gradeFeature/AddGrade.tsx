@@ -1,8 +1,6 @@
-import { ADD_GRADE_MUTATION, UPDATE_GRADE_MUTATION } from "core/mutations/gradeMutations";
-import { createAxiosService } from "core/utils";
 import { useEffect, useState } from "react";
-import { useMutation } from "react-query";
-import { Grade } from "./GradesListItem";
+import { Grade } from "../../components/GradesListItem";
+import { createGradeMutation, updateGradeMutation } from "./gradeMutations";
 
 export interface GradeInitials extends Grade {
 	onProceed: Function;
@@ -19,33 +17,17 @@ function AddGrade({ onProceed, onClose, id, name, isActive }) {
 	useEffect(() => {
 		setFormState({ id, name, isActive });
 	}, [id, name, isActive]);
-	const createMutation = useMutation(
-		"AddGrade",
-		() =>
-			createAxiosService(ADD_GRADE_MUTATION, {
-				name: formState.name,
-				isActive: formState.isActive,
-			}).then((response) => response.data.data),
-		{
-			onSuccess: () => {
-				console.log("Grade Created Successfully");
-			},
-		}
-	);
-	const updateMutation = useMutation(
-		"UpdateGrade",
-		() =>
-			createAxiosService(UPDATE_GRADE_MUTATION, {
-				updateGradeId: formState.id,
-				name: formState.name,
-				isActive: formState.isActive,
-			}).then((response) => response.data.data),
-		{
-			onSuccess: () => {
-				console.log("Grade Updated Successfully");
-			},
-		}
-	);
+
+	const createMutation = createGradeMutation({
+		name: formState.name,
+		isActive: formState.isActive,
+	});
+
+	const updateMutation = updateGradeMutation({
+		updateGradeId: formState.id,
+		name: formState.name,
+		isActive: formState.isActive,
+	});
 
 	const submitContact = async (e) => {
 		e.preventDefault();

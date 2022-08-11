@@ -145,6 +145,7 @@ export const UsersResponse = objectType({
 		t.nullable.field("totalCount", { type: UsersCount });
 	},
 });
+
 export const StudentsResponse = objectType({
 	name: "StudentsResponse",
 	definition(t) {
