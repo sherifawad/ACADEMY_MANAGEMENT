@@ -44,7 +44,7 @@ export const GET_STUDENT_DETAILS = `
 `;
 
 export const GET_USERS_IDS = `
-    query FilteredUsers($role: Role) {
+    query FilteredUsers($role: [Role]) {
         FilteredUsers(role: $role) {
             prevCursor
             nextCursor
@@ -58,7 +58,7 @@ export const GET_USERS_IDS = `
     }
 `;
 export const GET_STUDENTS_paginated_LIST = `
-    query FilteredUsers($role: Role, $data: PaginationInputType, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
+    query FilteredUsers($role: [Role], $data: PaginationInputType, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
         FilteredUsers(role: $role, data: $data) {
             totalCount {
                 _count
@@ -84,7 +84,7 @@ export const GET_STUDENTS_paginated_LIST = `
     }
 `;
 export const GET_STUDENTS_LIST = `
-    query FilteredUsers($role: Role, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
+    query FilteredUsers($role: [Role], $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
         FilteredUsers(role: $role) {
             list {
                 id

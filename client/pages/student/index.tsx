@@ -1,16 +1,29 @@
 import { flatten, getDayNames, ObjectFlatten } from "core/utils";
+import useModel from "customHooks/useModel";
 import usePagination from "customHooks/usePagination";
 import useReactTable from "customHooks/useReactTable";
 import { format } from "date-fns";
 import { studentExamsQuery } from "features/examFeature/examsQueries";
 import { studentsListQuery } from "features/studentFeature/studentsQueries";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useMemo } from "react";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
 
 function index({ flattenedList }) {
+	const AddStudent = dynamic(() => import("features/studentFeature/AddStudent"), {
+		ssr: false,
+	});
+	const { Model, modelProps } = useModel();
 	const formatDate = "dd MMM hh:mm a";
+	const router = useRouter();
+	const onProceed = () => {
+		router.replace(router.asPath);
+		console.log("Proceed clicked");
+	};
+
 	const tableColumns = useMemo(
 		() => [
 			{
@@ -105,6 +118,9 @@ function index({ flattenedList }) {
 	});
 	return (
 		<div className="container">
+			<Model title="Student">
+				<AddStudent onProceed={onProceed} onClose={modelProps.onClose} />
+			</Model>
 			<RenderedTable />
 		</div>
 	);

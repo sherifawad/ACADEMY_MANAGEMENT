@@ -216,7 +216,7 @@ export async function getStaticProps({ params }) {
 		const { groupId } = params;
 		const variables = {
 			groupId,
-			role: ["Student"],
+			role: "Student",
 			data: {
 				myCursor: null,
 				orderByKey: "id",
@@ -225,7 +225,7 @@ export async function getStaticProps({ params }) {
 				skip: null,
 			},
 		};
-		const { groupName, list, nextCursor, prevCursor, _count } = await initialData(variables);
+		const { groupName, list, nextCursor, prevCursor, _count } = (await initialData(variables)) || {};
 		return {
 			props: {
 				list,
@@ -238,7 +238,7 @@ export async function getStaticProps({ params }) {
 		};
 	} catch (error) {
 		return {
-			props: null,
+			props: {},
 		};
 	}
 }

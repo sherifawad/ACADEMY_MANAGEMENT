@@ -277,7 +277,6 @@ export const FilteredUsersQuery = extendType({
 						role.forEach((x) => {
 							if (x) ORConditions.push({ role: x });
 						});
-						console.log("🚀 ~ file: User.ts ~ line 277 ~ resolve: ~ ORConditions", ORConditions);
 						where = { ...where, OR: ORConditions };
 					}
 					if (isActive) {

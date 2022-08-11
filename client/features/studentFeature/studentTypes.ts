@@ -12,8 +12,8 @@ export interface student {
 export interface studentInitialProperties {
 	onProceed: Function;
 	onClose: Function;
-	initialStudent: student;
-	gradeId: string;
+	initialStudent?: student;
+	gradeId?: string;
 }
 
 export interface studentMutationVariables {
