@@ -18,7 +18,7 @@ export const Profile = objectType({
 			type: Exam,
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
 			async resolve(_parent, { take, orderByList }, ctx) {
-				const isEmpty = Object.keys(orderByList).length === 0;
+				const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 				let orderList: { [x: string]: string }[];
 				if (isEmpty) {
 					orderList = [{ date: "desc" }, { createdAt: "desc" }, { updatedAt: "desc" }];
@@ -40,7 +40,7 @@ export const Profile = objectType({
 						},
 					})
 					.exams({
-						take,
+						take: take,
 						orderBy: orderList,
 					});
 			},
@@ -61,7 +61,7 @@ export const Profile = objectType({
 			type: Attendance,
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
 			async resolve(_parent, { take, orderByList }, ctx) {
-				const isEmpty = Object.keys(orderByList).length === 0;
+				const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 				let orderList: { [x: string]: string }[];
 				if (isEmpty) {
 					orderList = [{ startAt: "desc" }, { endAt: "desc" }];

@@ -187,7 +187,6 @@ type Query {
   Profile(id: String!): Profile!
   Profiles: [Profile]!
   SExams(data: PaginationInputType, studentId: String!): ExamsResponse
-  StudentsQuery(data: PaginationInputType): UsersResponse
   User(id: String!, take: Int): User!
   Users: [User]
   studentAttendances(data: PaginationInputType, studentId: String!): AttendanceResponse
