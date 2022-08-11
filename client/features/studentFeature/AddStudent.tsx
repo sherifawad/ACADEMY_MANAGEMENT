@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
+import LabelInput from "components/inputs/LabelInput";
+import { useEffect, useRef, useState } from "react";
 import GradeGroupSelect from "../../components/GradeGroupSelect";
 import { createStudentMutation } from "./studentMutations";
 import { studentInitialProperties } from "./studentTypes";
 
 function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInitialProperties) {
 	const { profile, isActive, contact, avatar, name, id, password, groupId } = initialStudent || {};
+	const { email, phone, parentsPhones, address } = contact || {};
+
+	const mainRef = useRef();
 
 	const [_groupId, setGroupId] = useState();
 	const [_gradeId, setGradeId] = useState();
@@ -12,27 +16,27 @@ function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInit
 		id,
 		isActive,
 		avatar,
-		email: contact?.email,
+		email,
 		password,
 		name,
-		phone: contact?.phone,
-		parentsPhones: contact?.parentsPhones,
-		address: contact?.address,
+		phone,
+		parentsPhones,
+		address,
 		error: "",
 	});
 
 	useEffect(() => {
 		setFormState({
 			...formState,
-			name: name || "",
-			email: contact?.email || "",
-			phone: contact?.phone || "",
-			parentsPhones: contact?.parentsPhones || "",
-			address: contact?.address || "",
+			name,
+			email,
+			phone,
+			parentsPhones,
+			address,
 			isActive,
 			avatar,
 		});
-	}, [contact, name, groupId, isActive, avatar]);
+	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar]);
 
 	const createMutation = createStudentMutation({ ...formState, groupId });
 
@@ -49,155 +53,86 @@ function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInit
 	};
 
 	return (
-		<form method="dialog" className="space-y-6" action="#">
-			<div>
-				<label
-					htmlFor="email"
-					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-				>
-					Your email
-				</label>
-				<input
-					type="email"
-					name="email"
-					id="email"
-					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-					placeholder="name@company.com"
-					value={formState.email}
-					onChange={(e) =>
-						setFormState({
-							...formState,
-							error: "",
-							email: e.target.value,
-						})
-					}
-				/>
-			</div>
-
-			<div>
-				<label
-					htmlFor="name"
-					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-				>
-					Your name
-				</label>
-				<input
-					type="text"
-					name="name"
-					id="name"
-					placeholder="Sherif Mohammed"
-					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-					required
-					value={formState.name}
-					onChange={(e) =>
-						setFormState({
-							...formState,
-							error: "",
-							name: e.target.value,
-						})
-					}
-				/>
-			</div>
-
-			<div>
-				<label
-					htmlFor="phone"
-					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-				>
-					Your Phone
-				</label>
-				<input
-					type="text"
-					name="phone"
-					id="phone"
-					placeholder="012xxxxxxxx"
-					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-					required
-					value={formState.phone}
-					onChange={(e) =>
-						setFormState({
-							...formState,
-							error: "",
-							phone: e.target.value,
-						})
-					}
-				/>
-			</div>
-
-			<div>
-				<label
-					htmlFor="parentPhone"
-					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-				>
-					Your parentPhone
-				</label>
-				<input
-					type="text"
-					name="parentPhone"
-					id="parentPhone"
-					placeholder="012xxxxxxxx"
-					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-					required
-					value={formState.parentsPhones}
-					onChange={(e) =>
-						setFormState({
-							...formState,
-							error: "",
-							parentsPhones: e.target.value,
-						})
-					}
-				/>
-			</div>
-
-			<div>
-				<label
-					htmlFor="address"
-					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-				>
-					Your Address
-				</label>
-				<input
-					type="text"
-					name="address"
-					id="address"
-					placeholder="40 Nady Street"
-					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-					required
-					value={formState.address}
-					onChange={(e) =>
-						setFormState({
-							...formState,
-							error: "",
-							address: e.target.value,
-						})
-					}
-				/>
-			</div>
-
-			<div>
-				<label
-					htmlFor="password"
-					className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-				>
-					Your password
-				</label>
-				<input
-					type="password"
-					name="password"
-					id="password"
-					placeholder="••••••••"
-					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-					required
-					value={formState.password}
-					onChange={(e) =>
-						setFormState({
-							...formState,
-							error: "",
-							password: e.target.value,
-						})
-					}
-				/>
-			</div>
+		<form method="dialog" className="space-y-6" action="#" ref={mainRef}>
+			<LabelInput
+				name={"email"}
+				label={"Your email"}
+				type={"email"}
+				placeholder={"name@company.com"}
+				value={formState?.email}
+				onChange={(e) =>
+					setFormState({
+						...formState,
+						error: "",
+						email: e.target.value,
+					})
+				}
+			/>
+			<LabelInput
+				name={"name"}
+				label={"Your name"}
+				placeholder={"Ahmed Mohammed"}
+				value={formState?.name}
+				onChange={(e) =>
+					setFormState({
+						...formState,
+						error: "",
+						name: e.target.value,
+					})
+				}
+			/>
+			<LabelInput
+				name={"phone"}
+				label={"Your phone"}
+				placeholder={"01xxxxxxxxxx"}
+				value={formState?.phone}
+				onChange={(e) =>
+					setFormState({
+						...formState,
+						error: "",
+						phone: e.target.value,
+					})
+				}
+			/>
+			<LabelInput
+				name={"parentPhone"}
+				label={"Your parentPhone"}
+				placeholder={"01xxxxxxxxxx"}
+				value={formState?.parentsPhones}
+				onChange={(e) =>
+					setFormState({
+						...formState,
+						error: "",
+						parentsPhones: e.target.value,
+					})
+				}
+			/>
+			<LabelInput
+				name={"address"}
+				label={"Your address"}
+				placeholder={"5 main street, Tanta"}
+				value={formState?.address}
+				onChange={(e) =>
+					setFormState({
+						...formState,
+						error: "",
+						address: e.target.value,
+					})
+				}
+			/>
+			<LabelInput
+				name={"password"}
+				label={"Your password"}
+				placeholder={"********"}
+				value={formState?.password}
+				onChange={(e) =>
+					setFormState({
+						...formState,
+						error: "",
+						password: e.target.value,
+					})
+				}
+			/>
 
 			<GradeGroupSelect
 				setGroupId={setGroupId}

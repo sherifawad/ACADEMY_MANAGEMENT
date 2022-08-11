@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import AddStudent from "./AddStudent";
 import {
 	AiOutlineHome,
 	AiOutlinePhone,
@@ -14,9 +13,14 @@ import {
 	AiOutlineFieldTime,
 } from "react-icons/ai";
 import { GiUpgrade, GiTeamDowngrade } from "react-icons/gi";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 
 function StudentCard({ name = "", bio = "", contact = {}, group = {}, id, isActive, avatar }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
+	const AddStudent = dynamic(() => import("./AddStudent"), {
+		ssr: false,
+	});
 	const router = useRouter();
 	const onProceed = () => {
 		router.replace(router.asPath);
@@ -36,19 +40,21 @@ function StudentCard({ name = "", bio = "", contact = {}, group = {}, id, isActi
 					<div className="pt-6 md:pis-8 text-center md:text-left space-y-4 w-full">
 						<div className="flex flex-col md:flex-row-reverse flex-nowrap md:justify-between justify-center items-center">
 							<Model title="Student">
-								<AddStudent
-									onProceed={onProceed}
-									onClose={modelProps.onClose}
-									gradeId={(group as any)?.grade?.id}
-									initialStudent={{
-										name,
-										contact,
-										groupId: (group as any)?.id,
-										id,
-										isActive,
-										avatar,
-									}}
-								/>
+								<Suspense>
+									<AddStudent
+										onProceed={onProceed}
+										onClose={modelProps.onClose}
+										gradeId={(group as any)?.grade?.id}
+										initialStudent={{
+											name,
+											contact,
+											groupId: (group as any)?.id,
+											id,
+											isActive,
+											avatar,
+										}}
+									/>
+								</Suspense>
 							</Model>
 							<div className="text-sky-500 dark:text-sky-400 font-bold">{name}</div>
 						</div>
