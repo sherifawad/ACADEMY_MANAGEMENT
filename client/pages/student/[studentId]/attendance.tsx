@@ -56,7 +56,7 @@ export async function getStaticPaths() {
 				},
 			},
 		} = await createAxiosService(GET_USERS_IDS, {
-			role: "Student",
+			role: ["Student"],
 		});
 
 		const paths = list?.map((user) => ({

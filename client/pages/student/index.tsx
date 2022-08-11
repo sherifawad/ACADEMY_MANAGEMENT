@@ -114,7 +114,7 @@ function index({ flattenedList }) {
 export async function getStaticProps({ params }) {
 	try {
 		const variables = {
-			role: "Student",
+			role: ["Student"],
 			attendancesTake2: 1,
 			take: 1,
 			orderByList: {

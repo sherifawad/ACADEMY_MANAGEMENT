@@ -216,7 +216,7 @@ export async function getStaticProps({ params }) {
 		const { groupId } = params;
 		const variables = {
 			groupId,
-			role: "Student",
+			role: ["Student"],
 			data: {
 				myCursor: null,
 				orderByKey: "id",

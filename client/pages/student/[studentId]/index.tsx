@@ -37,7 +37,7 @@ function Student({ user }) {
 export async function getStaticPaths() {
 	try {
 		const { list } = await studentsIdsQuery({
-			role: "Student",
+			role: ["Student"],
 		});
 
 		const paths = list?.map((user) => ({

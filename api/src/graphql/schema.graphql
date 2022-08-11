@@ -179,7 +179,7 @@ type Query {
   Contact(id: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
-  FilteredUsers(data: PaginationInputType, isActive: Boolean, role: Role): UsersResponse
+  FilteredUsers(data: PaginationInputType, isActive: Boolean, role: [Role]): UsersResponse
   Grade(id: String!): Grade!
   Grades: [Grade]!
   Group(id: String!): Group!

@@ -18,6 +18,7 @@ import {
 	nullable,
 	booleanArg,
 	arg,
+	list,
 } from "nexus";
 import { Context } from ".";
 import { GetUserPassword } from "./UserPassword";
@@ -258,7 +259,7 @@ export const FilteredUsersQuery = extendType({
 			args: {
 				data: PaginationInputType,
 				isActive: nullable(booleanArg()),
-				role: nullable(arg({ type: "Role" })),
+				role: nullable(list(arg({ type: "Role" }))),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
 				try {
@@ -272,7 +273,12 @@ export const FilteredUsersQuery = extendType({
 					const { data, isActive, role } = args;
 					let where = {};
 					if (role) {
-						where = { ...where, role };
+						const ORConditions: { role: string }[] = [];
+						role.forEach((x) => {
+							if (x) ORConditions.push({ role: x });
+						});
+						console.log("🚀 ~ file: User.ts ~ line 277 ~ resolve: ~ ORConditions", ORConditions);
+						where = { ...where, OR: ORConditions };
 					}
 					if (isActive) {
 						where = { ...where, isActive };
