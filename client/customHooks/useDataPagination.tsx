@@ -1,3 +1,4 @@
+import { ObjectFlatten } from "core/utils";
 import { useEffect, useMemo, useState } from "react";
 
 export interface goFirstInputProps {
@@ -5,10 +6,12 @@ export interface goFirstInputProps {
 	currentSortProperty?: string | null;
 	currentOrder?: string;
 	take?: number | null;
+	sort?: any[];
 }
 
 export interface dataPaginationProps {
 	list: any[];
+	sort?: any[];
 	currentSortProperty?: string | null;
 	currentOrder?: string;
 	_count?: number | null;
@@ -27,10 +30,9 @@ function useDataPagination({
 	nextCursor,
 	queryVariables,
 	query,
-	currentOrder = "asc",
-	currentSortProperty,
 	setPageSize,
 	pageSize,
+	sort,
 }: dataPaginationProps) {
 	const currentPageSize = useMemo(() => pageSize, [pageSize]);
 	const [isLastPage, setIsLastPage] = useState(false);
@@ -42,10 +44,11 @@ function useDataPagination({
 		...queryVariables,
 		data: {
 			myCursor: nextCursor,
-			orderByKey: currentSortProperty,
-			orderDirection: currentOrder,
+			orderByKey: null,
+			orderDirection: null,
 			take: currentPageSize,
 			skip: null,
+			sort,
 		},
 	});
 
@@ -71,8 +74,12 @@ function useDataPagination({
 		};
 		const { list, prevCursor, nextCursor } = await query(options);
 		if (list && list.length > 0) {
+			let flattenedList = [];
+			if (list?.length > 0) {
+				flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
+			}
 			setPaginationResult({
-				list,
+				list: flattenedList ?? [],
 				prevCursor,
 				nextCursor,
 			});
@@ -90,8 +97,7 @@ function useDataPagination({
 
 	const gotoFirst = async ({
 		force = false,
-		currentSortProperty = null,
-		currentOrder = null,
+		sort = null,
 		take = currentPageSize,
 	}: goFirstInputProps) => {
 		if (isFirstPage) {
@@ -101,17 +107,18 @@ function useDataPagination({
 			...paginationOption,
 			data: { ...paginationOption.data, take, myCursor: null, skip: null },
 		};
-		if (currentSortProperty) {
-			options = { ...options, data: { ...options.data, orderByKey: currentSortProperty } };
-		}
-		if (currentOrder) {
-			options = { ...options, data: { ...options.data, orderDirection: currentOrder } };
+		if (sort) {
+			options = { ...options, data: { ...options.data, sort } };
 		}
 
 		const { list, prevCursor, nextCursor } = await query(options);
 		if (list && list.length > 0) {
+			let flattenedList = [];
+			if (list?.length > 0) {
+				flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
+			}
 			setPaginationResult({
-				list,
+				list: flattenedList ?? [],
 				prevCursor,
 				nextCursor,
 			});
@@ -120,8 +127,7 @@ function useDataPagination({
 				data: {
 					...paginationOption.data,
 					myCursor: nextCursor,
-					orderDirection: options.data.orderDirection,
-					orderByKey: options.data.orderByKey,
+					sort: options.data.sort,
 				},
 			});
 			setIsFirstPage(true);
@@ -146,8 +152,12 @@ function useDataPagination({
 		};
 		const { list, prevCursor, nextCursor } = await query(options);
 		if (list && list.length > 0) {
+			let flattenedList = [];
+			if (list?.length > 0) {
+				flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
+			}
 			setPaginationResult({
-				list,
+				list: flattenedList ?? [],
 				prevCursor,
 				nextCursor,
 			});
@@ -194,8 +204,12 @@ function useDataPagination({
 			}
 			if (resultList && resultList.length > 0) {
 				const { list, prevCursor, nextCursor } = result;
+				let flattenedList = [];
+				if (list?.length > 0) {
+					flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
+				}
 				setPaginationResult({
-					list,
+					list: flattenedList ?? [],
 					prevCursor,
 					nextCursor,
 				});

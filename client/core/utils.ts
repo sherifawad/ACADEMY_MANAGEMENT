@@ -102,3 +102,16 @@ export function ObjectFlatten(data) {
 	recurse(data, "");
 	return result;
 }
+
+export function renameKeyValue(obj: any, oldKey: string, newKey: string, newValue: any) {
+	const keyValues = Object.entries(obj).map(([key, value]) => {
+		if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+			value = renameKeyValue(value, oldKey, newKey, newValue);
+		}
+		if (key === oldKey) {
+			return [newKey, newValue];
+		}
+		return [key, value];
+	});
+	return Object.fromEntries(keyValues);
+}

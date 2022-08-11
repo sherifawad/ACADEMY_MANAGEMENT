@@ -1,6 +1,6 @@
 import { IndeterminateCheckbox } from "components/IndeterminateCheckbox";
 import Table from "components/Table";
-import { createAxiosService, getDayNames } from "core/utils";
+import { createAxiosService, getDayNames, renameKeyValue } from "core/utils";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import usePrevious from "./usePrevious";
 
 export interface paginationInputProps {
 	list: any[];
+	sortList?: any[];
 	tableHooks?: any[] | null;
 	hiddenColumns?: string[] | undefined | null;
 	tableColumns?: any[] | undefined | null;
@@ -31,6 +32,7 @@ export interface paginationInputProps {
 
 function usePagination({
 	list,
+	sortList,
 	_count,
 	prevCursor,
 	nextCursor,
@@ -55,6 +57,7 @@ function usePagination({
 
 	const [isAscending, setIsAscending] = useState(false);
 	const [currentSortProperty, setCurrentSortProperty] = useState("id");
+	const [sort, setSort] = useState(sortList);
 
 	const { RenderedPagination, gotoFirst, paginatedData } = useDataPagination({
 		list,
@@ -66,6 +69,7 @@ function usePagination({
 		currentSortProperty,
 		setPageSize,
 		pageSize,
+		sort,
 	});
 
 	const initialColumns = useMemo(
@@ -147,11 +151,18 @@ function usePagination({
 	}, []);
 
 	const sortColumn = useCallback((sortProperty: string, isAsc: boolean = false) => {
+		console.log("🚀 ~ file: usePagination.tsx ~ line 154 ~ sortColumn ~ sortProperty", sortProperty);
 		const sortDirection = isAsc ? "asc" : "desc";
+		let sortObject;
+		if (sort[0]) {
+			console.log("🚀 ~ file: usePagination.tsx ~ line 157 ~ sortColumn ~ sort[0]", sort[0]);
+			const result = renameKeyValue(sort[0], "currentSortProperty", sortProperty, sortDirection);
+			console.log("🚀 ~ file: usePagination.tsx ~ line 160 ~ sortColumn ~ result", result);
+			sortObject = [result];
+		}
 		gotoFirst({
 			force: true,
-			currentSortProperty: sortProperty,
-			currentOrder: sortDirection,
+			sort: sortObject,
 		});
 	}, []);
 
