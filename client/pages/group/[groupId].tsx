@@ -1,10 +1,6 @@
-import AddExam from "features/examFeature/AddExam";
-import StudentsGroupList from "components/StudentsGroupList";
-import UsersList from "components/UsersList";
-import { createAxiosService, ObjectFlatten } from "core/utils";
+import { ObjectFlatten } from "core/utils";
 import useModel from "customHooks/useModel";
 import usePagination from "customHooks/usePagination";
-import AddAttendance from "features/attendanceFeature/AddAttendance";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -12,8 +8,15 @@ import useToggle from "customHooks/useToggle";
 import { useCheckboxes, useInputHooks } from "customHooks/reactTableHooks";
 import { useRowSelect } from "react-table";
 import { getGroupsIds, getGroupStudents, GROUPS_IDS_QUERY } from "features/groupFeature/groupQueries";
+import dynamic from "next/dynamic";
 
 function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId }) {
+	const AddExam = dynamic(() => import("features/examFeature/AddExam"), {
+		ssr: false,
+	});
+	const AddAttendance = dynamic(() => import("features/attendanceFeature/AddAttendance"), {
+		ssr: false,
+	});
 	const checkBoxHook = (hooks: any) => useCheckboxes(hooks);
 	const inputHook = (hooks: any) => useInputHooks(hooks, "examScore", "ExamScore");
 

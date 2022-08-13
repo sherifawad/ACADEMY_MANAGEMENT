@@ -1,11 +1,15 @@
 import CardContainer from "components/layout/CardContainer";
 import { getDayNames } from "core/utils";
 import useModel from "customHooks/useModel";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import AddAttendance from "./AddAttendance";
 
 function AttendancesCard({ id = "", attendances = [] }) {
+
+    const AddAttendance = dynamic(() => import("./AddAttendance"), {
+		ssr: false,
+	});
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 	const router = useRouter();
 	const onProceed = () => {

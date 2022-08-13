@@ -1,16 +1,16 @@
 import { GET_STUDENT_EXAMS, studentExamsQuery } from "features/examFeature/examsQueries";
 import { createAxiosService } from "core/utils";
-import { useEffect, useMemo, useState } from "react";
-import { usePagination, useSortBy, useTable } from "react-table";
-import { format } from "date-fns";
-import AddModel from "components/AddModel";
-import AddExam from "features/examFeature/AddExam";
 import { useRouter } from "next/router";
 import useReactTable from "customHooks/useReactTable";
 import useModel from "customHooks/useModel";
 import { GET_USERS_IDS } from "features/studentFeature/studentsQueries";
+import dynamic from "next/dynamic";
 
 function studentExams({ exams = [], profileId }) {
+	const AddExam = dynamic(() => import("features/examFeature/AddExam"), {
+		ssr: false,
+	});
+
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 
 	const { RenderedTable } = useReactTable({

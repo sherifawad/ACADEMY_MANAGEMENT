@@ -151,13 +151,10 @@ function usePagination({
 	}, []);
 
 	const sortColumn = useCallback((sortProperty: string, isAsc: boolean = false) => {
-		console.log("🚀 ~ file: usePagination.tsx ~ line 154 ~ sortColumn ~ sortProperty", sortProperty);
 		const sortDirection = isAsc ? "asc" : "desc";
 		let sortObject;
 		if (sort[0]) {
-			console.log("🚀 ~ file: usePagination.tsx ~ line 157 ~ sortColumn ~ sort[0]", sort[0]);
 			const result = renameKeyValue(sort[0], "currentSortProperty", sortProperty, sortDirection);
-			console.log("🚀 ~ file: usePagination.tsx ~ line 160 ~ sortColumn ~ result", result);
 			sortObject = [result];
 		}
 		gotoFirst({
