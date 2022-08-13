@@ -1,18 +1,17 @@
 import LabelInput from "components/inputs/LabelInput";
 import { useEffect, useRef, useState } from "react";
 import GradeGroupSelect from "../../components/GradeGroupSelect";
-import { createUserMutation } from "./userMutations";
+import { createUserMutation, updateUserMutation } from "./userMutations";
 import { userInitialProperties } from "./userTypes";
 
 function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }: userInitialProperties) {
-	const { profile, isActive, contact, avatar, name, id, password, groupId } = initialUser || {};
+	const { profile, isActive, contact, avatar, name, id, password, groupId, role } = initialUser || {};
 	const { email, phone, parentsPhones, address } = contact || {};
 
 	const mainRef = useRef();
 
 	const [_groupId, setGroupId] = useState();
 	const [_gradeId, setGradeId] = useState();
-	const [role, setRole] = useState("Student");
 	const [formState, setFormState] = useState({
 		id,
 		isActive,
@@ -23,6 +22,7 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 		phone,
 		parentsPhones,
 		address,
+		role,
 		error: "",
 	});
 
@@ -36,15 +36,19 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 			address,
 			isActive,
 			avatar,
+			role,
 		});
-	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar]);
+	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar, role]);
 
-	const createMutation = createUserMutation({ ...formState, groupId });
+	const createMutation = createUserMutation({ ...formState, groupId, role });
+	const { error, ...rest } = formState;
+	const updateMutation = updateUserMutation({ ...formState, userUpdateId: id, groupId });
 
 	const submitContact = async (e) => {
 		e.preventDefault();
 		if (createMutation.isLoading) return;
-		await createMutation.mutateAsync();
+		if (updateMutation.isLoading) return;
+		id ? await updateMutation.mutateAsync() : await createMutation.mutateAsync();
 	};
 
 	const proceedAndClose = async (e) => {
@@ -155,11 +159,13 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 					<select
 						id="role"
 						className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-						value={role}
+						value={formState.role}
 						onChange={({ target: { value } }) => {
-							if (value && typeof value === "string" && value.length > 0) {
-								setRole(value);
-							}
+							setFormState({
+								...formState,
+								error: "",
+								role: value,
+							});
 						}}
 					>
 						{["Student", "ADMIN", "USER"].map((role) => (

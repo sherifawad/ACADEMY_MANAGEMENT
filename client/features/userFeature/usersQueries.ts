@@ -26,6 +26,7 @@ export const GET_STUDENT_DETAILS = `
             name
             isActive
             avatar
+            role
             contact {
                     note
                     phone
@@ -68,6 +69,7 @@ export const GET_USER_DETAILS = `
             name
             isActive
             avatar
+            role,
             contact {
                 phone
                 address

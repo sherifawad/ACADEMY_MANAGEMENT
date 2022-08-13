@@ -1,5 +1,6 @@
 export interface user {
 	id?: string | null;
+	role?: string | null;
 	name?: string | null;
 	groupId?: string | null;
 	password?: string | null;

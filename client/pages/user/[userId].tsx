@@ -7,14 +7,7 @@ function User({ user }) {
 	return (
 		<div className="container w-full">
 			<div className="w-full">
-				<UserCard
-					name={name}
-					contact={contact}
-					id={id}
-					isActive={isActive}
-					avatar={avatar}
-					isStudent={false}
-				/>
+				<UserCard {...user} isStudent={false} />
 			</div>
 		</div>
 	);

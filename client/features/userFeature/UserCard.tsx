@@ -16,7 +16,17 @@ import { GiUpgrade, GiTeamDowngrade } from "react-icons/gi";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 
-function UserCard({ name = "", bio = "", contact = {}, group = {}, id, isActive, avatar, isStudent = true }) {
+function UserCard({
+	name = "",
+	bio = "",
+	contact = {},
+	group = {},
+	id,
+	isActive,
+	avatar,
+	isStudent = true,
+	role,
+}) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 	const AddUser = dynamic(() => import("./AddUser"), {
 		ssr: false,
@@ -53,6 +63,7 @@ function UserCard({ name = "", bio = "", contact = {}, group = {}, id, isActive,
 											id,
 											isActive,
 											avatar,
+											role,
 										}}
 									/>
 								</Suspense>
