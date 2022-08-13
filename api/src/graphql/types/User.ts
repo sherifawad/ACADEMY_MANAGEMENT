@@ -406,11 +406,12 @@ export const GroupStudentsQuery = extendType({
 });
 
 export type UserParam = Pick<prismaUser, "avatar" | "name"> &
-	Pick<Contact, "email" | "parentsPhones" | "address" | "phone">;
+	Pick<Contact, "email" | "parentsPhones" | "address" | "phone"> &
+	Partial<Pick<Group, "id">>;
 
 export type StudentParam = Pick<prismaUser, "name"> &
 	Pick<Contact, "email" | "parentsPhones" | "address" | "phone"> &
-	Pick<Group, "id">;
+	Partial<Pick<Group, "id">>;
 
 export async function GetUserByEmail(prisma: PrismaClient, email: string): Promise<Contact | null> {
 	return await prisma.contact.findUnique({
@@ -434,48 +435,44 @@ export async function ValidateUserCredentials(
 	return await verifyPassword(password, userPassword.password);
 }
 
-export async function CreateStudent(ctx: Context, studentParam: StudentParam, password: string) {
-	const hashedPassword = await hashPassword(password);
-	const { name, id, ...rest } = studentParam;
-	return await ctx.prisma.user.create({
-		data: {
-			name,
-			password: {
-				create: {
-					password: hashedPassword,
-					forceChange: false,
-				},
-			},
-			contact: {
-				create: {
-					...rest,
-				},
-			},
-			profile: {
-				create: {
-					createdBy: ctx.user?.id || "",
-					group: {
-						connect: {
-							id,
-						},
-					},
-				},
-			},
-		},
-		include: {
-			password: true,
-			contact: true,
-			profile: true,
-		},
-	});
-}
-export async function UpdateStudent(
-	ctx: Context,
-	studentParam: any,
-	userPassword?: string | null | undefined
-) {
+// export async function CreateStudent(ctx: Context, studentParam: StudentParam, password: string) {
+// 	const hashedPassword = await hashPassword(password);
+// 	const { name, id, ...rest } = studentParam;
+// 	return await ctx.prisma.user.create({
+// 		data: {
+// 			name,
+// 			password: {
+// 				create: {
+// 					password: hashedPassword,
+// 					forceChange: false,
+// 				},
+// 			},
+// 			contact: {
+// 				create: {
+// 					...rest,
+// 				},
+// 			},
+// 			profile: {
+// 				create: {
+// 					createdBy: ctx.user?.id || "",
+// 					group: {
+// 						connect: {
+// 							id,
+// 						},
+// 					},
+// 				},
+// 			},
+// 		},
+// 		include: {
+// 			password: true,
+// 			contact: true,
+// 			profile: true,
+// 		},
+// 	});
+// }
+export async function UpdateUser(ctx: Context, studentParam: any, userPassword?: string | null | undefined) {
 	const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
-	const { name, id, groupId, ...rest } = studentParam;
+	const { name, id, groupId, role, avatar, ...rest } = studentParam;
 	const password = hashedPassword
 		? {
 				update: {
@@ -497,7 +494,6 @@ export async function UpdateStudent(
 		  }
 		: undefined;
 	const allIsNull = isNullish(rest);
-	console.log("🚀 ~ file: User.ts ~ line 500 ~ removeNullObjects(rest)", removeNullObjects(rest));
 	const contact = !allIsNull
 		? {
 				update: {
@@ -509,6 +505,8 @@ export async function UpdateStudent(
 		where: { id },
 		data: {
 			name: name ? name : undefined,
+			role: role ? role : undefined,
+			avatar: avatar ? avatar : undefined,
 			password,
 			contact,
 			profile,
@@ -521,13 +519,26 @@ export async function UpdateStudent(
 	});
 }
 
-export async function CreateUser(ctx: Context, userParam: UserParam, password: string): Promise<prismaUser> {
-	const hashedPassword = await hashPassword(password);
-	const { name, avatar, ...rest } = userParam;
+export async function CreateUser(ctx: Context, userParam: any, userPassword: string) {
+	const hashedPassword = await hashPassword(userPassword);
+	const { name, avatar, groupId, role, ...rest } = userParam;
+	const profile = groupId
+		? {
+				create: {
+					createdBy: ctx.user?.id || "",
+					group: {
+						connect: {
+							id: groupId,
+						},
+					},
+				},
+		  }
+		: undefined;
 	return await ctx.prisma.user.create({
 		data: {
 			name,
 			avatar,
+			role,
 			password: {
 				create: {
 					password: hashedPassword,
@@ -539,10 +550,12 @@ export async function CreateUser(ctx: Context, userParam: UserParam, password: s
 					...rest,
 				},
 			},
+			profile,
 		},
 		include: {
 			password: true,
 			contact: true,
+			profile: groupId ? true : false,
 		},
 	});
 }
@@ -589,88 +602,16 @@ export const UserByIdQuery = extendType({
 	},
 });
 
-// update User
-export const UpdateUserMutation = extendType({
+// When a user signs up proper (email + password)
+export const userUpdate = extendType({
 	type: "Mutation",
 	definition(t) {
-		t.nonNull.field("updateUser", {
+		t.nonNull.field("userUpdate", {
 			type: "User",
 			args: {
 				id: nonNull(stringArg()),
-				name: stringArg(),
-				email: stringArg(),
 				avatar: stringArg(),
-				password: stringArg(),
-				address: stringArg(),
-				parentsPhones: stringArg(),
-				phone: stringArg(),
-				groupId: stringArg(),
-			},
-			resolve: async (
-				_parent,
-				{ id, name, avatar, email, password, address, parentsPhones, phone, groupId },
-				{ prisma, user }
-			) => {
-				//check if the login user who make the change
-				//check if the user with admin role who make the change
-				if (!user || user.id !== id || user.role !== userRole.ADMIN) return null;
-
-				const updateUser = {
-					name,
-					avatar,
-					email,
-				};
-				return await prisma.user.update({
-					where: { id },
-					data: { ...updateUser },
-				});
-			},
-		});
-	},
-});
-
-// When a user signs up proper (email + password)
-export const studentRegister = extendType({
-	type: "Mutation",
-	definition(t) {
-		t.nonNull.field("studentRegister", {
-			type: "User",
-			args: {
-				name: stringArg(),
-				email: nonNull(stringArg()),
-				password: nonNull(stringArg()),
-				address: nonNull(stringArg()),
-				parentsPhones: stringArg(),
-				phone: nonNull(stringArg()),
-				groupId: nonNull(stringArg()),
-			},
-			resolve: async (
-				_parent,
-				{ name, email, password, address, parentsPhones, phone, groupId },
-				ctx
-			) => {
-				const studentParam: StudentParam = {
-					email,
-					address,
-					phone,
-					parentsPhones: parentsPhones ?? phone,
-					name: name ?? email,
-					id: groupId,
-				};
-
-				return await CreateStudent(ctx, studentParam, password);
-			},
-		});
-	},
-});
-// When a user signs up proper (email + password)
-export const studentUpdate = extendType({
-	type: "Mutation",
-	definition(t) {
-		t.nonNull.field("studentUpdate", {
-			type: "User",
-			args: {
-				id: nonNull(stringArg()),
+				role: arg({ type: "Role" }),
 				name: stringArg(),
 				email: stringArg(),
 				password: stringArg(),
@@ -681,7 +622,7 @@ export const studentUpdate = extendType({
 			},
 			resolve: async (
 				_parent,
-				{ id, name, email, password, address, parentsPhones, phone, groupId },
+				{ id, name, email, password, address, parentsPhones, phone, groupId, avatar, role },
 				ctx
 			) => {
 				const studentParam = {
@@ -692,9 +633,11 @@ export const studentUpdate = extendType({
 					parentsPhones: parentsPhones ?? phone,
 					name: name ?? email,
 					groupId: groupId,
+					avatar,
+					role,
 				};
 
-				return await UpdateStudent(ctx, studentParam, password);
+				return await UpdateUser(ctx, studentParam, password);
 			},
 		});
 	},
@@ -707,26 +650,30 @@ export const userRegister = extendType({
 		t.nonNull.field("userRegister", {
 			type: "User",
 			args: {
-				name: stringArg(),
-				email: nonNull(stringArg()),
+				name: nonNull(stringArg()),
+				role: nonNull(arg({ type: "Role" })),
+				email: nullable(stringArg()),
 				password: nonNull(stringArg()),
 				address: nonNull(stringArg()),
-				parentsPhones: stringArg(),
-				avatar: stringArg(),
+				parentsPhones: nullable(stringArg()),
 				phone: nonNull(stringArg()),
+				avatar: nullable(stringArg()),
+				groupId: nullable(stringArg()),
 			},
 			resolve: async (
 				_parent,
-				{ name, email, password, avatar, address, parentsPhones, phone },
+				{ name, email, password, avatar, address, parentsPhones, phone, groupId, role },
 				ctx
 			) => {
-				const userParam: UserParam = {
-					avatar: avatar ?? null,
+				const userParam = {
+					avatar,
 					email,
 					address,
 					phone,
 					parentsPhones: parentsPhones ?? phone,
 					name: name ?? email,
+					groupId,
+					role,
 				};
 
 				return await CreateUser(ctx, userParam, password);

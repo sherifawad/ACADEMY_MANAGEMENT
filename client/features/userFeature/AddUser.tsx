@@ -1,7 +1,7 @@
 import LabelInput from "components/inputs/LabelInput";
+import { createStudentMutation } from "features/studentFeature/studentMutations";
 import { useEffect, useRef, useState } from "react";
 import GradeGroupSelect from "../../components/GradeGroupSelect";
-import { createStudentMutation } from "./userMutations";
 import { studentInitialProperties } from "./userTypes";
 
 function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInitialProperties) {

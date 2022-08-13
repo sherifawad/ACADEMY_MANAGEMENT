@@ -4,14 +4,8 @@ import StudentCard from "features/studentFeature/StudentCard";
 import { studentDetailsQuery, studentsIdsQuery } from "features/studentFeature/studentsQueries";
 
 function Student({ user }) {
-	const {
-		id,
-		name,
-		isActive,
-		avatar,
-		profile: { attendances, exams, bio, group },
-		contact,
-	} = user || {};
+	const { id, name, isActive, avatar, profile, contact } = user || {};
+	const { attendances, exams, bio, group } = profile || {};
 
 	return (
 		<div className="container w-full">
