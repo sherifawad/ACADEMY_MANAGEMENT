@@ -2,16 +2,17 @@ import LabelInput from "components/inputs/LabelInput";
 import { useEffect, useRef, useState } from "react";
 import GradeGroupSelect from "../../components/GradeGroupSelect";
 import { createUserMutation } from "./userMutations";
-import { studentInitialProperties } from "./userTypes";
+import { userInitialProperties } from "./userTypes";
 
-function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInitialProperties) {
-	const { profile, isActive, contact, avatar, name, id, password, groupId } = initialStudent || {};
+function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }: userInitialProperties) {
+	const { profile, isActive, contact, avatar, name, id, password, groupId } = initialUser || {};
 	const { email, phone, parentsPhones, address } = contact || {};
 
 	const mainRef = useRef();
 
 	const [_groupId, setGroupId] = useState();
 	const [_gradeId, setGradeId] = useState();
+	const [role, setRole] = useState("Student");
 	const [formState, setFormState] = useState({
 		id,
 		isActive,
@@ -94,19 +95,21 @@ function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInit
 					})
 				}
 			/>
-			<LabelInput
-				name={"parentPhone"}
-				label={"Your parentPhone"}
-				placeholder={"01xxxxxxxxxx"}
-				value={formState?.parentsPhones}
-				onChange={(e) =>
-					setFormState({
-						...formState,
-						error: "",
-						parentsPhones: e.target.value,
-					})
-				}
-			/>
+			{isStudent && (
+				<LabelInput
+					name={"parentPhone"}
+					label={"Your parentPhone"}
+					placeholder={"01xxxxxxxxxx"}
+					value={formState?.parentsPhones}
+					onChange={(e) =>
+						setFormState({
+							...formState,
+							error: "",
+							parentsPhones: e.target.value,
+						})
+					}
+				/>
+			)}
 			<LabelInput
 				name={"address"}
 				label={"Your address"}
@@ -134,12 +137,39 @@ function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInit
 				}
 			/>
 
-			<GradeGroupSelect
-				setGroupId={setGroupId}
-				setGradeId={setGradeId}
-				groupId={groupId}
-				gradeId={gradeId}
-			/>
+			{isStudent && (
+				<GradeGroupSelect
+					setGroupId={setGroupId}
+					setGradeId={setGradeId}
+					groupId={groupId}
+					gradeId={gradeId}
+				/>
+			)}
+
+			{!isStudent && (
+				<div>
+					<label htmlFor="role" className="sr-only">
+						Choose a Role
+					</label>
+
+					<select
+						id="role"
+						className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+						value={role}
+						onChange={({ target: { value } }) => {
+							if (value && typeof value === "string" && value.length > 0) {
+								setRole(value);
+							}
+						}}
+					>
+						{["Student", "ADMIN", "USER"].map((role) => (
+							<option key={role} value={role}>
+								{role}
+							</option>
+						))}
+					</select>
+				</div>
+			)}
 			{formState.error?.length > 0 && <p className="text-red-600">{formState.error}</p>}
 
 			<button
@@ -153,4 +183,4 @@ function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInit
 	);
 }
 
-export default AddStudent;
+export default AddUser;

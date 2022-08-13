@@ -8,8 +8,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
 import { usersByRolesListQuery } from "features/userFeature/usersQueries";
+import dynamic from "next/dynamic";
+import useModel from "customHooks/useModel";
 
 export default function Index({ flattenedList }) {
+	const AddUser = dynamic(() => import("features/userFeature/AddUser"), {
+		ssr: false,
+	});
+
+	const { Model, modelProps } = useModel();
+
 	const tableColumns = useMemo(
 		() => [
 			{
@@ -109,6 +117,9 @@ export default function Index({ flattenedList }) {
 	});
 	return (
 		<div className="container">
+			<Model title="User">
+				<AddUser onProceed={onProceed} onClose={modelProps.onClose} isStudent={false} />
+			</Model>
 			<RenderedTable />
 		</div>
 	);

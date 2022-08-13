@@ -117,7 +117,7 @@ function index({ flattenedList }) {
 	return (
 		<div className="container">
 			<Model title="Student">
-				<AddStudent onProceed={onProceed} onClose={modelProps.onClose} />
+				<AddStudent onProceed={onProceed} onClose={modelProps.onClose}  />
 			</Model>
 			<RenderedTable />
 		</div>

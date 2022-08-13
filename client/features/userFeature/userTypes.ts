@@ -1,4 +1,4 @@
-export interface student {
+export interface user {
 	id?: string | null;
 	name?: string | null;
 	groupId?: string | null;
@@ -9,17 +9,18 @@ export interface student {
 	profile?: any | null;
 }
 
-export interface studentInitialProperties {
+export interface userInitialProperties {
 	onProceed: Function;
 	onClose: Function;
-	initialStudent?: student;
+	initialUser?: user;
 	gradeId?: string;
+	isStudent?: boolean;
 }
 
 export interface userVariables {
 	[x: string]: any;
 }
 
-export interface StudentState extends student {
+export interface StudentState extends user {
 	error: String;
 }
