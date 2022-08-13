@@ -29,6 +29,7 @@ import { encodeUser } from "../../core/jwt";
 import LoginInvalidError from "../utils/errors/loginInvalid";
 import { setTokenCookie } from "../../core/auth-cookies";
 import { createTokens } from "../../utils/auth";
+import { isNullish, removeNullObjects } from "../../utils/utils";
 
 // export interface User {
 // 	id: string;
@@ -468,6 +469,57 @@ export async function CreateStudent(ctx: Context, studentParam: StudentParam, pa
 		},
 	});
 }
+export async function UpdateStudent(
+	ctx: Context,
+	studentParam: any,
+	userPassword?: string | null | undefined
+) {
+	const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
+	const { name, id, groupId, ...rest } = studentParam;
+	const password = hashedPassword
+		? {
+				update: {
+					password: hashedPassword,
+					forceChange: false,
+				},
+		  }
+		: undefined;
+	const profile = groupId
+		? {
+				update: {
+					updatedBy: ctx.user?.id || "",
+					group: {
+						connect: {
+							id: groupId,
+						},
+					},
+				},
+		  }
+		: undefined;
+	const allIsNull = isNullish(rest);
+	console.log("🚀 ~ file: User.ts ~ line 500 ~ removeNullObjects(rest)", removeNullObjects(rest));
+	const contact = !allIsNull
+		? {
+				update: {
+					...removeNullObjects(rest),
+				},
+		  }
+		: undefined;
+	return await ctx.prisma.user.update({
+		where: { id },
+		data: {
+			name: name ? name : undefined,
+			password,
+			contact,
+			profile,
+		},
+		include: {
+			password: hashedPassword ? true : false,
+			contact: allIsNull ? false : true,
+			profile: groupId ? true : false,
+		},
+	});
+}
 
 export async function CreateUser(ctx: Context, userParam: UserParam, password: string): Promise<prismaUser> {
 	const hashedPassword = await hashPassword(password);
@@ -549,8 +601,16 @@ export const UpdateUserMutation = extendType({
 				email: stringArg(),
 				avatar: stringArg(),
 				password: stringArg(),
+				address: stringArg(),
+				parentsPhones: stringArg(),
+				phone: stringArg(),
+				groupId: stringArg(),
 			},
-			resolve: async (_parent, { id, name, avatar, email, password }, { prisma, user }) => {
+			resolve: async (
+				_parent,
+				{ id, name, avatar, email, password, address, parentsPhones, phone, groupId },
+				{ prisma, user }
+			) => {
 				//check if the login user who make the change
 				//check if the user with admin role who make the change
 				if (!user || user.id !== id || user.role !== userRole.ADMIN) return null;
@@ -599,6 +659,42 @@ export const studentRegister = extendType({
 				};
 
 				return await CreateStudent(ctx, studentParam, password);
+			},
+		});
+	},
+});
+// When a user signs up proper (email + password)
+export const studentUpdate = extendType({
+	type: "Mutation",
+	definition(t) {
+		t.nonNull.field("studentUpdate", {
+			type: "User",
+			args: {
+				id: nonNull(stringArg()),
+				name: stringArg(),
+				email: stringArg(),
+				password: stringArg(),
+				address: stringArg(),
+				parentsPhones: stringArg(),
+				phone: stringArg(),
+				groupId: stringArg(),
+			},
+			resolve: async (
+				_parent,
+				{ id, name, email, password, address, parentsPhones, phone, groupId },
+				ctx
+			) => {
+				const studentParam = {
+					id,
+					email,
+					address,
+					phone,
+					parentsPhones: parentsPhones ?? phone,
+					name: name ?? email,
+					groupId: groupId,
+				};
+
+				return (result = await UpdateStudent(ctx, studentParam, password));
 			},
 		});
 	},

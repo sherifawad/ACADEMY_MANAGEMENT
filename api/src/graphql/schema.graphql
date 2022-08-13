@@ -134,6 +134,7 @@ type Mutation {
   refreshToken(token: String!, userId: String!): AuthPayload
   revokeToken(token: String!, userId: String!): AuthPayload
   studentRegister(address: String!, email: String!, groupId: String!, name: String, parentsPhones: String, password: String!, phone: String!): User!
+  studentUpdate(address: String, email: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String): User!
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateContact(address: String, email: String, emailConfirmed: Boolean, id: String!, note: String, parentsPhones: String, phone: String): Contact!
   updateExam(date: DateTime, id: String!, note: String, score: Float): Exam!
@@ -142,7 +143,7 @@ type Mutation {
   updateMultipleAttendance(endAt: DateTime, endAtCondition: DateTime, note: String, noteCondition: String, profileIds: [String!]!, startAt: DateTime, startAtCondition: DateTime!): AttendancesCUResponse!
   updateMultipleExam(date: DateTime, dateCondition: DateTime!, note: String, noteCondition: DateTime, profileIds: [String!]!, score: Float, scoreCondition: Float): ExamCUResponse!
   updateProfile(bio: String, id: String!): Profile!
-  updateUser(avatar: String, email: String, id: String!, name: String, password: String): User!
+  updateUser(address: String, avatar: String, email: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String): User!
   userLogin(email: String!, password: String!): AuthPayload!
   userRegister(address: String!, avatar: String, email: String!, name: String, parentsPhones: String, password: String!, phone: String!): User!
 }
