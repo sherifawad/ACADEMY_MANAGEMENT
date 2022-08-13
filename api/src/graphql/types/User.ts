@@ -694,7 +694,7 @@ export const studentUpdate = extendType({
 					groupId: groupId,
 				};
 
-				return (result = await UpdateStudent(ctx, studentParam, password));
+				return await UpdateStudent(ctx, studentParam, password);
 			},
 		});
 	},
