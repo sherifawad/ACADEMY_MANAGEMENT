@@ -16,9 +16,9 @@ import { GiUpgrade, GiTeamDowngrade } from "react-icons/gi";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 
-function UserCard({ name = "", bio = "", contact = {}, group = {}, id, isActive, avatar }) {
+function UserCard({ name = "", bio = "", contact = {}, group = {}, id, isActive, avatar, isStudent = true }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
-	const AddStudent = dynamic(() => import("./AddUser"), {
+	const AddUser = dynamic(() => import("./AddUser"), {
 		ssr: false,
 	});
 	const router = useRouter();
@@ -39,16 +39,17 @@ function UserCard({ name = "", bio = "", contact = {}, group = {}, id, isActive,
 					/>
 					<div className="pt-6 md:pis-8 text-center md:text-left space-y-4 w-full">
 						<div className="flex flex-col md:flex-row-reverse flex-nowrap md:justify-between justify-center items-center">
-							<Model title="Student">
+							<Model title={`${isStudent ? "Student" : "User"}`}>
 								<Suspense>
-									<AddStudent
+									<AddUser
 										onProceed={onProceed}
 										onClose={modelProps.onClose}
-										gradeId={(group as any)?.grade?.id}
-										initialStudent={{
+										isStudent={isStudent}
+										gradeId={group ? (group as any)?.grade?.id : undefined}
+										initialUser={{
 											name,
 											contact,
-											groupId: (group as any)?.id,
+											groupId: group ? (group as any)?.id : undefined,
 											id,
 											isActive,
 											avatar,
@@ -58,10 +59,16 @@ function UserCard({ name = "", bio = "", contact = {}, group = {}, id, isActive,
 							</Model>
 							<div className="text-sky-500 dark:text-sky-400 font-bold">{name}</div>
 						</div>
-						<blockquote>
-							<p className="text-lg font-medium">“{bio}”</p>
-						</blockquote>
-						<div className="flex flex-col md:flex-row gap-2 p-2 md:items-start justify-around">
+						{isStudent && (
+							<blockquote>
+								<p className="text-lg font-medium">“{bio}”</p>
+							</blockquote>
+						)}
+						<div
+							className={`flex flex-col md:flex-row gap-2 p-2 md:items-start ${
+								isStudent ? "justify-around" : ""
+							} `}
+						>
 							<div>
 								<h3 className="font-bold underline-offset-4 underline">Contact Details</h3>
 								<div className="divide-y">
@@ -75,53 +82,59 @@ function UserCard({ name = "", bio = "", contact = {}, group = {}, id, isActive,
 										<AiOutlineMobile />
 										<p className="text-sm font-medium ">{(contact as any)?.phone}</p>
 									</div>
-									<div className="flex gap-2 py-2  items-center">
-										<AiOutlinePhone />
-										<p className="text-sm font-medium ">
-											{(contact as any)?.parentsPhones}
-										</p>
-									</div>
+									{isStudent && (
+										<div className="flex gap-2 py-2  items-center">
+											<AiOutlinePhone />
+											<p className="text-sm font-medium ">
+												{(contact as any)?.parentsPhones}
+											</p>
+										</div>
+									)}
 								</div>
 							</div>
-							<div>
-								<h3 className="font-bold underline-offset-4 underline">Group Details</h3>
-								<div className="divide-y">
-									<div className="flex gap-2 py-2 items-center">
-										<GiUpgrade />
-										<Link href={`/grade/${(group as any)?.grade?.id}`}>
-											<a>
-												<p className="text-sm font-medium">
-													{(group as any)?.grade?.name}
-												</p>
-											</a>
-										</Link>
-									</div>
-									<div className="flex gap-2 py-2 items-center">
-										<GiTeamDowngrade />
-										<Link href={`/group/${(group as any)?.id}`}>
-											<a>
-												<p className="text-sm font-medium">{(group as any)?.name}</p>
-											</a>
-										</Link>
-									</div>
-									<div className="flex gap-2 py-2  items-center">
-										<AiOutlineFieldTime />
-										<div className="flex flex-wrap gap-2">
-											<div className="text-sm font-medium">
-												{(group as any)?.startAt
-													? format(new Date((group as any)?.startAt), "hh:mm a")
-													: ""}
-											</div>
-											<span className="text-sm font-medium"> : </span>
-											<div className="text-sm font-medium">
-												{(group as any)?.endAt
-													? format(new Date((group as any)?.endAt), "hh:mm a")
-													: ""}
+							{isStudent && (
+								<div>
+									<h3 className="font-bold underline-offset-4 underline">Group Details</h3>
+									<div className="divide-y">
+										<div className="flex gap-2 py-2 items-center">
+											<GiUpgrade />
+											<Link href={`/grade/${(group as any)?.grade?.id}`}>
+												<a>
+													<p className="text-sm font-medium">
+														{(group as any)?.grade?.name}
+													</p>
+												</a>
+											</Link>
+										</div>
+										<div className="flex gap-2 py-2 items-center">
+											<GiTeamDowngrade />
+											<Link href={`/group/${(group as any)?.id}`}>
+												<a>
+													<p className="text-sm font-medium">
+														{(group as any)?.name}
+													</p>
+												</a>
+											</Link>
+										</div>
+										<div className="flex gap-2 py-2  items-center">
+											<AiOutlineFieldTime />
+											<div className="flex flex-wrap gap-2">
+												<div className="text-sm font-medium">
+													{(group as any)?.startAt
+														? format(new Date((group as any)?.startAt), "hh:mm a")
+														: ""}
+												</div>
+												<span className="text-sm font-medium"> : </span>
+												<div className="text-sm font-medium">
+													{(group as any)?.endAt
+														? format(new Date((group as any)?.endAt), "hh:mm a")
+														: ""}
+												</div>
 											</div>
 										</div>
 									</div>
 								</div>
-							</div>
+							)}
 						</div>
 						<figcaption className="font-medium">
 							<div className="flex gap-2 p-2">

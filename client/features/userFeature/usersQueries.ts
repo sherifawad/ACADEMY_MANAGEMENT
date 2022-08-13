@@ -61,6 +61,22 @@ export const GET_STUDENT_DETAILS = `
     }
 `;
 
+export const GET_USER_DETAILS = `
+    query User($userId: String!) {
+        User(id: $userId) {
+            id
+            name
+            isActive
+            avatar
+            contact {
+                phone
+                address
+                email
+            }
+        }
+    }
+`;
+
 export const GET_USERS_IDS = `
     query FilteredUsers($role: [Role]) {
         FilteredUsers(role: $role) {
@@ -152,6 +168,15 @@ export const studentsIdsQuery = async (variable: userVariables) => {
 		},
 	} = await createAxiosService(GET_USERS_IDS, variable);
 	return { list };
+};
+
+export const userDetailsQuery = async (variable: userVariables) => {
+	const {
+		data: {
+			data: { User },
+		},
+	} = await createAxiosService(GET_USER_DETAILS, variable);
+	return { User };
 };
 
 export const studentDetailsQuery = async (variable: userVariables) => {
