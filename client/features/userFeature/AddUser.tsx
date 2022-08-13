@@ -1,7 +1,7 @@
 import LabelInput from "components/inputs/LabelInput";
-import { createStudentMutation } from "features/studentFeature/studentMutations";
 import { useEffect, useRef, useState } from "react";
 import GradeGroupSelect from "../../components/GradeGroupSelect";
+import { createUserMutation } from "./userMutations";
 import { studentInitialProperties } from "./userTypes";
 
 function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInitialProperties) {
@@ -38,7 +38,7 @@ function AddStudent({ onProceed, onClose, initialStudent, gradeId }: studentInit
 		});
 	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar]);
 
-	const createMutation = createStudentMutation({ ...formState, groupId });
+	const createMutation = createUserMutation({ ...formState, groupId });
 
 	const submitContact = async (e) => {
 		e.preventDefault();

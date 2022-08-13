@@ -16,7 +16,7 @@ export interface studentInitialProperties {
 	gradeId?: string;
 }
 
-export interface userMutationVariables {
+export interface userVariables {
 	[x: string]: any;
 }
 

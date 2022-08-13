@@ -1,6 +1,6 @@
-import GroupContents from "components/pageContents/GroupContents";
 import { createAxiosService } from "core/utils";
 import { getGradeGroups, getGradeIds, GRADE_GROUPS_QUERY } from "features/gradeFeature/gradeQueries";
+import GroupContents from "features/groupFeature/GroupContents";
 import Head from "next/head";
 
 function gradeItemData({ groups, gradeName }) {

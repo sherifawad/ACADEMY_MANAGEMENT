@@ -1,6 +1,6 @@
 import { createAxiosService } from "core/utils";
 import { useMutation } from "react-query";
-import { userMutationVariables } from "./userTypes";
+import { userVariables } from "./userTypes";
 
 export const LOGIN_MUTATION = `
 	mutation Mutation($email: String!, $password: String!) {
@@ -21,7 +21,7 @@ export const LOGIN_MUTATION = `
 	}
 `;
 
-export const SIGN_UP_MUTATION = `
+export const CREATE_USER_MUTATION = `
     mutation UserRegister($name: String!, $role: Role!, $password: String!, $address: String!, $phone: String!, $email: String, $parentsPhones: String, $avatar: String, $groupId: String) {
         userRegister(name: $name, role: $role, password: $password, address: $address, phone: $phone, email: $email, parentsPhones: $parentsPhones, avatar: $avatar, groupId: $groupId) {
             id
@@ -37,7 +37,17 @@ export const UPDATE_USER_MUTATION = `
     }
 `;
 
-export const updateUserMutation = (variables: userMutationVariables) =>
+export const createUserMutation = (variables: userVariables) =>
+	useMutation(
+		"createUser",
+		() => createAxiosService(CREATE_USER_MUTATION, variables).then((response) => response.data.data),
+		{
+			onSuccess: () => {
+				console.log("User created Successfully");
+			},
+		}
+	);
+export const updateUserMutation = (variables: userVariables) =>
 	useMutation(
 		"updateUser",
 		() => createAxiosService(UPDATE_USER_MUTATION, variables).then((response) => response.data.data),

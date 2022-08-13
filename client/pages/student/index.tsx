@@ -1,10 +1,8 @@
-import { flatten, getDayNames, ObjectFlatten } from "core/utils";
+import { getDayNames, ObjectFlatten } from "core/utils";
 import useModel from "customHooks/useModel";
-import usePagination from "customHooks/usePagination";
 import useReactTable from "customHooks/useReactTable";
 import { format } from "date-fns";
-import { studentExamsQuery } from "features/examFeature/examsQueries";
-import { studentsListQuery } from "features/studentFeature/studentsQueries";
+import { studentsListQuery } from "features/userFeature/usersQueries";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,7 +11,7 @@ import { useMemo } from "react";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
 
 function index({ flattenedList }) {
-	const AddStudent = dynamic(() => import("features/studentFeature/AddStudent"), {
+	const AddStudent = dynamic(() => import("features/userFeature/AddUser"), {
 		ssr: false,
 	});
 	const { Model, modelProps } = useModel();

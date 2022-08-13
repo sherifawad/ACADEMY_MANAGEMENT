@@ -16,7 +16,7 @@ import { GiUpgrade, GiTeamDowngrade } from "react-icons/gi";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 
-function StudentCard({ name = "", bio = "", contact = {}, group = {}, id, isActive, avatar }) {
+function UserCard({ name = "", bio = "", contact = {}, group = {}, id, isActive, avatar }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 	const AddStudent = dynamic(() => import("./AddUser"), {
 		ssr: false,
@@ -138,4 +138,4 @@ function StudentCard({ name = "", bio = "", contact = {}, group = {}, id, isActi
 	);
 }
 
-export default StudentCard;
+export default UserCard;

@@ -2,7 +2,7 @@ import { studentAttendancesQuery } from "features/attendanceFeature/attendancesQ
 import { createAxiosService } from "core/utils";
 import useModel from "customHooks/useModel";
 import usePagination from "customHooks/usePagination";
-import { GET_USERS_IDS } from "features/studentFeature/studentsQueries";
+import { GET_USERS_IDS } from "features/userFeature/usersQueries";
 import dynamic from "next/dynamic";
 
 function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {

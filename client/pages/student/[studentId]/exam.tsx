@@ -3,7 +3,7 @@ import { createAxiosService } from "core/utils";
 import { useRouter } from "next/router";
 import useReactTable from "customHooks/useReactTable";
 import useModel from "customHooks/useModel";
-import { GET_USERS_IDS } from "features/studentFeature/studentsQueries";
+import { GET_USERS_IDS } from "features/userFeature/usersQueries";
 import dynamic from "next/dynamic";
 
 function studentExams({ exams = [], profileId }) {

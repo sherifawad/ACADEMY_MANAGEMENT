@@ -1,7 +1,7 @@
 import AttendancesCard from "features/attendanceFeature/AttendancesCard";
 import ExamsCard from "features/examFeature/ExamsCard";
-import StudentCard from "features/studentFeature/StudentCard";
-import { studentDetailsQuery, studentsIdsQuery } from "features/studentFeature/studentsQueries";
+import UserCard from "features/userFeature/UserCard";
+import { studentDetailsQuery, studentsIdsQuery } from "features/userFeature/usersQueries";
 
 function Student({ user }) {
 	const { id, name, isActive, avatar, profile, contact } = user || {};
@@ -10,7 +10,7 @@ function Student({ user }) {
 	return (
 		<div className="container w-full">
 			<div className="w-full">
-				<StudentCard
+				<UserCard
 					name={name}
 					bio={bio}
 					contact={contact}
