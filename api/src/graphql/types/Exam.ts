@@ -224,7 +224,7 @@ export const createMultipleExamMutation = extendType({
 				const newExams: Omit<exam, "id">[] = [];
 				const isEmpty = Object.keys(studentsAndScores).length === 0;
 				if (isEmpty) {
-					profileIds?.forEach((id) =>
+					profileIds?.forEach((id: string) =>
 						newExams.push({
 							score: score || 0.001,
 							date,

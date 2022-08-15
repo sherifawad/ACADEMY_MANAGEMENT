@@ -276,7 +276,7 @@ export const FilteredUsersQuery = extendType({
 					let where = {};
 					if (role) {
 						const ORConditions: { role: string }[] = [];
-						role.forEach((x) => {
+						role.forEach((x: any) => {
 							if (x) ORConditions.push({ role: x });
 						});
 						where = { ...where, OR: ORConditions };

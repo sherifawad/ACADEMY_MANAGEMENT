@@ -12,13 +12,13 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
 	const [queryClient] = useState(() => new QueryClient());
 
 	return (
-		// <SessionProvider session={session}>
-		<QueryClientProvider client={queryClient}>
-			<MainLayout>
-				<Component {...pageProps} />
-			</MainLayout>
-		</QueryClientProvider>
-		// </SessionProvider>
+		<SessionProvider session={session}>
+			<QueryClientProvider client={queryClient}>
+				<MainLayout>
+					<Component {...pageProps} />
+				</MainLayout>
+			</QueryClientProvider>
+		</SessionProvider>
 	);
 }
 

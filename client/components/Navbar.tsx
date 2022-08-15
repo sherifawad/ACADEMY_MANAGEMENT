@@ -2,16 +2,20 @@ import Paths from "core/paths";
 import { createAxiosService } from "core/utils";
 import { REVOKE_TOKEN_MUTATION } from "features/authFeature/authMutations";
 import { User } from "next-auth";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "react-query";
 
 const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 	const session = { refreshToken: "", user: { id: "" } };
+	const { data: { accessToken: { name, email, sub, role, avatar, iat, exp } = {} as any } = {} as any } =
+		useSession();
+
 	const router = useRouter();
 
 	const mutation = useMutation(
@@ -30,8 +34,9 @@ const Navbar = () => {
 	);
 	const handleSignOut = async (e) => {
 		e.preventDefault();
-		if (mutation.isLoading) return;
-		await mutation.mutateAsync();
+		// if (mutation.isLoading) return;
+		// await mutation.mutateAsync();
+		console.log("🚀 ~ file: Navbar.tsx ~ line 39 ~ handleSignOut ~ handleSignOut", handleSignOut);
 	};
 	const openMenu = () => {
 		setMenuOpen(true);
@@ -78,7 +83,7 @@ const Navbar = () => {
 				//#endregion
 			}
 
-			{session && (
+			{avatar && (
 				<div className="flex items-center justify-center space-x-2 md:col-start-3 md:row-start-1 col-start-2  mx-8">
 					<a href="#">
 						<svg
@@ -125,7 +130,7 @@ const Navbar = () => {
 							setAccountMenuOpen(!accountMenuOpen);
 						}}
 					>
-						{!(session.user as User).avatar && (
+						{!avatar && (
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								className="w-6 h-6 text-gray-200"
@@ -141,13 +146,8 @@ const Navbar = () => {
 								/>
 							</svg>
 						)}
-						{(session.user as User).avatar && (
-							<Image
-								src={`/${(session.user as User).avatar}`}
-								alt="user account image"
-								width="40"
-								height="40"
-							/>
+						{avatar && (
+							<Image src={`/${avatar}`} alt="user account image" width="40" height="40" />
 						)}
 						<div
 							className={`${
@@ -179,8 +179,8 @@ const Navbar = () => {
 					</button>
 				</div>
 			)}
-			{!session && (
-				<Link href="/auth">
+			{!avatar && (
+				<Link href="/auth/signin">
 					<a className="bg-green-400 w-20 rounded-full text-white text-center py-2">Log In</a>
 				</Link>
 			)}

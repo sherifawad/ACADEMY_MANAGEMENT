@@ -351,7 +351,7 @@ export const createMultipleAttendanceMutation = extendType({
 			resolve: async (_parent, { startAt, endAt, note, profileIds }, { prisma, user }) => {
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 				const newAttendances: Omit<attendance, "id">[] = [];
-				profileIds.forEach((id) =>
+				profileIds.forEach((id: string) =>
 					newAttendances.push({
 						startAt,
 						endAt,
