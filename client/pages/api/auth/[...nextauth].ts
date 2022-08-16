@@ -1,3 +1,5 @@
+import { ObjectFlatten } from "core/utils";
+import { userLogin } from "features/authFeature/authMutations";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -7,13 +9,16 @@ const authOptions: NextAuthOptions = {
 		CredentialsProvider({
 			type: "credentials",
 			credentials: {},
-			authorize(credentials, req) {
+			async authorize(credentials, req) {
 				const { email, password } = credentials as {
 					email: string;
 					password: string;
 				};
 				// perform you login logic
 				// find out user from db
+				const data = await userLogin({ email, password });
+				const result = ObjectFlatten(data);
+				return result;
 				if (email !== "john@gmail.com" || password !== "1234") {
 					throw new Error("invalid credentials");
 				}
@@ -43,17 +48,16 @@ const authOptions: NextAuthOptions = {
 	callbacks: {
 		async jwt({ token, user }) {
 			// update token
-			if (user?.role) {
-				token.role = user.role;
+			if (user) {
+				token = { token, ...user };
+				token.avatar = "johnAvatar.png";
+				console.log("🚀 ~ file: [...nextauth].ts ~ line 53 ~ jwt ~ token", token);
 			}
-			if (user?.avatar) {
-				token.avatar = user.avatar;
-			}
+
 			// return final_token
 			return token;
 		},
 		async session({ session, token, user }) {
-			const { name, email, sub, role, avatar, iat, exp } = token;
 			// Send properties to the client, like an access_token from a provider.
 			session.accessToken = token;
 			return session;

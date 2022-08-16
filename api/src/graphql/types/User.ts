@@ -692,7 +692,7 @@ export const userLogin = extendType({
 				password: nonNull(stringArg()),
 			},
 			resolve: async (_, { email, password }, ctx) => {
-				const user = await GetUserByEmail(ctx.prisma, email);
+				const user = (await GetUserByEmail(ctx.prisma, email)) as prismaUser | null;
 
 				if (user == null || !(await ValidateUserCredentials(ctx.prisma, user, password))) {
 					throw new LoginInvalidError("Invalid username or password");
@@ -700,10 +700,10 @@ export const userLogin = extendType({
 
 				const refreshToken: Pick<RefreshToken, "expiration" | "hash" | "userId"> =
 					await CreateRefreshTokenForUser(ctx.prisma, user);
-				const { accessToken } = await createTokens({ userId: user.id }, refreshToken, ctx);
+				const { accessToken } = await createTokens(user, refreshToken, ctx);
 
-				// const token = CreateJWTForUser(user.user);
-				// setTokenCookie(ctx.res, refreshToken.hash);
+				// // const token = CreateJWTForUser(user.user);
+				// // setTokenCookie(ctx.res, refreshToken.hash);
 
 				return {
 					token: accessToken,

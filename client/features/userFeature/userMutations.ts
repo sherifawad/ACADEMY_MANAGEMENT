@@ -2,25 +2,6 @@ import { createAxiosService } from "core/utils";
 import { useMutation } from "react-query";
 import { userVariables } from "./userTypes";
 
-export const LOGIN_MUTATION = `
-	mutation Mutation($email: String!, $password: String!) {
-		userLogin(email: $email, password: $password) {
-			token
-			refreshToken
-			user {
-				name
-				id
-				avatar
-				role
-				contact {
-					email
-					phone
-				}
-			}
-		}
-	}
-`;
-
 export const CREATE_USER_MUTATION = `
     mutation UserRegister($name: String!, $role: Role!, $password: String!, $address: String!, $phone: String!, $email: String, $parentsPhones: String, $avatar: String, $groupId: String) {
         userRegister(name: $name, role: $role, password: $password, address: $address, phone: $phone, email: $email, parentsPhones: $parentsPhones, avatar: $avatar, groupId: $groupId) {

@@ -1,3 +1,4 @@
+import { User } from "@prisma/client";
 import { addMilliseconds } from "date-fns";
 import { CookieOptions, Request } from "express";
 import { sign, verify } from "jsonwebtoken";
@@ -20,7 +21,7 @@ type GetUserIdContext = {
 	connection?: any;
 };
 
-export const createAccessToken = (payload: JwtPayload) => {
+export const createAccessToken = (payload: User) => {
 	return sign(payload, constants.JWT_ACCESS_SECRET, {
 		expiresIn: constants.JWT_ACCESS_EXPIRATION,
 	});
@@ -68,7 +69,7 @@ export const removeRefreshCookie = (context: any) => {
 };
 
 export const createTokens = async (
-	payload: JwtPayload,
+	payload: User,
 	refreshTokenPayload: JwtRefreshPayload,
 	context?: Context
 ) => {

@@ -2,7 +2,7 @@ import Paths from "core/paths";
 import { createAxiosService } from "core/utils";
 import { REVOKE_TOKEN_MUTATION } from "features/authFeature/authMutations";
 import { User } from "next-auth";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -13,8 +13,12 @@ const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 	const session = { refreshToken: "", user: { id: "" } };
-	const { data: { accessToken: { name, email, sub, role, avatar, iat, exp } = {} as any } = {} as any } =
-		useSession();
+	const { data } = useSession();
+
+	const { name, email, id, role, avatar, iat, exp, token } = data?.accessToken || {};
+	useEffect(() => {
+		console.log("🚀 ~ file: Navbar.tsx ~ line 22 ~ Navbar ~ data", JSON.stringify(data));
+	}, [data]);
 
 	const router = useRouter();
 
@@ -34,6 +38,7 @@ const Navbar = () => {
 	);
 	const handleSignOut = async (e) => {
 		e.preventDefault();
+        signOut();
 		// if (mutation.isLoading) return;
 		// await mutation.mutateAsync();
 		console.log("🚀 ~ file: Navbar.tsx ~ line 39 ~ handleSignOut ~ handleSignOut", handleSignOut);
@@ -83,7 +88,7 @@ const Navbar = () => {
 				//#endregion
 			}
 
-			{avatar && (
+			{id ? (
 				<div className="flex items-center justify-center space-x-2 md:col-start-3 md:row-start-1 col-start-2  mx-8">
 					<a href="#">
 						<svg
@@ -178,8 +183,7 @@ const Navbar = () => {
 						</div>
 					</button>
 				</div>
-			)}
-			{!avatar && (
+			) : (
 				<Link href="/auth/signin">
 					<a className="bg-green-400 w-20 rounded-full text-white text-center py-2">Log In</a>
 				</Link>
