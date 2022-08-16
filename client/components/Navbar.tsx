@@ -15,7 +15,8 @@ const Navbar = () => {
 	const session = { refreshToken: "", user: { id: "" } };
 	const { data } = useSession();
 
-	const { name, email, id, role, avatar, iat, exp, token } = data?.accessToken || {};
+	const { id, avatar } =
+		(data?.accessToken as { id: string | undefined | null; avatar: string | undefined | null }) || {};
 	useEffect(() => {
 		console.log("🚀 ~ file: Navbar.tsx ~ line 22 ~ Navbar ~ data", JSON.stringify(data));
 	}, [data]);
@@ -38,7 +39,8 @@ const Navbar = () => {
 	);
 	const handleSignOut = async (e) => {
 		e.preventDefault();
-        signOut();
+		const data = await signOut({ redirect: false, callbackUrl: "/" });
+		router.push(data?.url);
 		// if (mutation.isLoading) return;
 		// await mutation.mutateAsync();
 		console.log("🚀 ~ file: Navbar.tsx ~ line 39 ~ handleSignOut ~ handleSignOut", handleSignOut);

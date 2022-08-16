@@ -1,22 +1,55 @@
 import { NextPage } from "next";
-import { signIn } from "next-auth/react";
-import { FormEventHandler, useState } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { FormEventHandler, useEffect, useState } from "react";
 
 interface Props {}
 
 const SignIn: NextPage = (props): JSX.Element => {
+	const { data, status } = useSession();
+
+	const { id, role } =
+		(data?.accessToken as
+			| {
+					id: string | null | undefined;
+					role: string | undefined | null;
+			  }
+			| undefined
+			| null) || {};
+
+	useEffect(() => {
+		if (status === "authenticated") {
+			if (role) {
+				switch (role) {
+					case "Student":
+						router.push(`/student/${id}`);
+						break;
+					case "ADMIN":
+						router.push(`/user/${id}`);
+						break;
+					case "USER":
+						router.push(`/user/${id}`);
+						break;
+
+					default:
+						router.push("/");
+						break;
+				}
+			}
+		}
+	}, [status]);
+
 	const [userInfo, setUserInfo] = useState({ email: "", password: "" });
+	const router = useRouter();
 	const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
 		// validate your userinfo
 		e.preventDefault();
 
-		const res = await signIn("credentials", {
+		const { error } = await signIn("credentials", {
 			email: userInfo.email,
 			password: userInfo.password,
 			redirect: false,
 		});
-
-		console.log(res);
 	};
 	return (
 		<div className="sign-in-form">
