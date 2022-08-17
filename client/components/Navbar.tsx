@@ -1,5 +1,6 @@
 import Paths from "core/paths";
 import { createAxiosService } from "core/utils";
+import useAuth from "customHooks/useAuth";
 import { REVOKE_TOKEN_MUTATION } from "features/authFeature/authMutations";
 import { User } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
@@ -12,41 +13,44 @@ import { useMutation } from "react-query";
 const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-	const { data: session } = useSession();
+	// const { data: session } = useSession();
+	const { isAuthenticated, user, signOutHandler } = useAuth();
 
-	const { id, avatar } =
-		(session?.user as { id: string | undefined | null; avatar: string | undefined | null }) || {};
+	// const { id, avatar } =
+	// 	(session?.user as { id: string | undefined | null; avatar: string | undefined | null }) || {};
+	const { id, avatar } = user || {};
 	// useEffect(() => {
 	// 	console.log("🚀 ~ file: Navbar.tsx ~ line 22 ~ Navbar ~ data", JSON.stringify(data));
 	// }, [data]);
 
-	useEffect(() => {
-		if (session?.error === "RefreshAccessTokenError") {
-            console.log("🚀 ~ file: Navbar.tsx ~ line 25 ~ useEffect ~ session", session)
-			signOut({ redirect: false, callbackUrl: "/" }).then((data) => router.push(data?.url));
-		}
-	}, [session]);
+	// useEffect(() => {
+	// 	if (session?.error === "RefreshAccessTokenError") {
+	// 		console.log("🚀 ~ file: Navbar.tsx ~ line 25 ~ useEffect ~ session", session);
+	// 		signOut({ redirect: false, callbackUrl: "/" }).then((data) => router.push(data?.url));
+	// 	}
+	// }, [session]);
 
 	const router = useRouter();
 
-	const mutation = useMutation(
-		"AddGrade",
-		() =>
-			createAxiosService(REVOKE_TOKEN_MUTATION, {
-				token: session.refreshToken,
-				userId: (session.user as User).id,
-			}).then((response) => response.data.data),
-		{
-			onSuccess: () => {
-				console.log("Grade Created Successfully");
-				router.push(Paths.Home);
-			},
-		}
-	);
+	// const mutation = useMutation(
+	// 	"AddGrade",
+	// 	() =>
+	// 		createAxiosService(REVOKE_TOKEN_MUTATION, {
+	// 			token: session.refreshToken,
+	// 			userId: (session.user as User).id,
+	// 		}).then((response) => response.data.data),
+	// 	{
+	// 		onSuccess: () => {
+	// 			console.log("Grade Created Successfully");
+	// 			router.push(Paths.Home);
+	// 		},
+	// 	}
+	// );
 	const handleSignOut = async (e) => {
 		e.preventDefault();
-		const data = await signOut({ redirect: false, callbackUrl: "/" });
-		router.push(data?.url);
+		signOutHandler();
+		// const data = await signOut({ redirect: false, callbackUrl: "/" });
+		// router.push(data?.url);
 		// if (mutation.isLoading) return;
 		// await mutation.mutateAsync();
 	};
@@ -95,7 +99,7 @@ const Navbar = () => {
 				//#endregion
 			}
 
-			{id ? (
+			{isAuthenticated ? (
 				<div className="flex items-center justify-center space-x-2 md:col-start-3 md:row-start-1 col-start-2  mx-8">
 					<a href="#">
 						<svg

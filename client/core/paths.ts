@@ -3,6 +3,7 @@ export enum Paths {
 	Login = "/auth",
 	Logout = "/auth",
 	Home = "/",
+	SignIn = "/auth/signin",
 }
 
 export default Paths;

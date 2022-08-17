@@ -70,10 +70,6 @@ const authOptions: NextAuthOptions = {
 			// Return previous token if the access token has not expired yet
 
 			if (Date.now() < (token.accessTokenExpires as number) * 1000) {
-				console.log(
-					"🚀 ~ file: [...nextauth].ts ~ line 73 ~ accessTokenExpires ~ accessTokenNOTExpires",
-					new Date((token.accessTokenExpires as number) * 1000).toLocaleString()
-				);
 				return token;
 			}
 

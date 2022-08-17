@@ -31,12 +31,19 @@ export const REFRESH_TOKEN_MUTATION = `
 `;
 
 export const REVOKE_TOKEN_MUTATION = `
-	mutation Mutation($userId: String!, $token: String!) {
-		revokeToken(userId: $userId, token: $token) {
-			refreshToken
-		}
-	}
+    mutation RevokeToken($userId: String!, $token: String!) {
+        revokeToken(userId: $userId, token: $token) {
+            userId
+        }
+    }
 `;
+
+export const revokeRefreshToken = async (variables: Variables) => {
+	const { data: refreshToken, errors } = await createAxiosService(REVOKE_TOKEN_MUTATION, variables).then(
+		(response) => response.data
+	);
+	return { ...refreshToken, errors };
+};
 
 export const getRefreshToken = async (variables: Variables) => {
 	const { data: refreshToken, errors } = await createAxiosService(REFRESH_TOKEN_MUTATION, variables).then(
