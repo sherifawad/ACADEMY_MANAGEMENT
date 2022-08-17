@@ -56,32 +56,32 @@ export const GROUP_STUDENTS_QUERY = `
     }
 `;
 
-export const getGroups = async () => {
+export const getGroups = async (token = null) => {
 	try {
 		const {
 			data: {
 				data: { Groups },
 			},
-		} = await createAxiosService(GROUPS_QUERY);
+		} = await createAxiosService({ query: GROUPS_QUERY, token });
 		return { Groups };
 	} catch (error) {
 		return {};
 	}
 };
-export const getGroupsIds = async () => {
+export const getGroupsIds = async (token = null) => {
 	try {
-        const {
-            data: {
-                data: { Groups },
-            },
-        } = await createAxiosService(GROUPS_IDS_QUERY);
+		const {
+			data: {
+				data: { Groups },
+			},
+		} = await createAxiosService({ query: GROUPS_IDS_QUERY, token });
 		return { Groups };
 	} catch (error) {
 		return {};
 	}
 };
 
-export const getGroupStudents = async (variables: groupVariables) => {
+export const getGroupStudents = async (variables: groupVariables, token = null) => {
 	try {
 		const {
 			data: {
@@ -89,7 +89,7 @@ export const getGroupStudents = async (variables: groupVariables) => {
 					Group: { name, profiles },
 				},
 			},
-		} = await createAxiosService(GROUP_STUDENTS_QUERY, variables);
+		} = await createAxiosService({ query: GROUP_STUDENTS_QUERY, variables, token });
 		return { name, ...profiles };
 	} catch (error) {
 		return {};

@@ -1,12 +1,19 @@
 import axios from "axios";
 import constants from "./constants";
 
-export const createAxiosService = async (
-	query: string,
+export interface axiosProps {
+	query: string;
+	variables?: any;
+	token?: string;
+	endPoint?: string;
+}
+
+export const createAxiosService = async ({
+	query,
 	variables = {},
-	token: string = null,
-	endPoint: string = constants.END_POINT
-) => {
+	token = null,
+	endPoint = constants.END_POINT,
+}: axiosProps) => {
 	let headers: any = {
 		"content-type": "application/json",
 	};

@@ -141,51 +141,51 @@ export const GET_STUDENTS_LIST = `
     }
 `;
 
-export const usersByRolesListQuery = async (variable: { role: string[] }) => {
+export const usersByRolesListQuery = async (variables: { role: string[] }, token = null) => {
 	const {
 		data: {
 			data: { FilteredUsers },
 		},
-	} = await createAxiosService(GET_USERS_BY_ROLES, variable);
+	} = await createAxiosService({ query: GET_USERS_BY_ROLES, variables, token });
 
 	return { ...FilteredUsers };
 };
 
-export const studentsListQuery = async (variable: userVariables) => {
+export const studentsListQuery = async (variables: userVariables, token = null) => {
 	const {
 		data: {
 			data: { FilteredUsers },
 		},
-	} = await createAxiosService(GET_STUDENTS_LIST, variable);
+	} = await createAxiosService({ query: GET_STUDENTS_LIST, variables, token });
 
 	return { ...FilteredUsers };
 };
 
-export const studentsIdsQuery = async (variable: userVariables) => {
+export const studentsIdsQuery = async (variables: userVariables, token = null) => {
 	const {
 		data: {
 			data: {
 				FilteredUsers: { list },
 			},
 		},
-	} = await createAxiosService(GET_USERS_IDS, variable);
+	} = await createAxiosService({ query: GET_USERS_IDS, variables, token });
 	return { list };
 };
 
-export const userDetailsQuery = async (variable: userVariables) => {
+export const userDetailsQuery = async (variables: userVariables, token = null) => {
 	const {
 		data: {
 			data: { User },
 		},
-	} = await createAxiosService(GET_USER_DETAILS, variable);
+	} = await createAxiosService({ query: GET_USER_DETAILS, variables, token });
 	return { User };
 };
 
-export const studentDetailsQuery = async (variable: userVariables) => {
+export const studentDetailsQuery = async (variables: userVariables, token = null) => {
 	const {
 		data: {
 			data: { User },
 		},
-	} = await createAxiosService(GET_STUDENT_DETAILS, variable);
+	} = await createAxiosService({ query: GET_STUDENT_DETAILS, variables, token });
 	return { User };
 };

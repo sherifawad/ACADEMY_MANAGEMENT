@@ -22,13 +22,13 @@ function GradeGroupSelect({ setGroupId, setGradeId, gradeId, groupId }) {
 	}, [selectedGrade, gradeId]);
 
 	const { data } = useQuery("ActiveGrades", () =>
-		createAxiosService(ACTIVE_GRADES_QUERY).then((response) => response.data.data)
+		createAxiosService({ query: ACTIVE_GRADES_QUERY }).then((response) => response.data.data)
 	);
 
 	const { refetch } = useQuery(
 		["getGroups", selectedGrade],
 		() =>
-			createAxiosService(GRADE_GROUPS_QUERY, { gradeId: selectedGrade }).then(
+			createAxiosService({ query: GRADE_GROUPS_QUERY, variables: { gradeId: selectedGrade } }).then(
 				(response) => response.data.data
 			),
 		{

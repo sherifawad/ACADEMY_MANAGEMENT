@@ -78,7 +78,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 		// 	};
 		// }
 
-		const result = await createAxiosService(GRADES_QUERY);
+		const result = await createAxiosService({ query: GRADES_QUERY });
 		if (result?.data?.data) {
 			return {
 				props: {

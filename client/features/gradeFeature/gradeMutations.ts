@@ -19,20 +19,23 @@ export const UPDATE_GRADE_MUTATION = `
     }
 `;
 
-export const createGradeMutation = (variables: gradeVariables) =>
+export const createGradeMutation = (variables: gradeVariables, token = null) =>
 	useMutation(
 		"AddGrade",
-		() => createAxiosService(ADD_GRADE_MUTATION, variables).then((response) => response.data.data),
+		() =>
+			createAxiosService({ query: ADD_GRADE_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
 		{
 			onSuccess: () => {
 				console.log("Grade Created Successfully");
 			},
 		}
 	);
-export const updateGradeMutation = (variables: gradeVariables) =>
+export const updateGradeMutation = (variables: gradeVariables, token = null) =>
 	useMutation(
 		"UpdateGrade",
-		() => createAxiosService(ADD_GRADE_MUTATION, variables).then((response) => response.data.data),
+		() => createAxiosService({ query:ADD_GRADE_MUTATION, variables, token }).then((response) => response.data.data),
 		{
 			onSuccess: () => {
 				console.log("Grade Updated Successfully");

@@ -45,25 +45,25 @@ export const GRADE_GROUPS_QUERY = `
     }
 `;
 
-export const getGradeIds = async () => {
+export const getGradeIds = async (token = null) => {
 	try {
 		const {
 			data: {
 				data: { Grades },
 			},
-		} = await createAxiosService(GRADES_IDS);
+		} = await createAxiosService({ query: GRADES_IDS, token });
 		return { Grades };
 	} catch (error) {
 		return {};
 	}
 };
-export const getGradeGroups = async (variables: gradeVariables) => {
+export const getGradeGroups = async (variables: gradeVariables, token = null) => {
 	try {
 		const {
 			data: {
 				data: { Grade },
 			},
-		} = await createAxiosService(GRADE_GROUPS_QUERY, variables);
+		} = await createAxiosService({ query: GRADE_GROUPS_QUERY, variables, token });
 		return { ...Grade };
 	} catch (error) {
 		return {};

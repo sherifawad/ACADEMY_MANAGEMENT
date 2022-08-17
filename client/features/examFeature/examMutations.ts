@@ -34,10 +34,13 @@ export const UPDATE_Multiple_EXAM_MUTATION = `
     }
 `;
 
-export const createExamMutation = (variables: examMutationVariables) =>
+export const createExamMutation = (variables: examMutationVariables, token = null) =>
 	useMutation(
 		"AddExam",
-		() => createAxiosService(CREATE_EXAM_MUTATION, variables).then((response) => response.data.data),
+		() =>
+			createAxiosService({ query: CREATE_EXAM_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
 		{
 			onSuccess: () => {
 				console.log("Exam Created Successfully");
@@ -45,11 +48,11 @@ export const createExamMutation = (variables: examMutationVariables) =>
 		}
 	);
 
-export const createMultipleExamMutation = (variables: examMutationVariables) =>
+export const createMultipleExamMutation = (variables: examMutationVariables, token = null) =>
 	useMutation(
 		"AddMultipleExams",
 		() =>
-			createAxiosService(CREATE_Multiple_EXAM_MUTATION, variables).then(
+			createAxiosService({ query: CREATE_Multiple_EXAM_MUTATION, variables, token }).then(
 				(response) => response.data.data
 			),
 		{
@@ -59,10 +62,13 @@ export const createMultipleExamMutation = (variables: examMutationVariables) =>
 		}
 	);
 
-export const updateExamMutation = (variables: examMutationVariables) =>
+export const updateExamMutation = (variables: examMutationVariables, token = null) =>
 	useMutation(
 		"UpdateExam",
-		() => createAxiosService(UPDATE_EXAM_MUTATION, variables).then((response) => response.data.data),
+		() =>
+			createAxiosService({ query: UPDATE_EXAM_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
 		{
 			onSuccess: () => {
 				console.log("Exam Updated Successfully");
@@ -70,11 +76,11 @@ export const updateExamMutation = (variables: examMutationVariables) =>
 		}
 	);
 
-export const updateMultipleExamMutation = (variables: examMutationVariables) =>
+export const updateMultipleExamMutation = (variables: examMutationVariables, token = null) =>
 	useMutation(
 		"UpdateMultipleExams",
 		() =>
-			createAxiosService(UPDATE_Multiple_EXAM_MUTATION, variables).then(
+			createAxiosService({ query: UPDATE_Multiple_EXAM_MUTATION, variables, token }).then(
 				(response) => response.data.data
 			),
 		{

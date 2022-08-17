@@ -39,21 +39,23 @@ export const REVOKE_TOKEN_MUTATION = `
 `;
 
 export const revokeRefreshToken = async (variables: Variables) => {
-	const { data: refreshToken, errors } = await createAxiosService(REVOKE_TOKEN_MUTATION, variables).then(
-		(response) => response.data
-	);
+	const { data: refreshToken, errors } = await createAxiosService({
+		query: REVOKE_TOKEN_MUTATION,
+		variables,
+	}).then((response) => response.data);
 	return { ...refreshToken, errors };
 };
 
 export const getRefreshToken = async (variables: Variables) => {
-	const { data: refreshToken, errors } = await createAxiosService(REFRESH_TOKEN_MUTATION, variables).then(
-		(response) => response.data
-	);
+	const { data: refreshToken, errors } = await createAxiosService({
+		query: REFRESH_TOKEN_MUTATION,
+		variables,
+	}).then((response) => response.data);
 	return { ...refreshToken, errors };
 };
 
 export const userLogin = async (variables: Variables) => {
-	const { userLogin = {}, err = null } = await createAxiosService(LOGIN_MUTATION, variables)
+	const { userLogin = {}, err = null } = await createAxiosService({ query: LOGIN_MUTATION, variables })
 		.then((response) => response.data.data)
 		.catch((err) => {
 			err;

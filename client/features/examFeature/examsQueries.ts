@@ -14,13 +14,13 @@ export const GET_STUDENT_EXAMS = `
     }
 `;
 
-export const studentExamsQuery = async (variable: examMutationVariables) => {
+export const studentExamsQuery = async (variables: examMutationVariables, token = null) => {
 	const {
 		data: {
 			data: {
 				SExams: { list },
 			},
 		},
-	} = await createAxiosService(GET_STUDENT_EXAMS, variable);
+	} = await createAxiosService({ query: GET_STUDENT_EXAMS, variables, token });
 	return { list };
 };

@@ -18,20 +18,26 @@ export const UPDATE_USER_MUTATION = `
     }
 `;
 
-export const createUserMutation = (variables: userVariables) =>
+export const createUserMutation = (variables: userVariables, token = null) =>
 	useMutation(
 		"createUser",
-		() => createAxiosService(CREATE_USER_MUTATION, variables).then((response) => response.data.data),
+		() =>
+			createAxiosService({ query: CREATE_USER_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
 		{
 			onSuccess: () => {
 				console.log("User created Successfully");
 			},
 		}
 	);
-export const updateUserMutation = (variables: userVariables) =>
+export const updateUserMutation = (variables: userVariables, token = null) =>
 	useMutation(
 		"updateUser",
-		() => createAxiosService(UPDATE_USER_MUTATION, variables).then((response) => response.data.data),
+		() =>
+			createAxiosService({ query: UPDATE_USER_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
 		{
 			onSuccess: () => {
 				console.log("User updated Successfully");

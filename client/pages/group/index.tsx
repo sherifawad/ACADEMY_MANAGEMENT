@@ -3,6 +3,8 @@ import Head from "next/head";
 
 import { getGroups } from "features/groupFeature/groupQueries";
 import GroupContents from "features/groupFeature/GroupContents";
+import Paths from "core/paths";
+import { getSession } from "next-auth/react";
 
 function group({ groups = [] }) {
 
@@ -20,16 +22,17 @@ function group({ groups = [] }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 	try {
-		// const session = await getSession({ req });
+		const session = await getSession({ req });
+        console.log("🚀 ~ file: index.tsx ~ line 26 ~ constgetServerSideProps:GetServerSideProps= ~ session", session)
 
-		// if (!session) {
-		// 	return {
-		// 		redirect: {
-		// 			destination: "/auth",
-		// 			permanent: false,
-		// 		},
-		// 	};
-		// }
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.SignIn,
+					permanent: false,
+				},
+			};
+		}
 
 		const { Groups } = await getGroups();
 		return {
@@ -44,9 +47,6 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 			},
 		};
 	}
-	return {
-		props: {},
-	};
 };
 
 export default group;
