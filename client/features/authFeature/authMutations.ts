@@ -3,30 +3,31 @@ import { Variables } from "features/core/types";
 import { useMutation } from "react-query";
 
 export const LOGIN_MUTATION = `
-mutation Mutation($email: String!, $password: String!) {
+    mutation UserLogin($email: String!, $password: String!) {
         userLogin(email: $email, password: $password) {
-            token
+            accessTokenExpiresIn
+            accessToken
+            refreshExpireIn
+            hash
             user {
                 id
                 name
                 isActive
                 avatar
                 role
-                contact {
-                    email
-                }
             }
-            refreshToken
         }
     }
 `;
 
 export const REFRESH_TOKEN_MUTATION = `
-	mutation Mutation($userId: String!, $token: String!) {
-		refreshToken(userId: $userId, token: $token) {
-			token
-		}
-	}
+    mutation UserLogin($userId: String!, $token: String!) {
+        refreshToken(userId: $userId, token: $token) {
+            accessTokenExpiresIn
+            accessToken
+            hash
+        }
+    }
 `;
 
 export const REVOKE_TOKEN_MUTATION = `
@@ -37,9 +38,18 @@ export const REVOKE_TOKEN_MUTATION = `
 	}
 `;
 
-export const userLogin = async (variables: Variables) => {
-	const { userLogin = {} } = await createAxiosService(LOGIN_MUTATION, variables).then(
-		(response) => response.data.data
+export const getRefreshToken = async (variables: Variables) => {
+	const { data: refreshToken, errors } = await createAxiosService(REFRESH_TOKEN_MUTATION, variables).then(
+		(response) => response.data
 	);
-	return { ...userLogin };
+	return { ...refreshToken, errors };
+};
+
+export const userLogin = async (variables: Variables) => {
+	const { userLogin = {}, err = null } = await createAxiosService(LOGIN_MUTATION, variables)
+		.then((response) => response.data.data)
+		.catch((err) => {
+			err;
+		});
+	return { ...userLogin, err };
 };

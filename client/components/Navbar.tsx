@@ -12,14 +12,20 @@ import { useMutation } from "react-query";
 const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-	const session = { refreshToken: "", user: { id: "" } };
-	const { data } = useSession();
+	const { data: session } = useSession();
 
 	const { id, avatar } =
-		(data?.accessToken as { id: string | undefined | null; avatar: string | undefined | null }) || {};
+		(session?.user as { id: string | undefined | null; avatar: string | undefined | null }) || {};
+	// useEffect(() => {
+	// 	console.log("🚀 ~ file: Navbar.tsx ~ line 22 ~ Navbar ~ data", JSON.stringify(data));
+	// }, [data]);
+
 	useEffect(() => {
-		console.log("🚀 ~ file: Navbar.tsx ~ line 22 ~ Navbar ~ data", JSON.stringify(data));
-	}, [data]);
+		if (session?.error === "RefreshAccessTokenError") {
+            console.log("🚀 ~ file: Navbar.tsx ~ line 25 ~ useEffect ~ session", session)
+			signOut({ redirect: false, callbackUrl: "/" }).then((data) => router.push(data?.url));
+		}
+	}, [session]);
 
 	const router = useRouter();
 
@@ -43,7 +49,6 @@ const Navbar = () => {
 		router.push(data?.url);
 		// if (mutation.isLoading) return;
 		// await mutation.mutateAsync();
-		console.log("🚀 ~ file: Navbar.tsx ~ line 39 ~ handleSignOut ~ handleSignOut", handleSignOut);
 	};
 	const openMenu = () => {
 		setMenuOpen(true);

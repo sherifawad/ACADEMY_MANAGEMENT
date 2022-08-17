@@ -19,12 +19,16 @@ export const createAxiosService = async (
 		variables: { ...variables },
 	};
 
-	return await axios({
-		url: endPoint,
-		method: "post",
-		headers: headers,
-		data: graphqlQuery,
-	});
+	try {
+		return await axios({
+			url: endPoint,
+			method: "post",
+			headers: headers,
+			data: graphqlQuery,
+		});
+	} catch (error) {
+		return error.message;
+	}
 };
 
 export const getDayNames = (date: String, firstThreeLetter: boolean = false): string => {

@@ -45,7 +45,7 @@ const SignIn: NextPage = (props): JSX.Element => {
 		// validate your userinfo
 		e.preventDefault();
 
-		const { error } = await signIn("credentials", {
+		const result = await signIn("credentials", {
 			email: userInfo.email,
 			password: userInfo.password,
 			redirect: false,

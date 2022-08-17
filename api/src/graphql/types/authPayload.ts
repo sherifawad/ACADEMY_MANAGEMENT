@@ -2,13 +2,27 @@ import { RefreshToken, User } from "@prisma/client";
 import { extendType, nonNull, objectType, stringArg } from "nexus";
 import { getTokenCookie } from "../../core/auth-cookies";
 import { encodeUser } from "../../core/jwt";
+import { createTokens } from "../../utils/auth";
+
+export const RefreshTokenObject = objectType({
+	name: "RefreshTokenObject",
+	description: "Refresh token",
+	definition(t) {
+		t.field("refreshExpireIn", { type: "DateTime" });
+		t.string("hash");
+		t.string("userId");
+	},
+});
 
 export const AuthPayload = objectType({
 	name: "AuthPayload",
 	description: "Payload containing auth token",
 	definition(t) {
-		t.string("token");
-		t.string("refreshToken");
+		t.int("accessTokenExpiresIn");
+		t.string("accessToken");
+		t.field("refreshExpireIn", { type: "DateTime" });
+		t.string("hash");
+		t.string("userId");
 		t.string("userId");
 		t.field("user", {
 			type: "User",
@@ -32,14 +46,14 @@ export const GetAccessToken = extendType({
 				userId: nonNull(stringArg()),
 				token: nonNull(stringArg()),
 			},
-			resolve: async (_parent, { userId, token }, { req, prisma }) => {
-				let refresh_Token = getTokenCookie(req);
+			resolve: async (_parent, { userId, token }, ctx) => {
+				let refresh_Token = getTokenCookie(ctx.req);
 				if (!refresh_Token || refresh_Token.length < 2) {
 					if (token) {
 						refresh_Token = token;
 					}
 				}
-				const refreshToken: RefreshToken = await prisma.refreshToken.findFirst({
+				const refreshToken: RefreshToken = await ctx.prisma.refreshToken.findFirst({
 					where: {
 						userId,
 						valid: true,
@@ -51,14 +65,16 @@ export const GetAccessToken = extendType({
 					!refreshToken.valid ||
 					Date.now().valueOf() > refreshToken.expiration.valueOf()
 				)
-					return null;
-				const user: User = await prisma.user.findUnique({
+					throw new Error("RefreshAccessTokenError");
+				const user: User = await ctx.prisma.user.findUnique({
 					where: {
 						id: userId,
 					},
 				});
-				if (!user) return null;
-				return { token: encodeUser(user) };
+				if (!user) throw new Error("RefreshAccessTokenError");
+				const { accessToken } = await createTokens(user, refreshToken, ctx);
+
+				return { ...accessToken };
 			},
 		});
 	},

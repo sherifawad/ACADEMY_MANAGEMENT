@@ -1,7 +1,28 @@
 import { ObjectFlatten } from "core/utils";
-import { userLogin } from "features/authFeature/authMutations";
+import { getRefreshToken, userLogin } from "features/authFeature/authMutations";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+
+const refreshAccessToken = async (token: any) => {
+	const {
+		user: { id },
+		refreshToken,
+	} = (token as any) || {};
+	const data = await getRefreshToken({ userId: id, token: refreshToken });
+	const { accessTokenExpiresIn, accessToken, hash, errors } = (data as any) || {};
+	if (errors) {
+		return {
+			...token,
+			error: "RefreshAccessTokenError",
+		};
+	}
+	return {
+		...token,
+		accessToken: accessToken,
+		accessTokenExpires: accessTokenExpiresIn,
+		refreshToken: hash ?? refreshToken,
+	};
+};
 
 const authOptions: NextAuthOptions = {
 	debug: true,
@@ -17,20 +38,8 @@ const authOptions: NextAuthOptions = {
 				// perform you login logic
 				// find out user from db
 				const data = await userLogin({ email, password });
-				const result = ObjectFlatten(data);
-				return result;
-				if (email !== "john@gmail.com" || password !== "1234") {
-					throw new Error("invalid credentials");
-				}
-
-				// if everything is fine
-				return {
-					id: "1234",
-					name: "John Doe",
-					email: "john@gmail.com",
-					role: "admin",
-					avatar: "johnAvatar.png",
-				};
+				// const result = ObjectFlatten(data);
+				return data;
 			},
 		}),
 	],
@@ -47,19 +56,36 @@ const authOptions: NextAuthOptions = {
 	},
 	callbacks: {
 		async jwt({ token, user }) {
-			// update token
+			const { accessTokenExpiresIn, accessToken, refreshExpireIn, hash, ...rest } = (user as any) || {};
+			// Initial sign in
 			if (user) {
-				token = { token, ...user };
-				token.avatar = "johnAvatar.png";
-				console.log("🚀 ~ file: [...nextauth].ts ~ line 53 ~ jwt ~ token", token);
+				return {
+					...token,
+					accessToken: accessToken,
+					accessTokenExpires: accessTokenExpiresIn,
+					refreshToken: hash,
+					...rest,
+				};
+			}
+			// Return previous token if the access token has not expired yet
+
+			if (Date.now() < (token.accessTokenExpires as number) * 1000) {
+				console.log(
+					"🚀 ~ file: [...nextauth].ts ~ line 73 ~ accessTokenExpires ~ accessTokenNOTExpires",
+					new Date((token.accessTokenExpires as number) * 1000).toLocaleString()
+				);
+				return token;
 			}
 
-			// return final_token
-			return token;
+			// Access token has expired, try to update it
+			return refreshAccessToken(token);
 		},
 		async session({ session, token, user }) {
 			// Send properties to the client, like an access_token from a provider.
 			session.accessToken = token;
+			session.user = token.user;
+			session.accessToken = token.accessToken;
+			session.error = token.error;
 			return session;
 		},
 	},

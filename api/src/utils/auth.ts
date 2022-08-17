@@ -22,9 +22,17 @@ type GetUserIdContext = {
 };
 
 export const createAccessToken = (payload: User) => {
-	return sign(payload, constants.JWT_ACCESS_SECRET, {
-		expiresIn: constants.JWT_ACCESS_EXPIRATION,
+	let expiration = new Date();
+	expiration.setSeconds(expiration.getSeconds() + constants.JWT_ACCESS_EXPIRATION_SECONDS);
+	let accessTokenExpiresIn = Math.floor(expiration.getTime() / 1000);
+	const accessToken = sign(payload, constants.JWT_ACCESS_SECRET, {
+		expiresIn: constants.JWT_ACCESS_EXPIRATION_SECONDS,
 	});
+
+	return {
+		accessTokenExpiresIn,
+		accessToken,
+	};
 };
 
 export const createRefreshToken = (payload: JwtRefreshPayload) => {
@@ -70,15 +78,17 @@ export const removeRefreshCookie = (context: any) => {
 
 export const createTokens = async (
 	payload: User,
-	refreshTokenPayload: JwtRefreshPayload,
+	refreshTokenPayload?: JwtRefreshPayload,
 	context?: Context
 ) => {
 	const accessToken = createAccessToken(payload);
 	// const refreshToken = createRefreshToken(refreshTokenPayload);
 
 	if (!!context) {
-		const refreshCookie = createRefreshCookie(refreshTokenPayload);
-		context.response.cookie(...refreshCookie);
+		if (refreshTokenPayload) {
+			const refreshCookie = createRefreshCookie(refreshTokenPayload);
+			context.response.cookie(...refreshCookie);
+		}
 	}
 
 	return {

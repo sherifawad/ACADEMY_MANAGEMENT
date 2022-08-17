@@ -30,6 +30,7 @@ import LoginInvalidError from "../utils/errors/loginInvalid";
 import { setTokenCookie } from "../../core/auth-cookies";
 import { createTokens } from "../../utils/auth";
 import { isNullish, removeNullObjects } from "../../utils/utils";
+import constants from "../../core/constants";
 
 // export interface User {
 // 	id: string;
@@ -565,9 +566,9 @@ export async function CreateRefreshTokenForUser(
 	user: prismaUser | Contact
 ): Promise<RefreshToken> {
 	let hash = srs({ length: 100 });
-	var expiration = new Date();
+	let expiration = new Date();
 
-	expiration.setDate(expiration.getDate() + 14);
+	expiration.setMinutes(expiration.getMinutes() + constants.JWT_REFRESH_EXPIRATION_MINUTES);
 	return await prisma.refreshToken.create({
 		data: {
 			expiration,
@@ -700,13 +701,17 @@ export const userLogin = extendType({
 
 				const refreshToken: Pick<RefreshToken, "expiration" | "hash" | "userId"> =
 					await CreateRefreshTokenForUser(ctx.prisma, user);
+				const { hash, expiration, userId } = refreshToken || {};
 				const { accessToken } = await createTokens(user, refreshToken, ctx);
 
 				// // const token = CreateJWTForUser(user.user);
 				// // setTokenCookie(ctx.res, refreshToken.hash);
 
 				return {
-					token: accessToken,
+					...accessToken,
+					refreshExpireIn: expiration,
+					hash,
+					userId,
 				};
 			},
 		});

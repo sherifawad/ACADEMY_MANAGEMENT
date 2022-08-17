@@ -31,8 +31,10 @@ type AttendancesCount {
 
 """Payload containing auth token"""
 type AuthPayload {
-  refreshToken: String
-  token: String
+  accessToken: String
+  accessTokenExpiresIn: Int
+  hash: String
+  refreshExpireIn: DateTime
   user: User
   userId: String
 }
@@ -201,6 +203,13 @@ type Query {
   Users: [User]
   studentAttendances(data: PaginationInputType, studentId: String!): AttendanceResponse
   studentsGroup(data: PaginationInputType, groupId: String!, isActive: Boolean, role: Role): StudentsResponse
+}
+
+"""Refresh token"""
+type RefreshTokenObject {
+  hash: String
+  refreshExpireIn: DateTime
+  userId: String
 }
 
 """User Role"""
