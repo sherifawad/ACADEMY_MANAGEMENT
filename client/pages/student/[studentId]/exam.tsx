@@ -3,7 +3,7 @@ import { createAxiosService } from "core/utils";
 import { useRouter } from "next/router";
 import useReactTable from "customHooks/useReactTable";
 import useModel from "customHooks/useModel";
-import { GET_USERS_IDS } from "features/userFeature/usersQueries";
+import { GET_USERS_IDS, studentsIdsQuery } from "features/userFeature/usersQueries";
 import dynamic from "next/dynamic";
 
 function studentExams({ exams = [], profileId }) {
@@ -19,7 +19,7 @@ function studentExams({ exams = [], profileId }) {
 		hasPagination: true,
 		hasEditColumn: true,
 		setItemData,
-		hiddenColumns: ["note"],
+		hiddenColumns: ["note", "id"],
 	});
 
 	// eslint-disable-next-line react-hooks/rules-of-hooks
@@ -48,13 +48,7 @@ function studentExams({ exams = [], profileId }) {
 
 export async function getStaticPaths() {
 	try {
-		const {
-			data: {
-				data: {
-					FilteredUsers: { list },
-				},
-			},
-		} = await createAxiosService(GET_USERS_IDS, {
+		const { list } = await studentsIdsQuery({
 			role: ["Student"],
 		});
 
