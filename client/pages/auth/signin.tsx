@@ -1,3 +1,4 @@
+import useAuth from "customHooks/useAuth";
 import { NextPage } from "next";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -6,38 +7,13 @@ import { FormEventHandler, useEffect, useState } from "react";
 interface Props {}
 
 const SignIn: NextPage = (props): JSX.Element => {
-	const { data, status } = useSession();
-
-	const { id, role } =
-		(data?.accessToken as
-			| {
-					id: string | null | undefined;
-					role: string | undefined | null;
-			  }
-			| undefined
-			| null) || {};
+	const { user } = useAuth();
 
 	useEffect(() => {
-		if (status === "authenticated") {
-			if (role) {
-				switch (role) {
-					case "Student":
-						router.push(`/student/${id}`);
-						break;
-					case "ADMIN":
-						router.push(`/user/${id}`);
-						break;
-					case "USER":
-						router.push(`/user/${id}`);
-						break;
-
-					default:
-						router.push("/");
-						break;
-				}
-			}
+		if (user?.id && user?.role) {
+			router.replace(`/${user?.role?.toLocaleLowerCase()}/${user?.id}`);
 		}
-	}, [status]);
+	}, [user?.id, user?.role]);
 
 	const [userInfo, setUserInfo] = useState({ email: "", password: "" });
 	const router = useRouter();

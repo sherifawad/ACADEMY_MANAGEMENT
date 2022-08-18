@@ -5,6 +5,8 @@ import { getGroups } from "features/groupFeature/groupQueries";
 import GroupContents from "features/groupFeature/GroupContents";
 import Paths from "core/paths";
 import { getSession } from "next-auth/react";
+import { authOptions } from "pages/api/auth/[...nextauth]";
+import { unstable_getServerSession } from "next-auth";
 
 function group({ groups = [] }) {
 	return (
@@ -19,10 +21,9 @@ function group({ groups = [] }) {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
-		const session = await getSession({ req });
-
+		const session = await unstable_getServerSession(req, res, authOptions);
 		if (!session) {
 			return {
 				redirect: {

@@ -18,7 +18,7 @@ const Navbar = () => {
 
 	// const { id, avatar } =
 	// 	(session?.user as { id: string | undefined | null; avatar: string | undefined | null }) || {};
-	const { id, avatar } = user || {};
+	const { id, avatar, role } = user || {};
 	// useEffect(() => {
 	// 	console.log("🚀 ~ file: Navbar.tsx ~ line 22 ~ Navbar ~ data", JSON.stringify(data));
 	// }, [data]);
@@ -165,6 +165,7 @@ const Navbar = () => {
 						{avatar && (
 							<Image src={`/${avatar}`} alt="user account image" width="40" height="40" />
 						)}
+
 						<div
 							className={`${
 								accountMenuOpen ? "flex" : "hidden"
@@ -183,6 +184,11 @@ const Navbar = () => {
 									clipRule="evenodd"
 								></path>
 							</svg>
+
+							<Link href={`/${role?.toLocaleLowerCase()}/${id}`}>
+								<a className=" text-black text-center p-2">ProfilePage</a>
+							</Link>
+
 							<Link href="#">
 								<a
 									className="bg-red-400 rounded-full text-white text-center p-2"

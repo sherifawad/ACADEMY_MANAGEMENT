@@ -5,11 +5,13 @@ import useReactTable from "customHooks/useReactTable";
 import { format } from "date-fns";
 import { studentsListQuery } from "features/userFeature/usersQueries";
 import { GetServerSideProps } from "next";
+import { unstable_getServerSession } from "next-auth";
 import { getSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { authOptions } from "pages/api/auth/[...nextauth]";
 import { useMemo } from "react";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
 
@@ -127,9 +129,9 @@ function index({ flattenedList }) {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
-		const session = await getSession({ req });
+		const session = await unstable_getServerSession(req, res, authOptions);
 
 		if (!session) {
 			return {
@@ -170,6 +172,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 		return {
 			props: {
 				session: null,
+				error: true,
 			},
 		};
 	}

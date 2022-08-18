@@ -4,21 +4,13 @@ import UserCard from "features/userFeature/UserCard";
 import { studentDetailsQuery, studentsIdsQuery } from "features/userFeature/usersQueries";
 
 function Student({ user }) {
-	const { id, name, isActive, avatar, profile, contact } = user || {};
+	const { id, profile } = user || {};
 	const { attendances, exams, bio, group } = profile || {};
 
 	return (
 		<div className="container w-full">
 			<div className="w-full">
-				<UserCard
-					name={name}
-					bio={bio}
-					contact={contact}
-					group={group}
-					id={id}
-					isActive={isActive}
-					avatar={avatar}
-				/>
+				<UserCard {...user} bio={bio} group={group} />
 				<div className="flex flex-wrap md:flex-nowrap w-full gap-4 items-start justify-between pt-8">
 					<AttendancesCard attendances={attendances} id={id} />
 					<ExamsCard exams={exams} id={id} />

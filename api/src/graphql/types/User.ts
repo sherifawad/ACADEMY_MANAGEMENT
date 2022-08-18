@@ -703,7 +703,7 @@ export const userLogin = extendType({
 					await CreateRefreshTokenForUser(ctx.prisma, user);
 				const { hash, expiration, userId } = refreshToken || {};
 				const { accessToken } = await createTokens(user, refreshToken, ctx);
-
+				// TODO: send refresh token with cookies
 				// // const token = CreateJWTForUser(user.user);
 				// // setTokenCookie(ctx.res, refreshToken.hash);
 

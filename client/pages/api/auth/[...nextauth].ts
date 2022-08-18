@@ -24,7 +24,7 @@ const refreshAccessToken = async (token: any) => {
 	};
 };
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
 	debug: true,
 	providers: [
 		CredentialsProvider({
@@ -80,8 +80,8 @@ const authOptions: NextAuthOptions = {
 			// Send properties to the client, like an access_token from a provider.
 			session.accessToken = token;
 			session.user = token.user;
-			session.accessToken = token.accessToken;
-			session.error = token.error;
+			session.accessToken = token.accessToken || null;
+			session.error = token.error || null;
 			return session;
 		},
 	},

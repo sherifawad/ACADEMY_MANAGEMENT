@@ -5,6 +5,8 @@ import { getCsrfToken, getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Register from "components/Register";
 import Login from "components/Login";
+import { authOptions } from "./api/auth/[...nextauth]";
+import { unstable_getServerSession } from "next-auth";
 
 export default function Auth() {
 	const [loginActive, setLoginActive] = useState(true);
@@ -26,8 +28,9 @@ export default function Auth() {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-	const session = await getSession({ req });
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
+    try{
+    const session = await unstable_getServerSession(req, res, authOptions);
 
 	if (session?.user) {
 		return {
@@ -37,6 +40,8 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 			},
 			props: { user: session?.user },
 		};
-	}
-	return { props: {} };
+	}}catch(error){
+
+        return { props: {} };
+    }
 };
