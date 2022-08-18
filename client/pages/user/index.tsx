@@ -15,6 +15,7 @@ import Paths from "core/paths";
 import { getToken } from "next-auth/jwt";
 import { unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
+import { user } from "features/userFeature/userTypes";
 
 export default function Index({ flattenedList }) {
 	const AddUser = dynamic(() => import("features/userFeature/AddUser"), {
@@ -143,8 +144,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 				},
 			};
 		}
-
-		const { list, rest } = await usersByRolesListQuery({ role: ["USER", "ADMIN"] });
+		const { user } = session;
+		const { role } = (user as user) || {};
+		const variables = role === "ADMIN" ? { role: ["USER", "ADMIN"] } : { role: ["USER"] };
+		const { list, rest } = await usersByRolesListQuery(variables);
 		let flattenedList = [];
 		if (list?.length > 0) {
 			flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
