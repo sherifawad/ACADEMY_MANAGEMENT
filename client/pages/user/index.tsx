@@ -10,6 +10,8 @@ import { MdOutlineRadioButtonChecked } from "react-icons/md";
 import { usersByRolesListQuery } from "features/userFeature/usersQueries";
 import dynamic from "next/dynamic";
 import useModel from "customHooks/useModel";
+import { getSession } from "next-auth/react";
+import Paths from "core/paths";
 
 export default function Index({ flattenedList }) {
 	const AddUser = dynamic(() => import("features/userFeature/AddUser"), {
@@ -127,6 +129,17 @@ export default function Index({ flattenedList }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 	try {
+		const session = await getSession({ req });
+
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.SignIn,
+					permanent: false,
+				},
+			};
+		}
+
 		const { list, rest } = await usersByRolesListQuery({ role: ["USER", "ADMIN"] });
 		let flattenedList = [];
 		if (list?.length > 0) {
@@ -134,12 +147,16 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 		}
 		return {
 			props: {
+				session,
 				flattenedList,
 				...rest,
 			},
 		};
-	} catch (error) {}
-	return {
-		props: {},
-	};
+	} catch (error) {
+		return {
+			props: {
+				session: null,
+			},
+		};
+	}
 };

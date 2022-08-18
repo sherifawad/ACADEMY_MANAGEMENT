@@ -23,7 +23,7 @@ type GetUserIdContext = {
 
 export const createAccessToken = (payload: User) => {
 	let expiration = new Date();
-	expiration.setSeconds(expiration.getSeconds() + constants.JWT_ACCESS_EXPIRATION_SECONDS);
+	expiration.setSeconds(expiration.getSeconds() + (constants.JWT_ACCESS_EXPIRATION_SECONDS as number));
 	let accessTokenExpiresIn = Math.floor(expiration.getTime() / 1000);
 	const accessToken = sign(payload, constants.JWT_ACCESS_SECRET, {
 		expiresIn: constants.JWT_ACCESS_EXPIRATION_SECONDS,

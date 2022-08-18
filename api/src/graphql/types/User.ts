@@ -568,7 +568,7 @@ export async function CreateRefreshTokenForUser(
 	let hash = srs({ length: 100 });
 	let expiration = new Date();
 
-	expiration.setMinutes(expiration.getMinutes() + constants.JWT_REFRESH_EXPIRATION_MINUTES);
+	expiration.setDate(expiration.getDate() + (constants.JWT_REFRESH_EXPIRATION_DAYS as number));
 	return await prisma.refreshToken.create({
 		data: {
 			expiration,

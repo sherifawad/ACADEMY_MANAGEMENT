@@ -7,7 +7,6 @@ import Paths from "core/paths";
 import { getSession } from "next-auth/react";
 
 function group({ groups = [] }) {
-
 	return (
 		<div className="container">
 			<Head>
@@ -23,7 +22,6 @@ function group({ groups = [] }) {
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 	try {
 		const session = await getSession({ req });
-        console.log("🚀 ~ file: index.tsx ~ line 26 ~ constgetServerSideProps:GetServerSideProps= ~ session", session)
 
 		if (!session) {
 			return {

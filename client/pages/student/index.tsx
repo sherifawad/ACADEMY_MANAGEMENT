@@ -1,8 +1,11 @@
+import Paths from "core/paths";
 import { getDayNames, ObjectFlatten } from "core/utils";
 import useModel from "customHooks/useModel";
 import useReactTable from "customHooks/useReactTable";
 import { format } from "date-fns";
 import { studentsListQuery } from "features/userFeature/usersQueries";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -117,16 +120,26 @@ function index({ flattenedList }) {
 	return (
 		<div className="container">
 			<Model title="Student">
-				<AddStudent onProceed={onProceed} onClose={modelProps.onClose}  />
+				<AddStudent onProceed={onProceed} onClose={modelProps.onClose} />
 			</Model>
 			<RenderedTable />
 		</div>
 	);
 }
 
-// This also gets called at build time
-export async function getStaticProps({ params }) {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 	try {
+		const session = await getSession({ req });
+
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.SignIn,
+					permanent: false,
+				},
+			};
+		}
+
 		const variables = {
 			role: ["Student"],
 			attendancesTake2: 1,
@@ -148,15 +161,18 @@ export async function getStaticProps({ params }) {
 		}
 		return {
 			props: {
+				session,
 				flattenedList,
 				...rest,
 			},
 		};
 	} catch (error) {
 		return {
-			props: {},
+			props: {
+				session: null,
+			},
 		};
 	}
-}
+};
 
 export default index;

@@ -45,6 +45,19 @@ export const GRADE_GROUPS_QUERY = `
     }
 `;
 
+export const getGradeList = async (token = null) => {
+	try {
+		const {
+			data: {
+				data: { Grades },
+			},
+		} = await createAxiosService({ query: GRADES_QUERY, token });
+		return { Grades };
+	} catch (error) {
+		return {};
+	}
+};
+
 export const getGradeIds = async (token = null) => {
 	try {
 		const {
