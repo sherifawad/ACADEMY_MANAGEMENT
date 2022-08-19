@@ -1,5 +1,10 @@
+import Paths from "core/paths";
 import UserCard from "features/userFeature/UserCard";
-import { studentDetailsQuery, studentsIdsQuery, userDetailsQuery } from "features/userFeature/usersQueries";
+import { userDetailsQuery } from "features/userFeature/usersQueries";
+import { user } from "features/userFeature/userTypes";
+import { GetServerSideProps } from "next";
+import { unstable_getServerSession } from "next-auth";
+import { authOptions } from "pages/api/auth/[...nextauth]";
 
 function User({ user }) {
 	const { id, name, isActive, avatar, contact } = user || {};
@@ -13,32 +18,41 @@ function User({ user }) {
 	);
 }
 
-export async function getStaticPaths() {
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
-		const { list } = await studentsIdsQuery({
-			role: ["USER", "ADMIN"],
-		});
+		// If you don't have NEXTAUTH_SECRET set, you will have to pass your secret as `secret` to `getToken`
 
-		const paths = list?.map((user) => ({
-			params: { userId: user.id },
-		}));
-		return { paths, fallback: false };
+		const session = await unstable_getServerSession(req, res, authOptions);
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.SignIn,
+					permanent: false,
+				},
+			};
+		}
+		const { user, accessToken } = session;
+		const { id } = (user as user) || {};
+		const { User } = await userDetailsQuery(
+			{
+				userId: id,
+			},
+			accessToken
+		);
+
+		return {
+			props: {
+				session,
+				user: User,
+			},
+		};
 	} catch (error) {
-		return { fallback: false };
+		return {
+			props: {
+				session: null,
+			},
+		};
 	}
-}
-
-// This also gets called at build time
-export async function getStaticProps({ params }) {
-	try {
-		const { User } = await userDetailsQuery({
-			userId: params.userId,
-		});
-
-		return { props: { user: User } };
-	} catch (error) {
-		return { props: {} };
-	}
-}
+};
 
 export default User;

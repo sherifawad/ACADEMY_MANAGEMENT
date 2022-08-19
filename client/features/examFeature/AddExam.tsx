@@ -14,6 +14,7 @@ import { useMutation } from "react-query";
 import { examInitialProperties } from "./examTypes";
 import useToggle from "customHooks/useToggle";
 import LabelInput from "components/inputs/LabelInput";
+import useAuth from "customHooks/useAuth";
 
 function AddExam({
 	onProceed,
@@ -23,6 +24,8 @@ function AddExam({
 	studentsAndScores = {},
 	multiEnabled = false,
 }: examInitialProperties) {
+	const { accessToken } = useAuth();
+
 	const [value, toggleValue] = useToggle(false);
 
 	const { profileId, score, date, note, id } = initialExam || {};
@@ -50,37 +53,49 @@ function AddExam({
 		});
 	}, [score, date, note]);
 
-	const createMutation = createExamMutation({
-		profileId,
-		score: examState.score,
-		date: examState.date,
-		note: examState.note?.length > 0 ? examState.note : null,
-	});
+	const createMutation = createExamMutation(
+		{
+			profileId,
+			score: examState.score,
+			date: examState.date,
+			note: examState.note?.length > 0 ? examState.note : null,
+		},
+		accessToken
+	);
 
-	const createMultipleMutation = createMultipleExamMutation({
-		profileIds,
-		studentsAndScores,
-		score: examState.score,
-		date: examState.date,
-		note: examState.note?.length > 0 ? examState.note : null,
-	});
+	const createMultipleMutation = createMultipleExamMutation(
+		{
+			profileIds,
+			studentsAndScores,
+			score: examState.score,
+			date: examState.date,
+			note: examState.note?.length > 0 ? examState.note : null,
+		},
+		accessToken
+	);
 
-	const updateMutation = updateExamMutation({
-		updateExamId: examState.id,
-		score: examState.score,
-		date: examState.date,
-		note: examState.note?.length > 0 ? examState.note : null,
-	});
+	const updateMutation = updateExamMutation(
+		{
+			updateExamId: examState.id,
+			score: examState.score,
+			date: examState.date,
+			note: examState.note?.length > 0 ? examState.note : null,
+		},
+		accessToken
+	);
 
-	const updateMultipleMutation = updateMultipleExamMutation({
-		profileIds,
-		dateCondition,
-		scoreCondition,
-		noteCondition: noteCondition.length > 0 ? noteCondition : null,
-		date: examState.date || dateCondition,
-		score: examState.score,
-		note: examState.note,
-	});
+	const updateMultipleMutation = updateMultipleExamMutation(
+		{
+			profileIds,
+			dateCondition,
+			scoreCondition,
+			noteCondition: noteCondition.length > 0 ? noteCondition : null,
+			date: examState.date || dateCondition,
+			score: examState.score,
+			note: examState.note,
+		},
+		accessToken
+	);
 
 	useEffect(() => {
 		setHasConditions(multiEnabled && (dateCondition || scoreCondition || noteCondition));

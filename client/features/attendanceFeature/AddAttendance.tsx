@@ -1,3 +1,4 @@
+import useAuth from "customHooks/useAuth";
 import useToggle from "customHooks/useToggle";
 import { arEG } from "date-fns/locale";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -17,6 +18,7 @@ function AddAttendance({
 	profileIds,
 	multiEnabled = false,
 }: attendanceInitialProperties) {
+	const { accessToken } = useAuth();
 	const mainRef = useRef();
 	const [value, toggleValue] = useToggle(false);
 	const { profileId, startAt, endAt, note, id } = initialAttendance;
@@ -43,36 +45,48 @@ function AddAttendance({
 		});
 	}, [startAt, endAt, note]);
 
-	const createMutation = createAttendanceMutation({
-		profileId,
-		startAt: attendanceState.startAt,
-		endAt: attendanceState.endAt,
-		note: attendanceState.note?.length > 0 ? attendanceState.note : null,
-	});
+	const createMutation = createAttendanceMutation(
+		{
+			profileId,
+			startAt: attendanceState.startAt,
+			endAt: attendanceState.endAt,
+			note: attendanceState.note?.length > 0 ? attendanceState.note : null,
+		},
+		accessToken
+	);
 
-	const createMultipleMutation = createMultipleAttendanceMutation({
-		profileIds,
-		startAt: attendanceState.startAt,
-		endAt: attendanceState.endAt,
-		note: attendanceState.note?.length > 0 ? attendanceState.note : null,
-	});
+	const createMultipleMutation = createMultipleAttendanceMutation(
+		{
+			profileIds,
+			startAt: attendanceState.startAt,
+			endAt: attendanceState.endAt,
+			note: attendanceState.note?.length > 0 ? attendanceState.note : null,
+		},
+		accessToken
+	);
 
-	const updateMutation = updateAttendanceMutation({
-		updateAttendanceId: attendanceState.id,
-		startAt: attendanceState.startAt,
-		endAt: attendanceState.endAt,
-		note: attendanceState.note,
-	});
+	const updateMutation = updateAttendanceMutation(
+		{
+			updateAttendanceId: attendanceState.id,
+			startAt: attendanceState.startAt,
+			endAt: attendanceState.endAt,
+			note: attendanceState.note,
+		},
+		accessToken
+	);
 
-	const updateMultipleMutation = updateMultipleAttendanceMutation({
-		profileIds,
-		startAtCondition,
-		endAtCondition,
-		noteCondition: noteCondition.length > 0 ? noteCondition : null,
-		startAt: attendanceState.startAt || startAtCondition,
-		endAt: attendanceState.endAt,
-		note: attendanceState.note,
-	});
+	const updateMultipleMutation = updateMultipleAttendanceMutation(
+		{
+			profileIds,
+			startAtCondition,
+			endAtCondition,
+			noteCondition: noteCondition.length > 0 ? noteCondition : null,
+			startAt: attendanceState.startAt || startAtCondition,
+			endAt: attendanceState.endAt,
+			note: attendanceState.note,
+		},
+		accessToken
+	);
 
 	useEffect(() => {
 		setHasConditions(multiEnabled && (startAtCondition || endAtCondition || noteCondition));

@@ -1,3 +1,4 @@
+import useAuth from "customHooks/useAuth";
 import { useEffect, useState } from "react";
 import { Grade } from "../../components/GradesListItem";
 import { createGradeMutation, updateGradeMutation } from "./gradeMutations";
@@ -8,6 +9,8 @@ export interface GradeInitials extends Grade {
 }
 
 function AddGrade({ onProceed, onClose, id, name, isActive }) {
+	const { accessToken } = useAuth();
+
 	const [formState, setFormState] = useState({
 		id,
 		name,
@@ -18,16 +21,22 @@ function AddGrade({ onProceed, onClose, id, name, isActive }) {
 		setFormState({ id, name, isActive });
 	}, [id, name, isActive]);
 
-	const createMutation = createGradeMutation({
-		name: formState.name,
-		isActive: formState.isActive,
-	});
+	const createMutation = createGradeMutation(
+		{
+			name: formState.name,
+			isActive: formState.isActive,
+		},
+		accessToken
+	);
 
-	const updateMutation = updateGradeMutation({
-		updateGradeId: formState.id,
-		name: formState.name,
-		isActive: formState.isActive,
-	});
+	const updateMutation = updateGradeMutation(
+		{
+			updateGradeId: formState.id,
+			name: formState.name,
+			isActive: formState.isActive,
+		},
+		accessToken
+	);
 
 	const submitContact = async (e) => {
 		e.preventDefault();

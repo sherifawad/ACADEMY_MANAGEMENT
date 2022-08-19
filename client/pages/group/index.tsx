@@ -32,8 +32,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 				},
 			};
 		}
+		const { accessToken } = session;
 
-		const { Groups } = await getGroups();
+		const { Groups } = await getGroups(accessToken);
 		return {
 			props: {
 				groups: Groups,

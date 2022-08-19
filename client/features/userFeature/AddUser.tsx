@@ -1,11 +1,14 @@
 import GradeGroupSelect from "components/GradeGroupSelect";
 import LabelInput from "components/inputs/LabelInput";
+import useAuth from "customHooks/useAuth";
 import dynamic from "next/dynamic";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createUserMutation, updateUserMutation } from "./userMutations";
 import { userInitialProperties } from "./userTypes";
 
 function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }: userInitialProperties) {
+	const { accessToken } = useAuth();
+
 	const { profile, isActive, contact, avatar, name, id, password, groupId, role } = initialUser || {};
 	const { email, phone, parentsPhones, address } = contact || {};
 
@@ -41,9 +44,9 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 		});
 	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar, role]);
 
-	const createMutation = createUserMutation({ ...formState, groupId, role });
+	const createMutation = createUserMutation({ ...formState, groupId, role }, accessToken);
 	const { error, ...rest } = formState;
-	const updateMutation = updateUserMutation({ ...formState, userUpdateId: id, groupId });
+	const updateMutation = updateUserMutation({ ...formState, userUpdateId: id, groupId }, accessToken);
 
 	const submitContact = async (e) => {
 		e.preventDefault();

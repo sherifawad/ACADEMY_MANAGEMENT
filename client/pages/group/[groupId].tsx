@@ -9,6 +9,10 @@ import { useCheckboxes, useInputHooks } from "customHooks/reactTableHooks";
 import { useRowSelect } from "react-table";
 import { getGroupsIds, getGroupStudents, GROUPS_IDS_QUERY } from "features/groupFeature/groupQueries";
 import dynamic from "next/dynamic";
+import { GetServerSideProps } from "next";
+import { unstable_getServerSession } from "next-auth";
+import { authOptions } from "pages/api/auth/[...nextauth]";
+import Paths from "core/paths";
 
 function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId }) {
 	const AddExam = dynamic(() => import("features/examFeature/AddExam"), {
@@ -175,22 +179,21 @@ function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId }) 
 	);
 }
 
-export async function getStaticPaths() {
-	const { Groups } = await getGroupsIds();
-
-	if (Groups) {
-		const paths = Groups?.map((group) => ({
-			params: { groupId: group?.id },
-		}));
-		return { paths, fallback: false };
-	}
-	return { fallback: false };
-}
-
-// This also gets called at build time
-export async function getStaticProps({ params }) {
+export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
 		const { groupId } = params;
+
+		const session = await unstable_getServerSession(req, res, authOptions);
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.SignIn,
+					permanent: false,
+				},
+			};
+		}
+		const { accessToken } = session;
+
 		const variables = {
 			groupId,
 			role: "Student",
@@ -203,7 +206,8 @@ export async function getStaticProps({ params }) {
 				sort: [{ user: { name: "asc" } }],
 			},
 		};
-		const { name, list, nextCursor, prevCursor, totalCount } = (await getGroupStudents(variables)) || {};
+		const { name, list, nextCursor, prevCursor, totalCount } =
+			(await getGroupStudents(variables, accessToken)) || {};
 		const { _count } = totalCount || {};
 		let flattenedList = [];
 		if (list?.length > 0) {
@@ -211,6 +215,7 @@ export async function getStaticProps({ params }) {
 		}
 		return {
 			props: {
+				session,
 				list: flattenedList,
 				_count,
 				name,
@@ -221,9 +226,11 @@ export async function getStaticProps({ params }) {
 		};
 	} catch (error) {
 		return {
-			props: {},
+			props: {
+				session: null,
+			},
 		};
 	}
-}
+};
 
 export default groupItemData;

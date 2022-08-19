@@ -37,11 +37,13 @@ export const UPDATE_MULTIPLE_ATTENDANCE_MUTATION = `
     }
 `;
 
-export const createAttendanceMutation = (variables: attendanceMutationVariables) =>
+export const createAttendanceMutation = (variables: attendanceMutationVariables, token = null) =>
 	useMutation(
 		"AddAttendance",
 		() =>
-			createAxiosService(CREATE_ATTENDANCE_MUTATION, variables).then((response) => response.data.data),
+			createAxiosService({ query: CREATE_ATTENDANCE_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
 		{
 			onSuccess: () => {
 				console.log("Attendance Created Successfully");
@@ -49,11 +51,11 @@ export const createAttendanceMutation = (variables: attendanceMutationVariables)
 		}
 	);
 
-export const createMultipleAttendanceMutation = (variables: attendanceMutationVariables) =>
+export const createMultipleAttendanceMutation = (variables: attendanceMutationVariables, token = null) =>
 	useMutation(
 		"AddMultipleAttendance",
 		() =>
-			createAxiosService(CREATE_MULTIPLE_ATTENDANCE_MUTATION, variables).then(
+			createAxiosService({ query: CREATE_MULTIPLE_ATTENDANCE_MUTATION, variables, token }).then(
 				(response) => response.data.data
 			),
 		{
@@ -63,11 +65,13 @@ export const createMultipleAttendanceMutation = (variables: attendanceMutationVa
 		}
 	);
 
-export const updateAttendanceMutation = (variables: attendanceMutationVariables) =>
+export const updateAttendanceMutation = (variables: attendanceMutationVariables, token = null) =>
 	useMutation(
 		"UpdateAttendance",
 		() =>
-			createAxiosService(UPDATE_ATTENDANCE_MUTATION, variables).then((response) => response.data.data),
+			createAxiosService({ query: UPDATE_ATTENDANCE_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
 		{
 			onSuccess: () => {
 				console.log("Attendance Updated Successfully");
@@ -75,11 +79,11 @@ export const updateAttendanceMutation = (variables: attendanceMutationVariables)
 		}
 	);
 
-export const updateMultipleAttendanceMutation = (variables: attendanceMutationVariables) =>
+export const updateMultipleAttendanceMutation = (variables: attendanceMutationVariables, token = null) =>
 	useMutation(
 		"UpdateMultipleAttendance",
 		() =>
-			createAxiosService(UPDATE_MULTIPLE_ATTENDANCE_MUTATION, variables).then(
+			createAxiosService({ query: UPDATE_MULTIPLE_ATTENDANCE_MUTATION, variables, token }).then(
 				(response) => response.data.data
 			),
 		{

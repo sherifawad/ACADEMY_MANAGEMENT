@@ -1,4 +1,5 @@
 import { createAxiosService } from "core/utils";
+import useAuth from "customHooks/useAuth";
 import {
 	ACTIVE_GRADES_QUERY,
 	getActiveGradesList,
@@ -9,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "react-query";
 
 function GradeGroupSelect({ setGroupId, setGradeId, gradeId, groupId }) {
+	const { accessToken } = useAuth();
 	const [groups, setGroups] = useState([]);
 	const [selectedGrade, setSelectedGrade] = useState("");
 	const [selectedGroup, setSelectedGroup] = useState("");
@@ -29,14 +31,14 @@ function GradeGroupSelect({ setGroupId, setGradeId, gradeId, groupId }) {
 	}, [selectedGrade, gradeId]);
 
 	const fetchGrades = useCallback(async () => {
-		const { grades } = await getActiveGradesList();
+		const { grades } = await getActiveGradesList(accessToken);
 
 		setActiveGrades(grades);
 	}, []);
 
 	const fetchGroups = useCallback(async () => {
 		if (!selectedGrade) return;
-		const { groups = [] } = await getGradeGroups({ gradeId: selectedGrade });
+		const { groups = [] } = await getGradeGroups({ gradeId: selectedGrade }, accessToken);
 		if (groups && groups.length > 0) {
 			setGroups(groups);
 			setSelectedGroup(groupId);

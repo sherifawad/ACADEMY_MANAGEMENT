@@ -78,8 +78,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 				},
 			};
 		}
+		const { accessToken } = session;
 
-		const { Grades } = await getGradeList();
+		const { Grades } = await getGradeList(accessToken);
 		return {
 			props: {
 				session,

@@ -1,8 +1,14 @@
 import { createAxiosService } from "core/utils";
+import useAuth from "customHooks/useAuth";
 import { arEG } from "date-fns/locale";
-import { ACTIVE_GRADES_QUERY } from "features/gradeFeature/gradeQueries";
-import { ADD_GROUP_MUTATION, UPDATE_GROUP_MUTATION } from "features/groupFeature/groupMutations";
-import { useEffect, useRef, useState } from "react";
+import { ACTIVE_GRADES_QUERY, getActiveGradesList } from "features/gradeFeature/gradeQueries";
+import {
+	ADD_GROUP_MUTATION,
+	createGroupMutation,
+	updateGroupMutation,
+	UPDATE_GROUP_MUTATION,
+} from "features/groupFeature/groupMutations";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TimePicker } from "react-next-dates";
 import { useMutation, useQuery } from "react-query";
 import { Group } from "../../components/GroupsListItem";
@@ -12,7 +18,11 @@ export interface GroupInitials extends Group {
 	onClose: Function;
 }
 function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grade }: GroupInitials) {
+	const { accessToken } = useAuth();
+
 	const mainRef = useRef();
+
+	const [activeGrades, setActiveGrades] = useState([]);
 
 	const [formState, setFormState] = useState({
 		id,
@@ -23,46 +33,45 @@ function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grad
 		gradeId: grade?.id || "",
 	});
 
+	const fetchGrades = useCallback(async () => {
+		const { grades } = await getActiveGradesList(accessToken);
+		setActiveGrades(grades);
+	}, []);
+
+	useEffect(() => {
+		fetchGrades();
+	}, []);
+
 	useEffect(() => {
 		setFormState({ id, startAt, endAt, name, isActive, gradeId: grade?.id || "" });
 	}, [id, startAt, endAt, name, isActive, grade]);
 
 	const { data } = useQuery("ActiveGrades", () =>
-		createAxiosService(ACTIVE_GRADES_QUERY).then((response) => response.data.data)
+		createAxiosService({ query: ACTIVE_GRADES_QUERY, token: accessToken }).then(
+			(response) => response.data.data
+		)
 	);
 
-	const createMutation = useMutation(
-		"AddGroup",
-		() =>
-			createAxiosService(ADD_GROUP_MUTATION, {
-				name: formState.name,
-				startAt: formState.startAt,
-				endAt: formState.endAt,
-				gradeId: formState.gradeId,
-				isActive: formState.isActive,
-			}).then((response) => response.data.data),
+	const createMutation = createGroupMutation(
 		{
-			onSuccess: () => {
-				console.log("Creation is a Success");
-			},
-		}
+			name: formState.name,
+			startAt: formState.startAt,
+			endAt: formState.endAt,
+			gradeId: formState.gradeId,
+			isActive: formState.isActive,
+		},
+		accessToken
 	);
-	const updateMutation = useMutation(
-		"UpdateGroup",
-		() =>
-			createAxiosService(UPDATE_GROUP_MUTATION, {
-				updateGroupId: formState.id,
-				name: formState.name,
-				startAt: formState.startAt,
-				endAt: formState.endAt,
-				gradeId: formState.gradeId,
-				isActive: formState.isActive,
-			}).then((response) => response.data.data),
+	const updateMutation = updateGroupMutation(
 		{
-			onSuccess: () => {
-				console.log("Update is a Success");
-			},
-		}
+			updateGroupId: formState.id,
+			name: formState.name,
+			startAt: formState.startAt,
+			endAt: formState.endAt,
+			gradeId: formState.gradeId,
+			isActive: formState.isActive,
+		},
+		accessToken
 	);
 
 	const submitContact = async (e) => {
@@ -98,12 +107,11 @@ function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grad
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white rounded-r-lg border-l-2 dark:focus:ring-blue-500 dark:focus:border-blue-500"
 				>
 					<option defaultValue={0}>Choose a grade</option>
-					{data &&
-						data?.ActiveGrades?.map((grade) => (
-							<option key={grade.id} value={grade.id}>
-								{grade.name}
-							</option>
-						))}
+					{activeGrades?.map((grade) => (
+						<option key={grade.id} value={grade.id}>
+							{grade.name}
+						</option>
+					))}
 				</select>
 			</div>
 

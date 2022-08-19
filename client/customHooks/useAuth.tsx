@@ -5,10 +5,11 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 function useAuth(shouldRedirect: boolean = false) {
-	const { data: session = {} as { user: user; error: string }, status } = useSession();
+	const { data: session = {} as { user: user; error: string; accessToken: string }, status } = useSession();
 	const router = useRouter();
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [user, setUser] = useState<user>();
+	const [accessToken, setAccessToken] = useState(null);
 
 	const signOutHandler = (path: string = Paths.SignIn) => {
 		signOut({ redirect: shouldRedirect, callbackUrl: path }).then((data) => router.replace(data?.url));
@@ -21,6 +22,8 @@ function useAuth(shouldRedirect: boolean = false) {
 
 		if ((session?.user as any)?.id) {
 			setUser(session?.user);
+		} else if (session?.accessToken) {
+			setAccessToken(session?.accessToken);
 		} else {
 			// logging.error("invalid auth state", { data, status });
 			// signOut({ callbackUrl: Paths.SignIn, redirect: shouldRedirect });
@@ -47,7 +50,7 @@ function useAuth(shouldRedirect: boolean = false) {
 		}
 	}, [session]);
 
-	return { isAuthenticated, user, signOutHandler };
+	return { isAuthenticated, accessToken, user, signOutHandler };
 }
 
 export default useAuth;
