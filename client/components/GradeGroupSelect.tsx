@@ -1,16 +1,22 @@
 import { createAxiosService } from "core/utils";
-import { ACTIVE_GRADES_QUERY, GRADE_GROUPS_QUERY } from "features/gradeFeature/gradeQueries";
-import { useEffect, useState } from "react";
+import {
+	ACTIVE_GRADES_QUERY,
+	getActiveGradesList,
+	getGradeGroups,
+	GRADE_GROUPS_QUERY,
+} from "features/gradeFeature/gradeQueries";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "react-query";
 
 function GradeGroupSelect({ setGroupId, setGradeId, gradeId, groupId }) {
 	const [groups, setGroups] = useState([]);
 	const [selectedGrade, setSelectedGrade] = useState("");
 	const [selectedGroup, setSelectedGroup] = useState("");
+	const [activeGrades, setActiveGrades] = useState([]);
 
 	useEffect(() => {
 		setSelectedGrade(gradeId);
-		refetch;
+		fetchGroups();
 	}, [gradeId]);
 
 	useEffect(() => {
@@ -19,30 +25,27 @@ function GradeGroupSelect({ setGroupId, setGradeId, gradeId, groupId }) {
 
 	useEffect(() => {
 		setGradeId(selectedGrade);
+		fetchGroups();
 	}, [selectedGrade, gradeId]);
 
-	const { data } = useQuery("ActiveGrades", () =>
-		createAxiosService({ query: ACTIVE_GRADES_QUERY }).then((response) => response.data.data)
-	);
+	const fetchGrades = useCallback(async () => {
+		const { grades } = await getActiveGradesList();
 
-	const { refetch } = useQuery(
-		["getGroups", selectedGrade],
-		() =>
-			createAxiosService({ query: GRADE_GROUPS_QUERY, variables: { gradeId: selectedGrade } }).then(
-				(response) => response.data.data
-			),
-		{
-			enabled: selectedGrade?.length > 0 && selectedGroup?.length < 1,
-			onSuccess: (data) => {
-				setGroups(data?.Grade?.groups);
-				setSelectedGroup(groupId);
-			},
-			onError: () => {
-				setGroups([]);
-				setSelectedGroup("");
-			},
+		setActiveGrades(grades);
+	}, []);
+
+	const fetchGroups = useCallback(async () => {
+		if (!selectedGrade) return;
+		const { groups = [] } = await getGradeGroups({ gradeId: selectedGrade });
+		if (groups && groups.length > 0) {
+			setGroups(groups);
+			setSelectedGroup(groupId);
 		}
-	);
+	}, [selectedGrade, gradeId, groupId]);
+
+	useEffect(() => {
+		fetchGrades();
+	}, []);
 
 	const handleGradeSelection = async (gradeId: string) => {
 		setSelectedGrade(gradeId);
@@ -69,12 +72,11 @@ function GradeGroupSelect({ setGroupId, setGradeId, gradeId, groupId }) {
 						className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 					>
 						<option defaultChecked>Choose a Grade</option>
-						{data &&
-							data?.ActiveGrades?.map((grade) => (
-								<option key={grade.id} value={grade.id}>
-									{grade.name}
-								</option>
-							))}
+						{activeGrades?.map((grade) => (
+							<option key={grade.id} value={grade.id}>
+								{grade.name}
+							</option>
+						))}
 					</select>
 				</div>
 			</div>

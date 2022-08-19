@@ -45,6 +45,19 @@ export const GRADE_GROUPS_QUERY = `
     }
 `;
 
+export const getActiveGradesList = async (token = null) => {
+	try {
+		const {
+			data: {
+				data: { ActiveGrades },
+			},
+		} = await createAxiosService({ query: ACTIVE_GRADES_QUERY, token });
+		return { grades: ActiveGrades };
+	} catch (error) {
+		return {};
+	}
+};
+
 export const getGradeList = async (token = null) => {
 	try {
 		const {

@@ -1,6 +1,7 @@
+import GradeGroupSelect from "components/GradeGroupSelect";
 import LabelInput from "components/inputs/LabelInput";
-import { useEffect, useRef, useState } from "react";
-import GradeGroupSelect from "../../components/GradeGroupSelect";
+import dynamic from "next/dynamic";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createUserMutation, updateUserMutation } from "./userMutations";
 import { userInitialProperties } from "./userTypes";
 
@@ -56,6 +57,18 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 		onProceed();
 		onClose();
 	};
+
+	const groupSelect = useMemo(
+		() => (
+			<GradeGroupSelect
+				setGroupId={setGroupId}
+				setGradeId={setGradeId}
+				groupId={groupId}
+				gradeId={gradeId}
+			/>
+		),
+		[]
+	);
 
 	return (
 		<form method="dialog" className="space-y-6" action="#" ref={mainRef}>
@@ -141,16 +154,9 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 				}
 			/>
 
-			{isStudent && (
-				<GradeGroupSelect
-					setGroupId={setGroupId}
-					setGradeId={setGradeId}
-					groupId={groupId}
-					gradeId={gradeId}
-				/>
-			)}
-
-			{!isStudent && (
+			{isStudent ? (
+				groupSelect
+			) : (
 				<div>
 					<label htmlFor="role" className="sr-only">
 						Choose a Role

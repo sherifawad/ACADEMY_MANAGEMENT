@@ -13,8 +13,9 @@ import {
 	AiOutlineFieldTime,
 } from "react-icons/ai";
 import { GiUpgrade, GiTeamDowngrade } from "react-icons/gi";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { Group } from "components/GroupsListItem";
 
 function UserCard({
 	name = "",
@@ -50,23 +51,21 @@ function UserCard({
 					<div className="pt-6 md:pis-8 text-center md:text-left space-y-4 w-full">
 						<div className="flex flex-col md:flex-row-reverse flex-nowrap md:justify-between justify-center items-center">
 							<Model title={`${isStudent ? "Student" : "User"}`}>
-								<Suspense>
-									<AddUser
-										onProceed={onProceed}
-										onClose={modelProps.onClose}
-										isStudent={isStudent}
-										gradeId={group ? (group as any)?.grade?.id : undefined}
-										initialUser={{
-											name,
-											contact,
-											groupId: group ? (group as any)?.id : undefined,
-											id,
-											isActive,
-											avatar,
-											role,
-										}}
-									/>
-								</Suspense>
+								<AddUser
+									onProceed={onProceed}
+									onClose={modelProps.onClose}
+									isStudent={isStudent}
+									gradeId={group ? (group as Group)?.grade?.id : undefined}
+									initialUser={{
+										name,
+										contact,
+										groupId: group ? (group as Group)?.id : undefined,
+										id,
+										isActive,
+										avatar,
+										role,
+									}}
+								/>
 							</Model>
 							<div className="text-sky-500 dark:text-sky-400 font-bold">{name}</div>
 						</div>

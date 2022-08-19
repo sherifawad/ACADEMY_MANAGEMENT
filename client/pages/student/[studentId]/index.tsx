@@ -1,7 +1,13 @@
+import Paths from "core/paths";
 import AttendancesCard from "features/attendanceFeature/AttendancesCard";
 import ExamsCard from "features/examFeature/ExamsCard";
 import UserCard from "features/userFeature/UserCard";
 import { studentDetailsQuery, studentsIdsQuery } from "features/userFeature/usersQueries";
+import { user } from "features/userFeature/userTypes";
+import { GetServerSideProps } from "next";
+import { unstable_getServerSession } from "next-auth";
+import { authOptions } from "pages/api/auth/[...nextauth]";
+import { useMemo } from "react";
 
 function Student({ user }) {
 	const { id, profile } = user || {};
@@ -20,34 +26,75 @@ function Student({ user }) {
 	);
 }
 
-export async function getStaticPaths() {
-	try {
-		const { list } = await studentsIdsQuery({
-			role: ["Student"],
-		});
+// export async function getStaticPaths() {
+// 	try {
+// 		const { list } = await studentsIdsQuery({
+// 			role: ["Student"],
+// 		});
 
-		const paths = list?.map((user) => ({
-			params: { studentId: user.id },
-		}));
-		return { paths, fallback: false };
-	} catch (error) {
-		return { fallback: false };
-	}
-}
+// 		const paths = list?.map((user) => ({
+// 			params: { studentId: user.id },
+// 		}));
+// 		return { paths, fallback: false };
+// 	} catch (error) {
+// 		return { fallback: false };
+// 	}
+// }
 
 // This also gets called at build time
-export async function getStaticProps({ params }) {
-	try {
-		const { User } = await studentDetailsQuery({
-			userId: params.studentId,
-			attendancesTake2: 5,
-			examsTake2: 5,
-		});
+// export async function getStaticProps({ params }) {
+// 	try {
+// 		const { User } = await studentDetailsQuery({
+// 			userId: params.studentId,
+// 			attendancesTake2: 5,
+// 			examsTake2: 5,
+// 		});
 
-		return { props: { user: User } };
+// 		return { props: { user: User } };
+// 	} catch (error) {
+// 		return { props: {} };
+// 	}
+// }
+
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
+	try {
+		const session = await unstable_getServerSession(req, res, authOptions);
+
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.SignIn,
+					permanent: false,
+				},
+			};
+		}
+
+		const { user, accessToken } = session;
+
+		const { id } = (user as user) || {};
+
+		const { User } = await studentDetailsQuery(
+			{
+				userId: id,
+				attendancesTake2: 5,
+				examsTake2: 5,
+			},
+			accessToken
+		);
+		return {
+			props: {
+				session,
+				user: User,
+			},
+		};
 	} catch (error) {
-		return { props: {} };
+		return {
+			props: {
+				session: null,
+				error: true,
+			},
+		};
 	}
-}
+};
 
 export default Student;
