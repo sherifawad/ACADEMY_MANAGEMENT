@@ -14,26 +14,25 @@ export async function createContext(request: ExpressContext): Promise<Partial<Co
 
 	const userId = getUserId(context);
 
-	// if (userId) {
-	// 	const user = await prisma.user.findFirst({
-	// 		where: {
-	// 			id: userId,
-	// 		},
-	// 		rejectOnNotFound: true,
-	// 	});
-	// 	context.user = user;
-	// }
-
-	const user = await prisma.contact.findUniqueOrThrow({
-		where: {
-			email: "seededadmin@admin.com",
-		},
-
-		include: { user: true },
-	});
-	if (user) {
-		context.user = user.user;
+	if (userId) {
+		const user = await prisma.user.findUniqueOrThrow({
+			where: {
+				id: userId,
+			},
+		});
+		context.user = user;
 	}
+
+	// const user = await prisma.contact.findUniqueOrThrow({
+	// 	where: {
+	// 		email: "seededadmin@admin.com",
+	// 	},
+
+	// 	include: { user: true },
+	// });
+	// if (user) {
+	// 	context.user = user.user;
+	// }
 
 	return context;
 }

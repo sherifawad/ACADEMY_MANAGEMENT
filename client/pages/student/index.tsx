@@ -142,6 +142,8 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 			};
 		}
 
+		const { accessToken } = session;
+
 		const variables = {
 			role: ["Student"],
 			attendancesTake2: 1,
@@ -156,7 +158,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 				endAt: "desc",
 			},
 		};
-		const { list, rest } = await studentsListQuery(variables);
+		const { list, rest } = await studentsListQuery(variables, accessToken);
 		let flattenedList = [];
 		if (list?.length > 0) {
 			flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);

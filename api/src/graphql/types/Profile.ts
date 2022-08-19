@@ -17,7 +17,13 @@ export const Profile = objectType({
 		t.list.field("exams", {
 			type: Exam,
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
-			async resolve(_parent, { take, orderByList }, ctx) {
+			async resolve(_parent, { take, orderByList }, { user, prisma }) {
+				if (
+					!user ||
+					(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
+				) {
+					return null;
+				}
 				const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 				let orderList: { [x: string]: string }[];
 				if (isEmpty) {
@@ -33,7 +39,7 @@ export const Profile = objectType({
 						[]
 					);
 				}
-				return await ctx.prisma.profile
+				return await prisma.profile
 					.findUnique({
 						where: {
 							id: _parent.id,
@@ -60,7 +66,13 @@ export const Profile = objectType({
 		t.list.field("attendances", {
 			type: Attendance,
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
-			async resolve(_parent, { take, orderByList }, ctx) {
+			async resolve(_parent, { take, orderByList }, { user, prisma }) {
+				if (
+					!user ||
+					(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
+				) {
+					return null;
+				}
 				const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 				let orderList: { [x: string]: string }[];
 				if (isEmpty) {
@@ -76,7 +88,7 @@ export const Profile = objectType({
 						[]
 					);
 				}
-				return await ctx.prisma.profile
+				return await prisma.profile
 					.findUnique({
 						where: {
 							id: _parent.id,
@@ -90,7 +102,13 @@ export const Profile = objectType({
 		});
 		t.field("group", {
 			type: "Group",
-			resolve: async ({ id }, _, { prisma }) => {
+			resolve: async ({ id }, _, { user, prisma }) => {
+				if (
+					!user ||
+					(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== id)
+				) {
+					return null;
+				}
 				return await prisma.profile
 					.findUnique({
 						where: { id },
@@ -142,7 +160,8 @@ export const ProfileByIdQuery = extendType({
 			type: "Profile",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || (user.id !== id && user.role !== Role.ADMIN)) return null;
+				if (!user || (user.id !== id && user.role !== Role.ADMIN && user.role !== Role.USER))
+					return null;
 				return await prisma.profile.findUnique({
 					where: { id },
 				});
@@ -160,7 +179,8 @@ export const ProfileAttendancesQuery = extendType({
 			args: { studentId: nonNull(stringArg()) },
 
 			resolve: async (_parent, { studentId }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+				if (!user || (user.id !== studentId && user.role !== Role.ADMIN && user.role !== Role.USER))
+					return null;
 
 				return await prisma.attendance
 					.findMany({

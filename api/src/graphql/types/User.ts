@@ -265,8 +265,9 @@ export const FilteredUsersQuery = extendType({
 				role: nullable(list(arg({ type: "Role" }))),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
+				console.log("🚀 ~ file: User.ts ~ line 268 ~ resolve: ~ user", user);
 				try {
-					if (!user || user.role !== Role.ADMIN) return null;
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 					// return await prisma.user.findMany({
 					// 	where: {
 					// 		role: args.data?.role,
@@ -336,7 +337,7 @@ export const GroupStudentsQuery = extendType({
 				role: nullable(arg({ type: "Role" })),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 				const { data, isActive, groupId, role } = args;
 				let where = {};
@@ -594,10 +595,34 @@ export const UserByIdQuery = extendType({
 			type: "User",
 			args: { id: nonNull(stringArg()), take: nullable(intArg()) },
 			resolve: async (_parent, { id }, { user, prisma }) => {
-				if (!user || user.role !== userRole.ADMIN) return null;
-				return await prisma.user.findUnique({
+				if (!user) return null;
+				const userQuery = await prisma.user.findUnique({
 					where: { id },
 				});
+				const sameUser = user.id === id;
+				switch (user.role) {
+					case userRole.ADMIN:
+						if (userQuery.role === userRole.ADMIN && !sameUser) {
+							return null;
+						}
+						return userQuery;
+					case userRole.USER:
+						if (userQuery.role === userRole.ADMIN) {
+							return null;
+						}
+						if (userQuery.role === userRole.USER && !sameUser) {
+							return null;
+						}
+						return userQuery;
+					case userRole.Student:
+						if (sameUser) {
+							return userQuery;
+						}
+						return null;
+
+					default:
+						return null;
+				}
 			},
 		});
 	},

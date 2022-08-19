@@ -1,14 +1,10 @@
 import { User } from "@prisma/client";
 import { addMilliseconds } from "date-fns";
 import { CookieOptions, Request } from "express";
-import { sign, verify } from "jsonwebtoken";
+import { JwtPayload, sign, verify } from "jsonwebtoken";
 import ms from "ms";
 import constants from "../core/constants";
 import { Context } from "../graphql/types";
-
-export type JwtPayload = {
-	userId: string;
-};
 
 export type JwtRefreshPayload = {
 	userId: string;
@@ -101,8 +97,8 @@ export function getUserId({ request, connection }: GetUserIdContext) {
 	const Authorization = connection ? connection.context.authorization : request.get("Authorization");
 	if (Authorization) {
 		const token = Authorization.replace("Bearer ", "");
-		const verifiedToken = verify(token, constants.JWT_ACCESS_SECRET) as JwtPayload;
-		return verifiedToken && verifiedToken.userId;
+		const verifiedToken = verify(token, constants.JWT_ACCESS_SECRET) as User | JwtPayload;
+		return verifiedToken?.id;
 	}
 }
 

@@ -291,6 +291,7 @@ export const AttendanceByUserQuery = extendType({
 				take: nullable(intArg()),
 			},
 			resolve: async (_parent, { studentId, take, skip = 1 }, { prisma, user }) => {
+                console.log("🚀 ~ file: Attendance.ts ~ line 294 ~ resolve: ~ studentId", studentId)
 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
 					return null;
 
