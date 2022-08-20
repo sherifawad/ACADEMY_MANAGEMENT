@@ -170,7 +170,9 @@ function useReactTable({
 								</a>
 								<a
 									href="#"
-									className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-teal-400 hover:text-white"
+									className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
+										canPreviousPage ? "hover:bg-teal-400 hover:text-white" : ""
+									}`}
 									style={{ transition: "all 0.2s ease" }}
 									onClick={() => previousPage()}
 								>
@@ -178,7 +180,9 @@ function useReactTable({
 								</a>
 								<a
 									href="#"
-									className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-teal-400 hover:text-white"
+									className={`px-4 py-2 text-gray-700 bg-gray-200 rounded-md ${
+										canNextPage ? "hover:bg-teal-400 hover:text-white" : ""
+									}`}
 									style={{ transition: "all 0.2s ease" }}
 									onClick={() => nextPage()}
 								>

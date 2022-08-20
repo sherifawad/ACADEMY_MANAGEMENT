@@ -69,7 +69,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 
 		const { list } = await studentExamsQuery({ studentId }, accessToken);
 
-		return { props: { session, exams: list, profileId: params.studentId } };
+		return { props: { exams: list, profileId: params.studentId } };
 	} catch (error) {
 		return {
 			props: {
