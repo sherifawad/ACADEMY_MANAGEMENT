@@ -5,11 +5,14 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 function useAuth(shouldRedirect: boolean = false) {
-	const { data: session = {} as { user: user; error: string; accessToken: string }, status } = useSession();
+	const { data: session, status } = useSession();
+	const { user, error, accessToken } =
+		(session as unknown as { user: user; error: boolean; accessToken: string }) || {};
+	const { id } = user || {};
 	const router = useRouter();
-	const [isAuthenticated, setIsAuthenticated] = useState(false);
-	const [user, setUser] = useState<user>();
-	const [accessToken, setAccessToken] = useState(null);
+	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+	const [currentUser, setCurrentUser] = useState<user>();
+	const [currentAccessToken, setCurrentAccessToken] = useState<string>(null);
 
 	const signOutHandler = (path: string = Paths.SignIn) => {
 		signOut({ redirect: shouldRedirect, callbackUrl: path }).then((data) => router.replace(data?.url));
@@ -20,16 +23,18 @@ function useAuth(shouldRedirect: boolean = false) {
 			return;
 		}
 
-		if ((session?.user as any)?.id) {
-			setUser(session?.user);
-		} else if (session?.accessToken) {
-			setAccessToken(session?.accessToken);
-		} else {
+		if (id) {
+			setCurrentUser(session?.user);
+		}
+		if (accessToken) {
+			setCurrentAccessToken(accessToken);
+		}
+		if (!id || !accessToken) {
 			// logging.error("invalid auth state", { data, status });
 			// signOut({ callbackUrl: Paths.SignIn, redirect: shouldRedirect });
 			signOutHandler();
 		}
-	}, [status, (session?.user as any)?.id]);
+	}, [status, id, accessToken]);
 
 	useEffect(() => {
 		if (session?.error === "RefreshAccessTokenError") {
@@ -50,7 +55,7 @@ function useAuth(shouldRedirect: boolean = false) {
 		}
 	}, [session]);
 
-	return { isAuthenticated, accessToken, user, signOutHandler };
+	return { isAuthenticated, accessToken: currentAccessToken, user: currentUser, signOutHandler };
 }
 
 export default useAuth;

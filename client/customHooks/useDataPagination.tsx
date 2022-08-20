@@ -1,6 +1,7 @@
 import { ObjectFlatten } from "core/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useAuth from "./useAuth";
+import usePrevious from "./usePrevious";
 
 export interface goFirstInputProps {
 	force?: boolean | null;
@@ -8,6 +9,7 @@ export interface goFirstInputProps {
 	currentOrder?: string;
 	take?: number | null;
 	sort?: any[];
+	token: string;
 }
 
 export interface dataPaginationProps {
@@ -22,6 +24,7 @@ export interface dataPaginationProps {
 	query?: Function | null;
 	setPageSize: Function;
 	pageSize: number;
+	accessToken: string;
 }
 
 function useDataPagination({
@@ -34,9 +37,8 @@ function useDataPagination({
 	setPageSize,
 	pageSize,
 	sort,
+	accessToken,
 }: dataPaginationProps) {
-	const { accessToken } = useAuth();
-    console.log("🚀 ~ file: useDataPagination.tsx ~ line 39 ~ accessToken", accessToken)
 	const currentPageSize = useMemo(() => pageSize, [pageSize]);
 	const [isLastPage, setIsLastPage] = useState(false);
 	const [isFirstPage, setIsFirstPage] = useState(true);
@@ -66,143 +68,18 @@ function useDataPagination({
 			...paginationOption,
 			data: { ...paginationOption.data, take: currentPageSize },
 		});
-		gotoFirst({ force: true, take: currentPageSize });
+		gotoFirst({ force: true, take: currentPageSize, token: accessToken });
 	}, [currentPageSize]);
 
-	const gotoLast = async () => {
-		if (isLastPage) return;
-		const options = {
-			...paginationOption,
-			data: { ...paginationOption.data, myCursor: null, take: -currentPageSize, skip: null },
-		};
-		const { list, prevCursor, nextCursor } = await query(options, accessToken);
-		if (list && list.length > 0) {
-			let flattenedList = [];
-			if (list?.length > 0) {
-				flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
-			}
-			setPaginationResult({
-				list: flattenedList ?? [],
-				prevCursor,
-				nextCursor,
-			});
-			setPaginationOption({
+	const gotoLast = useCallback(
+		async (token: string) => {
+			if (isLastPage) return;
+			const options = {
 				...paginationOption,
-				data: { ...paginationOption.data, myCursor: nextCursor },
-			});
-			setIsLastPage(true);
-			setIsFirstPage(false);
-			setCanGoNext(false);
-			setCanPrevious(true);
-			setCurrentPageNumber(Math.abs(Math.ceil(_count / currentPageSize)));
-		}
-	};
-
-	const gotoFirst = async ({ force = false, sort = null, take = currentPageSize }: goFirstInputProps) => {
-		if (isFirstPage) {
-			if (!force) return;
-		}
-		let options = {
-			...paginationOption,
-			data: { ...paginationOption.data, take, myCursor: null, skip: null },
-		};
-		if (sort) {
-			options = { ...options, data: { ...options.data, sort } };
-		}
-
-		const { list, prevCursor, nextCursor } = await query(options, accessToken);
-		if (list && list.length > 0) {
-			let flattenedList = [];
-			if (list?.length > 0) {
-				flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
-			}
-			setPaginationResult({
-				list: flattenedList ?? [],
-				prevCursor,
-				nextCursor,
-			});
-			setPaginationOption({
-				...paginationOption,
-				data: {
-					...paginationOption.data,
-					myCursor: nextCursor,
-					sort: options.data.sort,
-				},
-			});
-			setIsFirstPage(true);
-			setCanGoNext(true);
-			setIsLastPage(false);
-			setCanPrevious(false);
-			setCurrentPageNumber(1);
-			if (currentPageSize >= _count) {
-				setIsFirstPage(true);
-				setIsLastPage(true);
-				setCanGoNext(false);
-				setCanPrevious(false);
-			}
-		}
-	};
-
-	const gotoNext = async () => {
-		if (!canGoNext) return;
-		const options = {
-			...paginationOption,
-			data: { ...paginationOption.data, take: currentPageSize },
-		};
-		const { list, prevCursor, nextCursor } = await query(options, accessToken);
-		if (list && list.length > 0) {
-			let flattenedList = [];
-			if (list?.length > 0) {
-				flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
-			}
-			setPaginationResult({
-				list: flattenedList ?? [],
-				prevCursor,
-				nextCursor,
-			});
-			setPaginationOption({
-				...paginationOption,
-				data: { ...paginationOption.data, myCursor: nextCursor },
-			});
-			if (currentPageNumber + 1 === Math.abs(Math.ceil(_count / currentPageSize))) {
-				setCanGoNext(false);
-				setIsLastPage(true);
-			}
-			setIsFirstPage(false);
-			setCanPrevious(true);
-			setCurrentPageNumber(currentPageNumber + 1);
-		}
-	};
-
-	const gotoPrevious = async () => {
-		if (!canGoPrevious) return;
-		let options = {
-			...paginationOption,
-			data: {
-				...paginationOption.data,
-				myCursor: paginationResult.prevCursor,
-				take: -currentPageSize,
-			},
-		};
-		let resultList;
-		let result = await query(options, accessToken);
-		resultList = result.list;
-		if (resultList && resultList.length > 0) {
-			if (isLastPage && resultList.length < currentPageSize) {
-				const newSize = currentPageSize - resultList.length - currentPageSize;
-				options = {
-					...options,
-					data: {
-						...options.data,
-						myCursor: null,
-						take: currentPageSize,
-					},
-				};
-				result = await query(options, accessToken);
-				resultList = result.list;
-			}
-			if (resultList && resultList.length > 0) {
-				const { list, prevCursor, nextCursor } = result;
+				data: { ...paginationOption.data, myCursor: null, take: -currentPageSize, skip: null },
+			};
+			const { list, prevCursor, nextCursor } = await query(options, token);
+			if (list && list.length > 0) {
 				let flattenedList = [];
 				if (list?.length > 0) {
 					flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
@@ -216,16 +93,155 @@ function useDataPagination({
 					...paginationOption,
 					data: { ...paginationOption.data, myCursor: nextCursor },
 				});
-				if (currentPageNumber - 1 === 1) {
-					setCanPrevious(false);
-					setIsFirstPage(true);
+				setIsLastPage(true);
+				setIsFirstPage(false);
+				setCanGoNext(false);
+				setCanPrevious(true);
+				setCurrentPageNumber(Math.abs(Math.ceil(_count / currentPageSize)));
+			}
+		},
+		[isLastPage]
+	);
+
+	const gotoFirst = useCallback(
+		async ({ force = false, sort = null, take = currentPageSize, token }: goFirstInputProps) => {
+			if (isFirstPage) {
+				if (!force) return;
+			}
+			let options = {
+				...paginationOption,
+				data: { ...paginationOption.data, take, myCursor: null, skip: null },
+			};
+			if (sort) {
+				options = { ...options, data: { ...options.data, sort } };
+			}
+
+			const { list, prevCursor, nextCursor } = await query(options, token);
+
+			if (list && list.length > 0) {
+				let flattenedList = [];
+				if (list?.length > 0) {
+					flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
 				}
+				setPaginationResult({
+					list: flattenedList ?? [],
+					prevCursor,
+					nextCursor,
+				});
+				setPaginationOption({
+					...paginationOption,
+					data: {
+						...paginationOption.data,
+						myCursor: nextCursor,
+						sort: options.data.sort,
+					},
+				});
+				setIsFirstPage(true);
 				setCanGoNext(true);
 				setIsLastPage(false);
-				setCurrentPageNumber(currentPageNumber - 1);
+				setCanPrevious(false);
+				setCurrentPageNumber(1);
+				if (currentPageSize >= _count) {
+					setIsFirstPage(true);
+					setIsLastPage(true);
+					setCanGoNext(false);
+					setCanPrevious(false);
+				}
 			}
-		}
-	};
+		},
+		[isFirstPage]
+	);
+
+	const gotoNext = useCallback(
+		async (token: string) => {
+			if (!canGoNext) return;
+			const options = {
+				...paginationOption,
+				data: { ...paginationOption.data, take: currentPageSize },
+			};
+
+			const { list, prevCursor, nextCursor } = await query(options, token);
+			if (list && list.length > 0) {
+				let flattenedList = [];
+				if (list?.length > 0) {
+					flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
+				}
+				setPaginationResult({
+					list: flattenedList ?? [],
+					prevCursor,
+					nextCursor,
+				});
+				setPaginationOption({
+					...paginationOption,
+					data: { ...paginationOption.data, myCursor: nextCursor },
+				});
+				if (currentPageNumber + 1 === Math.abs(Math.ceil(_count / currentPageSize))) {
+					setCanGoNext(false);
+					setIsLastPage(true);
+				}
+				setIsFirstPage(false);
+				setCanPrevious(true);
+				setCurrentPageNumber(currentPageNumber + 1);
+			}
+		},
+		[canGoNext]
+	);
+
+	const gotoPrevious = useCallback(
+		async (token: string) => {
+			if (!canGoPrevious) return;
+			let options = {
+				...paginationOption,
+				data: {
+					...paginationOption.data,
+					myCursor: paginationResult.prevCursor,
+					take: -currentPageSize,
+				},
+			};
+			let resultList;
+			let result = await query(options, token);
+			resultList = result.list;
+			if (resultList && resultList.length > 0) {
+				if (isLastPage && resultList.length < currentPageSize) {
+					const newSize = currentPageSize - resultList.length - currentPageSize;
+					options = {
+						...options,
+						data: {
+							...options.data,
+							myCursor: null,
+							take: currentPageSize,
+						},
+					};
+					result = await query(options, token);
+					resultList = result.list;
+				}
+				if (resultList && resultList.length > 0) {
+					const { list, prevCursor, nextCursor } = result;
+					let flattenedList = [];
+					if (list?.length > 0) {
+						flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);
+					}
+					setPaginationResult({
+						list: flattenedList ?? [],
+						prevCursor,
+						nextCursor,
+					});
+					setPaginationOption({
+						...paginationOption,
+						data: { ...paginationOption.data, myCursor: nextCursor },
+					});
+					if (currentPageNumber - 1 === 1) {
+						setCanPrevious(false);
+						setIsFirstPage(true);
+					}
+					setCanGoNext(true);
+					setIsLastPage(false);
+					setCurrentPageNumber(currentPageNumber - 1);
+				}
+			}
+		},
+		[canGoPrevious]
+	);
 
 	const RenderedPagination = useMemo(() => {
 		return () => {
@@ -239,7 +255,7 @@ function useDataPagination({
 									isFirstPage ? "" : "hover:bg-teal-400 hover:text-white"
 								}`}
 								style={{ transition: "all 0.2s ease" }}
-								onClick={() => gotoFirst({})}
+								onClick={() => gotoFirst({ token: accessToken })}
 							>
 								First
 							</a>
@@ -249,7 +265,7 @@ function useDataPagination({
 									canGoPrevious ? "hover:bg-teal-400 hover:text-white" : ""
 								}`}
 								style={{ transition: "all 0.2s ease" }}
-								onClick={gotoPrevious}
+								onClick={() => gotoPrevious(accessToken)}
 							>
 								Prev
 							</a>
@@ -259,7 +275,7 @@ function useDataPagination({
 									canGoNext ? "hover:bg-teal-400 hover:text-white" : ""
 								}`}
 								style={{ transition: "all 0.2s ease" }}
-								onClick={gotoNext}
+								onClick={() => gotoNext(accessToken)}
 							>
 								Next
 							</a>
@@ -269,7 +285,7 @@ function useDataPagination({
 									!isLastPage ? "hover:bg-teal-400 hover:text-white" : ""
 								}`}
 								style={{ transition: "all 0.2s ease" }}
-								onClick={gotoLast}
+								onClick={() => gotoLast(accessToken)}
 							>
 								Last
 							</a>
@@ -309,7 +325,7 @@ function useDataPagination({
 				</div>
 			);
 		};
-	}, [paginationResult.list]);
+	}, [paginationResult.list, accessToken]);
 
 	return {
 		RenderedPagination,

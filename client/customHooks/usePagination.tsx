@@ -7,8 +7,8 @@ import Link from "next/link";
 import { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Column, Hooks, useRowSelect, useTable } from "react-table";
 import { inputHooks, newInputColumn, useCheckboxes, useEditHooks, useInputHooks } from "./reactTableHooks";
+import useAuth from "./useAuth";
 import useDataPagination from "./useDataPagination";
-import usePrevious from "./usePrevious";
 
 export interface paginationInputProps {
 	list: any[];
@@ -28,11 +28,12 @@ export interface paginationInputProps {
 	query?: Function | null;
 	inputColumn?: inputHooks | null;
 	tableInitialState?: any;
+	accessToken: string;
 }
 
 function usePagination({
 	list,
-	sortList,
+	sortList = [],
 	_count,
 	prevCursor,
 	nextCursor,
@@ -48,16 +49,16 @@ function usePagination({
 	hiddenColumns = [],
 	additionalHiddenColumns,
 	tableHooks = [],
+	accessToken,
 }: paginationInputProps) {
 	const initialState = { hiddenColumns, stateArr: {}, selectedRowIds: {}, ...tableInitialState };
-
 	const [checkedItems, setCheckedItems] = useState([]);
 	const [inputsData, setInputData] = useState({});
 	const [pageSize, setPageSize] = useState(5);
-
 	const [isAscending, setIsAscending] = useState(false);
 	const [currentSortProperty, setCurrentSortProperty] = useState("id");
 	const [sort, setSort] = useState(sortList);
+
 
 	const { RenderedPagination, gotoFirst, paginatedData } = useDataPagination({
 		list,
@@ -70,6 +71,7 @@ function usePagination({
 		setPageSize,
 		pageSize,
 		sort,
+		accessToken,
 	});
 
 	const initialColumns = useMemo(
@@ -150,18 +152,24 @@ function usePagination({
 		}
 	}, []);
 
-	const sortColumn = useCallback((sortProperty: string, isAsc: boolean = false) => {
-		const sortDirection = isAsc ? "asc" : "desc";
-		let sortObject;
-		if (sort[0]) {
-			const result = renameKeyValue(sort[0], "currentSortProperty", sortProperty, sortDirection);
-			sortObject = [result];
-		}
-		gotoFirst({
-			force: true,
-			sort: sortObject,
-		});
-	}, []);
+	const sortColumn = useCallback(
+		(sortProperty: string, isAsc: boolean = false) => {
+			const sortDirection = isAsc ? "asc" : "desc";
+			let sortObject: [{ [x: string]: string }];
+			if (sort && sort.length > 0) {
+				const result = renameKeyValue(sort[0], "currentSortProperty", sortProperty, sortDirection);
+				sortObject = [result];
+			} else {
+				sortObject = [{ [sortProperty]: sortDirection }];
+			}
+			gotoFirst({
+				force: true,
+				sort: sortObject,
+				token: accessToken,
+			});
+		},
+		[sort]
+	);
 
 	const headerClickHandler = useCallback(
 		(headerName: string) => {
@@ -263,7 +271,7 @@ function usePagination({
 		PaginatedTable,
 		checkedItems,
 		inputsData,
-		refetch: () => gotoFirst({ force: true }),
+		refetch: () => gotoFirst({ force: true, token: accessToken }),
 	};
 }
 

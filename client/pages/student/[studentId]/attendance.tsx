@@ -1,27 +1,24 @@
 import { studentAttendancesQuery } from "features/attendanceFeature/attendancesQueries";
-import { createAxiosService } from "core/utils";
 import useModel from "customHooks/useModel";
 import usePagination from "customHooks/usePagination";
-import { studentsIdsQuery } from "features/userFeature/usersQueries";
 import dynamic from "next/dynamic";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import Paths from "core/paths";
+import { useCallback } from "react";
+import useAuth from "customHooks/useAuth";
 
-function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
+function Attendance({ list, prevCursor, nextCursor, _count, profileId, accessToken }) {
 	const AddAttendance = dynamic(() => import("features/attendanceFeature/AddAttendance"), {
 		ssr: false,
 	});
-	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
+	const { Model, modelProps, itemData, setItemData } = useModel();
 
-	const rowEditHandler = (row) => {
-		// setIsOpened(true);
-		// alert("Note: " + row?.values?.note);
-	};
+	const rowEditHandler = useCallback(() => {}, []);
 
 	const { PaginatedTable, refetch } = usePagination({
-		list,
+		list: list ?? [],
 		prevCursor,
 		nextCursor,
 		_count,
@@ -30,6 +27,7 @@ function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 		queryVariables: { studentId: profileId },
 		hiddenColumns: ["id", "note"],
 		query: studentAttendancesQuery,
+		accessToken,
 	});
 
 	const onProceed = async () => {
@@ -87,7 +85,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 
 		return {
 			props: {
-				session,
+				accessToken,
 				list,
 				prevCursor,
 				nextCursor,
@@ -98,7 +96,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 	} catch (error) {
 		return {
 			props: {
-				session: null,
+				accessToken: null,
 				error: true,
 			},
 		};
