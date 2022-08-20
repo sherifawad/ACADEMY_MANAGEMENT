@@ -5,6 +5,10 @@ import useReactTable from "customHooks/useReactTable";
 import useModel from "customHooks/useModel";
 import { GET_USERS_IDS, studentsIdsQuery } from "features/userFeature/usersQueries";
 import dynamic from "next/dynamic";
+import { unstable_getServerSession } from "next-auth";
+import { GetServerSideProps } from "next";
+import { authOptions } from "pages/api/auth/[...nextauth]";
+import Paths from "core/paths";
 
 function studentExams({ exams = [], profileId }) {
 	const AddExam = dynamic(() => import("features/examFeature/AddExam"), {
@@ -46,32 +50,34 @@ function studentExams({ exams = [], profileId }) {
 	);
 }
 
-export async function getStaticPaths() {
+export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
-		const { list } = await studentsIdsQuery({
-			role: ["Student"],
-		});
+		const session = await unstable_getServerSession(req, res, authOptions);
 
-		const paths = list?.map((user) => ({
-			params: { studentId: user.id },
-		}));
-		return { paths, fallback: false };
-	} catch (error) {
-		return { fallback: false };
-	}
-}
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.SignIn,
+					permanent: false,
+				},
+			};
+		}
 
-// This also gets called at build time
-export async function getStaticProps({ params }) {
-	try {
-		const { list } = await studentExamsQuery({ studentId: params.studentId });
+		const { studentId } = params;
 
-		return { props: { exams: list, profileId: params.studentId } };
+		const { accessToken } = session;
+
+		const { list } = await studentExamsQuery({ studentId }, accessToken);
+
+		return { props: { session, exams: list, profileId: params.studentId } };
 	} catch (error) {
 		return {
-			props: {},
+			props: {
+				session: null,
+				error: true,
+			},
 		};
 	}
-}
+};
 
 export default studentExams;

@@ -13,39 +13,21 @@ import { useMutation } from "react-query";
 const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-	// const { data: session } = useSession();
+	const [isStudent, setIsStudent] = useState(true);
 	const { isAuthenticated, user, signOutHandler } = useAuth();
 
-	// const { id, avatar } =
-	// 	(session?.user as { id: string | undefined | null; avatar: string | undefined | null }) || {};
 	const { id, avatar, role } = user || {};
-	// useEffect(() => {
-	// 	console.log("🚀 ~ file: Navbar.tsx ~ line 22 ~ Navbar ~ data", JSON.stringify(data));
-	// }, [data]);
-
-	// useEffect(() => {
-	// 	if (session?.error === "RefreshAccessTokenError") {
-	// 		console.log("🚀 ~ file: Navbar.tsx ~ line 25 ~ useEffect ~ session", session);
-	// 		signOut({ redirect: false, callbackUrl: "/" }).then((data) => router.push(data?.url));
-	// 	}
-	// }, [session]);
 
 	const router = useRouter();
 
-	// const mutation = useMutation(
-	// 	"AddGrade",
-	// 	() =>
-	// 		createAxiosService(REVOKE_TOKEN_MUTATION, {
-	// 			token: session.refreshToken,
-	// 			userId: (session.user as User).id,
-	// 		}).then((response) => response.data.data),
-	// 	{
-	// 		onSuccess: () => {
-	// 			console.log("Grade Created Successfully");
-	// 			router.push(Paths.Home);
-	// 		},
-	// 	}
-	// );
+	useEffect(() => {
+		if (!role || role === "Student") {
+			setIsStudent(true);
+			return;
+		}
+		setIsStudent(false);
+	}, [user?.role]);
+
 	const handleSignOut = async (e) => {
 		e.preventDefault();
 		signOutHandler();
@@ -78,22 +60,26 @@ const Navbar = () => {
 				<Link href="#">
 					<a className="md:mx-0 mx-8 menu-line">Home</a>
 				</Link>
-
-				<Link href="/user">
-					<a className="menu-line">Users</a>
-				</Link>
-
-				<Link href="/student">
-					<a className="menu-line">Students</a>
-				</Link>
-
-				<Link href="/grade">
-					<a className="menu-line">Grade</a>
-				</Link>
-
-				<Link href="/group">
-					<a className="menu-line">Group</a>
-				</Link>
+				{!isStudent && (
+					<Link href="/user">
+						<a className="menu-line">Users</a>
+					</Link>
+				)}
+				{!isStudent && (
+					<Link href="/student">
+						<a className="menu-line">Students</a>
+					</Link>
+				)}
+				{!isStudent && (
+					<Link href="/grade">
+						<a className="menu-line">Grade</a>
+					</Link>
+				)}
+				{!isStudent && (
+					<Link href="/group">
+						<a className="menu-line">Group</a>
+					</Link>
+				)}
 			</div>
 			{
 				//#endregion

@@ -1,5 +1,6 @@
 import { ObjectFlatten } from "core/utils";
 import { useEffect, useMemo, useState } from "react";
+import useAuth from "./useAuth";
 
 export interface goFirstInputProps {
 	force?: boolean | null;
@@ -34,6 +35,8 @@ function useDataPagination({
 	pageSize,
 	sort,
 }: dataPaginationProps) {
+	const { accessToken } = useAuth();
+    console.log("🚀 ~ file: useDataPagination.tsx ~ line 39 ~ accessToken", accessToken)
 	const currentPageSize = useMemo(() => pageSize, [pageSize]);
 	const [isLastPage, setIsLastPage] = useState(false);
 	const [isFirstPage, setIsFirstPage] = useState(true);
@@ -72,7 +75,7 @@ function useDataPagination({
 			...paginationOption,
 			data: { ...paginationOption.data, myCursor: null, take: -currentPageSize, skip: null },
 		};
-		const { list, prevCursor, nextCursor } = await query(options);
+		const { list, prevCursor, nextCursor } = await query(options, accessToken);
 		if (list && list.length > 0) {
 			let flattenedList = [];
 			if (list?.length > 0) {
@@ -95,11 +98,7 @@ function useDataPagination({
 		}
 	};
 
-	const gotoFirst = async ({
-		force = false,
-		sort = null,
-		take = currentPageSize,
-	}: goFirstInputProps) => {
+	const gotoFirst = async ({ force = false, sort = null, take = currentPageSize }: goFirstInputProps) => {
 		if (isFirstPage) {
 			if (!force) return;
 		}
@@ -111,7 +110,7 @@ function useDataPagination({
 			options = { ...options, data: { ...options.data, sort } };
 		}
 
-		const { list, prevCursor, nextCursor } = await query(options);
+		const { list, prevCursor, nextCursor } = await query(options, accessToken);
 		if (list && list.length > 0) {
 			let flattenedList = [];
 			if (list?.length > 0) {
@@ -150,7 +149,7 @@ function useDataPagination({
 			...paginationOption,
 			data: { ...paginationOption.data, take: currentPageSize },
 		};
-		const { list, prevCursor, nextCursor } = await query(options);
+		const { list, prevCursor, nextCursor } = await query(options, accessToken);
 		if (list && list.length > 0) {
 			let flattenedList = [];
 			if (list?.length > 0) {
@@ -186,7 +185,7 @@ function useDataPagination({
 			},
 		};
 		let resultList;
-		let result = await query(options);
+		let result = await query(options, accessToken);
 		resultList = result.list;
 		if (resultList && resultList.length > 0) {
 			if (isLastPage && resultList.length < currentPageSize) {
@@ -199,7 +198,7 @@ function useDataPagination({
 						take: currentPageSize,
 					},
 				};
-				result = await query(options);
+				result = await query(options, accessToken);
 				resultList = result.list;
 			}
 			if (resultList && resultList.length > 0) {

@@ -33,15 +33,12 @@ export const GET_STUDENT_ATTENDANCES = `
 export const studentAttendancesQuery = async (variables: attendanceMutationVariables, token = null) => {
 	const {
 		data: {
-			data: {
-				studentAttendances: { list, nextCursor, prevCursor, totalCount },
-			},
+			data: { studentAttendances },
 		},
 	} = await createAxiosService({ query: GET_PAGINATED_STUDENT_ATTENDANCES, variables, token });
-	if (totalCount) {
-		const { _count } = totalCount;
-		return { list, nextCursor, prevCursor, _count };
-	} else {
-		return { list, prevCursor, nextCursor };
-	}
+
+	const { list, nextCursor, prevCursor, totalCount } = studentAttendances || {};
+
+	const { _count } = totalCount || {};
+	return { list, nextCursor, prevCursor, _count };
 };

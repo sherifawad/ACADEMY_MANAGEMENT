@@ -4,6 +4,10 @@ import useModel from "customHooks/useModel";
 import usePagination from "customHooks/usePagination";
 import { studentsIdsQuery } from "features/userFeature/usersQueries";
 import dynamic from "next/dynamic";
+import { GetServerSideProps } from "next";
+import { unstable_getServerSession } from "next-auth";
+import { authOptions } from "pages/api/auth/[...nextauth]";
+import Paths from "core/paths";
 
 function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 	const AddAttendance = dynamic(() => import("features/attendanceFeature/AddAttendance"), {
@@ -50,26 +54,25 @@ function Attendance({ list, prevCursor, nextCursor, _count, profileId }) {
 	);
 }
 
-export async function getStaticPaths() {
+export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
-		const { list } = await studentsIdsQuery({
-			role: ["Student"],
-		});
+		const session = await unstable_getServerSession(req, res, authOptions);
 
-		const paths = list?.map((user) => ({
-			params: { studentId: user.id },
-		}));
-		return { paths, fallback: false };
-	} catch (error) {
-		return { fallback: false };
-	}
-}
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.SignIn,
+					permanent: false,
+				},
+			};
+		}
 
-// This also gets called at build time
-export async function getStaticProps({ params }) {
-	try {
+		const { studentId } = params;
+
+		const { accessToken } = session;
+
 		const variables = {
-			studentId: params?.studentId,
+			studentId,
 			data: {
 				myCursor: null,
 				orderByKey: "id",
@@ -77,10 +80,14 @@ export async function getStaticProps({ params }) {
 				take: 5,
 			},
 		};
-		const { list, nextCursor, prevCursor, _count } = await studentAttendancesQuery(variables);
+		const { list, nextCursor, prevCursor, _count } = await studentAttendancesQuery(
+			variables,
+			accessToken
+		);
 
 		return {
 			props: {
+				session,
 				list,
 				prevCursor,
 				nextCursor,
@@ -90,9 +97,12 @@ export async function getStaticProps({ params }) {
 		};
 	} catch (error) {
 		return {
-			props: {},
+			props: {
+				session: null,
+				error: true,
+			},
 		};
 	}
-}
+};
 
 export default Attendance;
