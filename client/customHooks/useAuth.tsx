@@ -25,19 +25,17 @@ function useAuth(shouldRedirect: boolean = false) {
 
 		if (id) {
 			setCurrentUser(session?.user);
-		} else {
+		}
+		if (accessToken) {
+			setCurrentAccessToken(accessToken);
+		}
+		if (!id || !accessToken) {
+			// logging.error("invalid auth state", { data, status });
+			// signOut({ callbackUrl: Paths.SignIn, redirect: shouldRedirect });
+			// TODO: Cookie “next-auth.session-token” has been rejected because it is already expired
 			signOutHandler();
 		}
-		// if (accessToken) {
-		// 	setCurrentAccessToken(accessToken);
-		// }
-		// if (!id || !accessToken) {
-		// 	// logging.error("invalid auth state", { data, status });
-		// 	// signOut({ callbackUrl: Paths.SignIn, redirect: shouldRedirect });
-		//     // TODO: Cookie “next-auth.session-token” has been rejected because it is already expired
-		// 	signOutHandler();
-		// }
-	}, [status, id]);
+	}, [status, id, accessToken]);
 
 	useEffect(() => {
 		if (session?.error === "RefreshAccessTokenError") {

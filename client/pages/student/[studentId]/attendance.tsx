@@ -86,10 +86,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 		return {
 			props: {
 				accessToken,
-				list,
+				list: list ?? [],
 				prevCursor,
 				nextCursor,
-				_count,
+				_count: _count ?? 0,
 				profileId: params.studentId,
 			},
 		};

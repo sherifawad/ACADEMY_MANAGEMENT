@@ -84,7 +84,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 		return {
 			props: {
 				session,
-				grades: Grades,
+				grades: Grades ?? [],
 			},
 		};
 	} catch (error) {

@@ -276,11 +276,25 @@ export const FilteredUsersQuery = extendType({
 					// 	},
 					// });
 					const { data, isActive, role } = args;
+
 					let where = {};
 					if (role) {
 						const ORConditions: { role: string }[] = [];
 						role.forEach((x: any) => {
-							if (x) ORConditions.push({ role: x });
+							if (x) {
+								switch (user.role) {
+									case "ADMIN":
+										ORConditions.push({ role: x });
+										break;
+									case "USER":
+										if (x === "ADMIN") return;
+										ORConditions.push({ role: x });
+										break;
+
+									default:
+										break;
+								}
+							}
 						});
 						where = { ...where, OR: ORConditions };
 					}

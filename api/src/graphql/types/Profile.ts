@@ -57,9 +57,15 @@ export const Profile = objectType({
 		});
 		t.field("user", {
 			type: User,
-			async resolve(_parent, _args, ctx) {
+			async resolve(_parent, _args, {user, prisma}) {
 				try {
-					return await ctx.prisma.profile
+					if (
+						!user ||
+						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
+					) {
+						return null;
+					}
+					return await prisma.profile
 						.findUniqueOrThrow({
 							where: {
 								id: _parent.id,
@@ -262,6 +268,8 @@ export const UpdateProfileMutation = extendType({
 			},
 			resolve: async (_parent, { id, bio }, { prisma, user }) => {
 				try {
+
+                    //TODO: role recheck
 					if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
 
 					const updateProfile = {
@@ -291,6 +299,7 @@ export const DeleteProfileMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, user }) {
 				try {
+                    //TODO: role recheck
 					if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
 
 					return await prisma.profile.delete({
