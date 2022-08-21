@@ -23,15 +23,19 @@ export const ContactByIdQuery = extendType({
 			type: "Contact",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user) return null;
-				if (user.role !== Role.ADMIN && user.role !== Role.USER)
-					return await prisma.contact.findUnique({
-						where: { id },
+				try {
+					if (!user) return null;
+					if (user.role !== Role.ADMIN && user.role !== Role.USER)
+						return await prisma.contact.findUniqueOrThrow({
+							where: { id },
+						});
+					// if logged in is not admin or user get the account details of logged user
+					return await prisma.contact.findUniqueOrThrow({
+						where: { id: user.id },
 					});
-				// if logged in is not admin or user get the account details of logged user
-				return await prisma.contact.findUnique({
-					where: { id: user.id },
-				});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -51,18 +55,22 @@ export const createContactMutation = extendType({
 				email: nullable(stringArg()),
 			},
 			resolve: async (_parent, { phone, address, note, parentsPhones, email }, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const newContact = {
-					phone,
-					address,
-					note,
-					parentsPhones,
-					email,
-				};
-				return await prisma.contact.create({
-					data: newContact,
-				});
+					const newContact = {
+						phone,
+						address,
+						note,
+						parentsPhones,
+						email,
+					};
+					return await prisma.contact.create({
+						data: newContact,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -88,20 +96,24 @@ export const UpdateContactMutation = extendType({
 				{ id, phone, address, note, parentsPhones, email, emailConfirmed },
 				{ prisma, user }
 			) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const updateContact = {
-					phone,
-					address,
-					note,
-					parentsPhones,
-					email,
-					emailConfirmed,
-				};
-				return await prisma.contact.update({
-					where: { id },
-					data: { ...updateContact },
-				});
+					const updateContact = {
+						phone,
+						address,
+						note,
+						parentsPhones,
+						email,
+						emailConfirmed,
+					};
+					return await prisma.contact.update({
+						where: { id },
+						data: { ...updateContact },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -117,11 +129,15 @@ export const DeleteContactMutation = extendType({
 				id: nonNull(stringArg()),
 			},
 			async resolve(_parent, { id }, { prisma, user }) {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				return await prisma.contact.delete({
-					where: { id },
-				});
+					return await prisma.contact.delete({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},

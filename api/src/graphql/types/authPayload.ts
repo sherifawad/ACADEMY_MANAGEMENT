@@ -27,11 +27,15 @@ export const AuthPayload = objectType({
 		t.field("user", {
 			type: "User",
 			resolve: async ({ userId }, _, { prisma }) => {
-				return await prisma.refreshToken
-					.findFirst({
-						where: { userId },
-					})
-					.user();
+				try {
+					return await prisma.refreshToken
+						.findFirst({
+							where: { userId },
+						})
+						.user();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -47,34 +51,38 @@ export const GetAccessToken = extendType({
 				token: nonNull(stringArg()),
 			},
 			resolve: async (_parent, { userId, token }, ctx) => {
-				let refresh_Token = getTokenCookie(ctx.req);
-				if (!refresh_Token || refresh_Token.length < 2) {
-					if (token) {
-						refresh_Token = token;
+				try {
+					let refresh_Token = getTokenCookie(ctx.req);
+					if (!refresh_Token || refresh_Token.length < 2) {
+						if (token) {
+							refresh_Token = token;
+						}
 					}
-				}
-				const refreshToken: RefreshToken = await ctx.prisma.refreshToken.findFirst({
-					where: {
-						userId,
-						valid: true,
-						hash: refresh_Token,
-					},
-				});
-				if (
-					!refreshToken ||
-					!refreshToken.valid ||
-					Date.now().valueOf() > refreshToken.expiration.valueOf()
-				)
-					throw new Error("RefreshAccessTokenError");
-				const user: User = await ctx.prisma.user.findUnique({
-					where: {
-						id: userId,
-					},
-				});
-				if (!user) throw new Error("RefreshAccessTokenError");
-				const { accessToken } = await createTokens(user, refreshToken, ctx);
+					const refreshToken: RefreshToken = await ctx.prisma.refreshToken.findFirst({
+						where: {
+							userId,
+							valid: true,
+							hash: refresh_Token,
+						},
+					});
+					if (
+						!refreshToken ||
+						!refreshToken.valid ||
+						Date.now().valueOf() > refreshToken.expiration.valueOf()
+					)
+						throw new Error("RefreshAccessTokenError");
+					const user: User = await ctx.prisma.user.findUniqueOrThrow({
+						where: {
+							id: userId,
+						},
+					});
+					if (!user) throw new Error("RefreshAccessTokenError");
+					const { accessToken } = await createTokens(user, refreshToken, ctx);
 
-				return { ...accessToken };
+					return { ...accessToken };
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -90,26 +98,30 @@ export const RevokeRefreshToken = extendType({
 				token: nonNull(stringArg()),
 			},
 			resolve: async (_parent, { userId, token }, { req, prisma }) => {
-				let refresh_Token = getTokenCookie(req);
-				if (!refresh_Token || refresh_Token.length < 2) {
-					if (token) {
-						refresh_Token = token;
+				try {
+					let refresh_Token = getTokenCookie(req);
+					if (!refresh_Token || refresh_Token.length < 2) {
+						if (token) {
+							refresh_Token = token;
+						}
 					}
+					const refreshToken: RefreshToken = await prisma.refreshToken.findFirst({
+						where: {
+							userId,
+							valid: true,
+							hash: refresh_Token,
+						},
+					});
+					if (!refreshToken) return null;
+					return await prisma.refreshToken.update({
+						where: {
+							id: refreshToken.id,
+						},
+						data: { valid: false },
+					});
+				} catch (error) {
+					return Promise.reject("error");
 				}
-				const refreshToken: RefreshToken = await prisma.refreshToken.findFirst({
-					where: {
-						userId,
-						valid: true,
-						hash: refresh_Token,
-					},
-				});
-				if (!refreshToken) return null;
-				return await prisma.refreshToken.update({
-					where: {
-						id: refreshToken.id,
-					},
-					data: { valid: false },
-				});
 			},
 		});
 	},

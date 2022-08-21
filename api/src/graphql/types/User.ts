@@ -85,7 +85,7 @@ export const User = objectType({
 			type: "Profile",
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.user
-					.findUnique({
+					.findUniqueOrThrow({
 						where: { id },
 					})
 					.profile();
@@ -95,7 +95,7 @@ export const User = objectType({
 			type: "Contact",
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.user
-					.findUnique({
+					.findUniqueOrThrow({
 						where: { id },
 					})
 					.contact();
@@ -165,8 +165,10 @@ export const UsersQuery = extendType({
 		t.list.field("Users", {
 			type: "User",
 			resolve: async (_parent, _args, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
-				return await prisma.user.findMany();
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
+					return await prisma.user.findMany();
+				} catch (error) {}
 			},
 		});
 	},
@@ -317,7 +319,7 @@ export const FilteredUsersQuery = extendType({
 						groupName: groupName?.name,
 					};
 				} catch (error) {
-					return Promise.reject(error);
+					return Promise.reject("error");
 				}
 			},
 		});
@@ -379,7 +381,7 @@ export const GroupStudentsQuery = extendType({
 							},
 							_count: true,
 						});
-						groupName = await prisma.Group.findUnique({
+						groupName = await prisma.Group.findUniqueOrThrow({
 							where: { id: groupId },
 							select: {
 								name: true,
@@ -415,7 +417,7 @@ export type StudentParam = Pick<prismaUser, "name"> &
 	Partial<Pick<Group, "id">>;
 
 export async function GetUserByEmail(prisma: PrismaClient, email: string): Promise<Contact | null> {
-	return await prisma.contact.findUnique({
+	return await prisma.contact.findUniqueOrThrow({
 		where: {
 			email,
 		},
@@ -472,111 +474,123 @@ export async function ValidateUserCredentials(
 // 	});
 // }
 export async function UpdateUser(ctx: Context, studentParam: any, userPassword?: string | null | undefined) {
-	const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
-	const { name, id, groupId, role, avatar, ...rest } = studentParam;
-	const password = hashedPassword
-		? {
-				update: {
-					password: hashedPassword,
-					forceChange: false,
-				},
-		  }
-		: undefined;
-	const profile = groupId
-		? {
-				update: {
-					updatedBy: ctx.user?.id || "",
-					group: {
-						connect: {
-							id: groupId,
+	try {
+		const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
+		const { name, id, groupId, role, avatar, ...rest } = studentParam;
+		const password = hashedPassword
+			? {
+					update: {
+						password: hashedPassword,
+						forceChange: false,
+					},
+			  }
+			: undefined;
+		const profile = groupId
+			? {
+					update: {
+						updatedBy: ctx.user?.id || "",
+						group: {
+							connect: {
+								id: groupId,
+							},
 						},
 					},
-				},
-		  }
-		: undefined;
-	const allIsNull = isNullish(rest);
-	const contact = !allIsNull
-		? {
-				update: {
-					...removeNullObjects(rest),
-				},
-		  }
-		: undefined;
-	return await ctx.prisma.user.update({
-		where: { id },
-		data: {
-			name: name ? name : undefined,
-			role: role ? role : undefined,
-			avatar: avatar ? avatar : undefined,
-			password,
-			contact,
-			profile,
-		},
-		include: {
-			password: hashedPassword ? true : false,
-			contact: allIsNull ? false : true,
-			profile: groupId ? true : false,
-		},
-	});
+			  }
+			: undefined;
+		const allIsNull = isNullish(rest);
+		const contact = !allIsNull
+			? {
+					update: {
+						...removeNullObjects(rest),
+					},
+			  }
+			: undefined;
+		return await ctx.prisma.user.update({
+			where: { id },
+			data: {
+				name: name ? name : undefined,
+				role: role ? role : undefined,
+				avatar: avatar ? avatar : undefined,
+				password,
+				contact,
+				profile,
+			},
+			include: {
+				password: hashedPassword ? true : false,
+				contact: allIsNull ? false : true,
+				profile: groupId ? true : false,
+			},
+		});
+	} catch (error) {
+		return Promise.reject("error");
+	}
 }
 
 export async function CreateUser(ctx: Context, userParam: any, userPassword: string) {
-	const hashedPassword = await hashPassword(userPassword);
-	const { name, avatar, groupId, role, ...rest } = userParam;
-	const profile = groupId
-		? {
-				create: {
-					createdBy: ctx.user?.id || "",
-					group: {
-						connect: {
-							id: groupId,
+	try {
+		const hashedPassword = await hashPassword(userPassword);
+		const { name, avatar, groupId, role, ...rest } = userParam;
+		const profile = groupId
+			? {
+					create: {
+						createdBy: ctx.user?.id || "",
+						group: {
+							connect: {
+								id: groupId,
+							},
 						},
 					},
+			  }
+			: undefined;
+		return await ctx.prisma.user.create({
+			data: {
+				name,
+				avatar,
+				role,
+				password: {
+					create: {
+						password: hashedPassword,
+						forceChange: false,
+					},
 				},
-		  }
-		: undefined;
-	return await ctx.prisma.user.create({
-		data: {
-			name,
-			avatar,
-			role,
-			password: {
-				create: {
-					password: hashedPassword,
-					forceChange: false,
+				contact: {
+					create: {
+						...rest,
+					},
 				},
+				profile,
 			},
-			contact: {
-				create: {
-					...rest,
-				},
+			include: {
+				password: true,
+				contact: true,
+				profile: groupId ? true : false,
 			},
-			profile,
-		},
-		include: {
-			password: true,
-			contact: true,
-			profile: groupId ? true : false,
-		},
-	});
+		});
+	} catch (error) {
+		return Promise.reject("error");
+	}
 }
 
 export async function CreateRefreshTokenForUser(
 	prisma: PrismaClient,
 	user: prismaUser | Contact
 ): Promise<RefreshToken> {
-	let hash = srs({ length: 100 });
-	let expiration = new Date();
+	try {
+		let hash = srs({ length: 100 });
+		let expiration = new Date();
 
-	expiration.setDate(expiration.getDate() + (constants.JWT_REFRESH_EXPIRATION_DAYS as number));
-	return await prisma.refreshToken.create({
-		data: {
-			expiration,
-			hash,
-			label: "Login",
-			userId: user.id,
-		},
-	});
+		expiration.setDate(expiration.getDate() + (constants.JWT_REFRESH_EXPIRATION_DAYS as number));
+		return await prisma.refreshToken.create({
+			data: {
+				expiration,
+				hash,
+				label: "Login",
+				userId: user.id,
+			},
+		});
+	} catch (error) {
+		return Promise.reject("error");
+	}
 }
 
 export function CreateJWTForUser(user: prismaUser): string {
@@ -594,34 +608,36 @@ export const UserByIdQuery = extendType({
 			type: "User",
 			args: { id: nonNull(stringArg()), take: nullable(intArg()) },
 			resolve: async (_parent, { id }, { user, prisma }) => {
-				if (!user) return null;
-				const userQuery = await prisma.user.findUnique({
-					where: { id },
-				});
-				const sameUser = user.id === id;
-				switch (user.role) {
-					case userRole.ADMIN:
-						if (userQuery.role === userRole.ADMIN && !sameUser) {
-							return null;
-						}
-						return userQuery;
-					case userRole.USER:
-						if (userQuery.role === userRole.ADMIN) {
-							return null;
-						}
-						if (userQuery.role === userRole.USER && !sameUser) {
-							return null;
-						}
-						return userQuery;
-					case userRole.Student:
-						if (sameUser) {
+				try {
+					if (!user) return null;
+					const userQuery = await prisma.user.findUniqueOrThrow({
+						where: { id },
+					});
+					const sameUser = user.id === id;
+					switch (user.role) {
+						case userRole.ADMIN:
+							if (userQuery.role === userRole.ADMIN && !sameUser) {
+								return null;
+							}
 							return userQuery;
-						}
-						return null;
+						case userRole.USER:
+							if (userQuery.role === userRole.ADMIN) {
+								return null;
+							}
+							if (userQuery.role === userRole.USER && !sameUser) {
+								return null;
+							}
+							return userQuery;
+						case userRole.Student:
+							if (sameUser) {
+								return userQuery;
+							}
+							return null;
 
-					default:
-						return null;
-				}
+						default:
+							return null;
+					}
+				} catch (error) {}
 			},
 		});
 	},

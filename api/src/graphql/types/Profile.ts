@@ -18,102 +18,115 @@ export const Profile = objectType({
 			type: Exam,
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
 			async resolve(_parent, { take, orderByList }, { user, prisma }) {
-				if (
-					!user ||
-					(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
-				) {
-					return null;
+				try {
+					if (
+						!user ||
+						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
+					) {
+						return null;
+					}
+					const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
+					let orderList: { [x: string]: string }[];
+					if (isEmpty) {
+						orderList = [{ date: "desc" }, { createdAt: "desc" }, { updatedAt: "desc" }];
+					} else {
+						orderList = Object.entries(orderByList).reduce<{ [x: string]: string }[]>(
+							(acc, [key, value]) => {
+								if (typeof value === "string" || value instanceof String) {
+									return [...acc, { [key]: String(value) }];
+								}
+								return acc;
+							},
+							[]
+						);
+					}
+					return await prisma.profile
+						.findUniqueOrThrow({
+							where: {
+								id: _parent.id,
+							},
+						})
+						.exams({
+							take: take,
+							orderBy: orderList,
+						});
+				} catch (error) {
+					return Promise.reject("error");
 				}
-				const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
-				let orderList: { [x: string]: string }[];
-				if (isEmpty) {
-					orderList = [{ date: "desc" }, { createdAt: "desc" }, { updatedAt: "desc" }];
-				} else {
-					orderList = Object.entries(orderByList).reduce<{ [x: string]: string }[]>(
-						(acc, [key, value]) => {
-							if (typeof value === "string" || value instanceof String) {
-								return [...acc, { [key]: String(value) }];
-							}
-							return acc;
-						},
-						[]
-					);
-				}
-				return await prisma.profile
-					.findUnique({
-						where: {
-							id: _parent.id,
-						},
-					})
-					.exams({
-						take: take,
-						orderBy: orderList,
-					});
 			},
 		});
 		t.field("user", {
 			type: User,
 			async resolve(_parent, _args, ctx) {
-				return await ctx.prisma.profile
-					.findUnique({
-						where: {
-							id: _parent.id,
-						},
-					})
-					.user();
+				try {
+					return await ctx.prisma.profile
+						.findUniqueOrThrow({
+							where: {
+								id: _parent.id,
+							},
+						})
+						.user();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 		t.list.field("attendances", {
 			type: Attendance,
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
 			async resolve(_parent, { take, orderByList }, { user, prisma }) {
-				if (
-					!user ||
-					(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
-				) {
-					return null;
+				try {
+					if (
+						!user ||
+						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
+					) {
+						return null;
+					}
+					const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
+					let orderList: { [x: string]: string }[];
+					if (isEmpty) {
+						orderList = [{ startAt: "desc" }, { endAt: "desc" }];
+					} else {
+						orderList = Object.entries(orderByList).reduce<{ [x: string]: string }[]>(
+							(acc, [key, value]) => {
+								if (typeof value === "string" || value instanceof String) {
+									return [...acc, { [key]: String(value) }];
+								}
+								return acc;
+							},
+							[]
+						);
+					}
+					return await prisma.profile
+						.findUniqueOrThrow({
+							where: {
+								id: _parent.id,
+							},
+						})
+						.attendances({
+							take,
+							orderBy: orderList,
+						});
+				} catch (error) {
+					return Promise.reject("error");
 				}
-				const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
-				let orderList: { [x: string]: string }[];
-				if (isEmpty) {
-					orderList = [{ startAt: "desc" }, { endAt: "desc" }];
-				} else {
-					orderList = Object.entries(orderByList).reduce<{ [x: string]: string }[]>(
-						(acc, [key, value]) => {
-							if (typeof value === "string" || value instanceof String) {
-								return [...acc, { [key]: String(value) }];
-							}
-							return acc;
-						},
-						[]
-					);
-				}
-				return await prisma.profile
-					.findUnique({
-						where: {
-							id: _parent.id,
-						},
-					})
-					.attendances({
-						take,
-						orderBy: orderList,
-					});
 			},
 		});
 		t.field("group", {
 			type: "Group",
 			resolve: async ({ id }, _, { user, prisma }) => {
-				if (
-					!user ||
-					(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== id)
-				) {
-					return null;
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== id)) {
+						return null;
+					}
+					return await prisma.profile
+						.findUniqueOrThrow({
+							where: { id },
+						})
+						.group();
+				} catch (error) {
+					return Promise.reject("error");
 				}
-				return await prisma.profile
-					.findUnique({
-						where: { id },
-					})
-					.group();
 			},
 		});
 	},
@@ -145,8 +158,12 @@ export const ProfilesQuery = extendType({
 		t.nonNull.list.field("Profiles", {
 			type: "Profile",
 			resolve: async (_parent, _args, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
-				return await prisma.profile.findMany();
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
+					return await prisma.profile.findMany();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -160,11 +177,15 @@ export const ProfileByIdQuery = extendType({
 			type: "Profile",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || (user.id !== id && user.role !== Role.ADMIN && user.role !== Role.USER))
-					return null;
-				return await prisma.profile.findUnique({
-					where: { id },
-				});
+				try {
+					if (!user || (user.id !== id && user.role !== Role.ADMIN && user.role !== Role.USER))
+						return null;
+					return await prisma.profile.findUniqueOrThrow({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -179,14 +200,21 @@ export const ProfileAttendancesQuery = extendType({
 			args: { studentId: nonNull(stringArg()) },
 
 			resolve: async (_parent, { studentId }, { prisma, user }) => {
-				if (!user || (user.id !== studentId && user.role !== Role.ADMIN && user.role !== Role.USER))
-					return null;
+				try {
+					if (
+						!user ||
+						(user.id !== studentId && user.role !== Role.ADMIN && user.role !== Role.USER)
+					)
+						return null;
 
-				return await prisma.attendance
-					.findMany({
-						where: { profileId: studentId },
-					})
-					.attendances();
+					return await prisma.attendance
+						.findMany({
+							where: { profileId: studentId },
+						})
+						.attendances();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -203,16 +231,20 @@ export const createProfileMutation = extendType({
 				bio: stringArg(),
 			},
 			resolve: async (_parent, { id, bio }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
-				const newProfile = {
-					id,
-					bio,
-					createdBy: user.id,
-				};
-				return await prisma.profile.create({
-					data: newProfile,
-				});
+					const newProfile = {
+						id,
+						bio,
+						createdBy: user.id,
+					};
+					return await prisma.profile.create({
+						data: newProfile,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -229,16 +261,20 @@ export const UpdateProfileMutation = extendType({
 				bio: stringArg(),
 			},
 			resolve: async (_parent, { id, bio }, { prisma, user }) => {
-				if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
 
-				const updateProfile = {
-					bio,
-					updatedBy: user.id,
-				};
-				return await prisma.profile.update({
-					where: { id },
-					data: { ...updateProfile },
-				});
+					const updateProfile = {
+						bio,
+						updatedBy: user.id,
+					};
+					return await prisma.profile.update({
+						where: { id },
+						data: { ...updateProfile },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -254,11 +290,15 @@ export const DeleteProfileMutation = extendType({
 				id: nonNull(stringArg()),
 			},
 			async resolve(_parent, { id }, { prisma, user }) {
-				if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
 
-				return await prisma.profile.delete({
-					where: { id },
-				});
+					return await prisma.profile.delete({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},

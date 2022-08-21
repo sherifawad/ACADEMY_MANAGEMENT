@@ -17,25 +17,33 @@ export const Grade = objectType({
 		t.list.field("groups", {
 			type: Group,
 			async resolve(_parent, _args, ctx) {
-				return await ctx.prisma.grade
-					.findUnique({
-						where: {
-							id: _parent.id,
-						},
-					})
-					.groups();
+				try {
+					return await ctx.prisma.grade
+						.findUniqueOrThrow({
+							where: {
+								id: _parent.id,
+							},
+						})
+						.groups();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 		t.list.field("profiles", {
 			type: Profile,
 			async resolve({ id }, _args, ctx) {
-				return await ctx.prisma.grade
-					.findUnique({
-						where: {
-							id,
-						},
-					})
-					.profiles();
+				try {
+					return await ctx.prisma.grade
+						.findUniqueOrThrow({
+							where: {
+								id,
+							},
+						})
+						.profiles();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -48,8 +56,12 @@ export const GradesQuery = extendType({
 		t.nonNull.list.field("Grades", {
 			type: "Grade",
 			resolve: async (_parent, _args, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-				return await prisma.Grade.findMany();
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+					return await prisma.Grade.findMany();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -62,10 +74,14 @@ export const ActiveGradesQuery = extendType({
 		t.nonNull.list.field("ActiveGrades", {
 			type: "Grade",
 			resolve: async (_parent, _args, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-				return await prisma.Grade.findMany({
-					where: { isActive: true },
-				});
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+					return await prisma.Grade.findMany({
+						where: { isActive: true },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -79,11 +95,15 @@ export const GradeByIdQuery = extendType({
 			type: "Grade",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
-				return await prisma.Grade.findUnique({
-					where: { id },
-				});
+					return await prisma.Grade.findUniqueOrThrow({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -100,16 +120,20 @@ export const createGradeMutation = extendType({
 				isActive: nonNull(booleanArg()),
 			},
 			resolve: async (_parent, { name, isActive }, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const newGrade = {
-					name,
-					isActive,
-					createdBy: user.id,
-				};
-				return await prisma.Grade.create({
-					data: newGrade,
-				});
+					const newGrade = {
+						name,
+						isActive,
+						createdBy: user.id,
+					};
+					return await prisma.Grade.create({
+						data: newGrade,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -127,17 +151,21 @@ export const UpdateGradeMutation = extendType({
 				isActive: nonNull(booleanArg()),
 			},
 			resolve: async (_parent, { id, name, isActive }, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const updateGrade = {
-					name,
-					isActive,
-					updatedBy: user.id,
-				};
-				return await prisma.Grade.update({
-					where: { id },
-					data: { ...updateGrade },
-				});
+					const updateGrade = {
+						name,
+						isActive,
+						updatedBy: user.id,
+					};
+					return await prisma.Grade.update({
+						where: { id },
+						data: { ...updateGrade },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -153,11 +181,15 @@ export const DeleteGradeMutation = extendType({
 				id: nonNull(stringArg()),
 			},
 			resolve(_parent, { id }, { prisma, user }) {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				return prisma.Grade.delete({
-					where: { id },
-				});
+					return prisma.Grade.delete({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},

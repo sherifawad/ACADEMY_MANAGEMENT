@@ -4,7 +4,7 @@ export async function GetUserPassword(
 	prisma: PrismaClient,
 	user: User | Contact
 ): Promise<UserPassword | null> {
-	return await prisma.userPassword.findUnique({
+	return await prisma.userPassword.findUniqueOrThrow({
 		where: {
 			id: user.id,
 		},

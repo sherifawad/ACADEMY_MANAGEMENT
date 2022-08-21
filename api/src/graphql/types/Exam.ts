@@ -40,11 +40,15 @@ export const Exam = objectType({
 		t.field("profile", {
 			type: "Profile",
 			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.exam
-					.findUnique({
-						where: { id },
-					})
-					.Profile();
+				try {
+					return await prisma.exam
+						.findUniqueOrThrow({
+							where: { id },
+						})
+						.Profile();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -83,9 +87,13 @@ export const ExamsQuery = extendType({
 		t.nonNull.list.field("Exams", {
 			type: "Exam",
 			resolve: async (_parent, _args, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
-				return await prisma.exam.findMany();
+					return await prisma.exam.findMany();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -102,49 +110,56 @@ export const ExamsByUserIdQuery = extendType({
 				studentId: nonNull(stringArg()),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
-				const { studentId, data } = args;
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
-					return null;
-				let where = {};
-				if (studentId) {
-					where = {
-						...where,
-						Profile: { id: studentId },
-					};
-				}
-				let result: studentExam[];
-				let totalCount: { _count: number } | undefined | null;
-				let nextCursor: string | undefined | null;
-				let prevCursor: string | undefined | null;
+				try {
+					const { studentId, data } = args;
+					if (
+						!user ||
+						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId)
+					)
+						return null;
+					let where = {};
+					if (studentId) {
+						where = {
+							...where,
+							Profile: { id: studentId },
+						};
+					}
+					let result: studentExam[];
+					let totalCount: { _count: number } | undefined | null;
+					let nextCursor: string | undefined | null;
+					let prevCursor: string | undefined | null;
 
-				if (data) {
-					result = await prisma.exam.findMany(queryArgs(data, where));
+					if (data) {
+						result = await prisma.exam.findMany(queryArgs(data, where));
 
-					nextCursor = result[result?.length - 1]?.id;
-					prevCursor = result[0]?.id;
+						nextCursor = result[result?.length - 1]?.id;
+						prevCursor = result[0]?.id;
 
-					if (!data?.myCursor) {
-						totalCount = await prisma.exam.aggregate({
+						if (!data?.myCursor) {
+							totalCount = await prisma.exam.aggregate({
+								where: {
+									Profile: { id: studentId },
+								},
+								_count: true,
+							});
+						}
+					} else {
+						result = await prisma.exam.findMany({
 							where: {
 								Profile: { id: studentId },
 							},
-							_count: true,
 						});
 					}
-				} else {
-					result = await prisma.exam.findMany({
-						where: {
-							Profile: { id: studentId },
-						},
-					});
-				}
 
-				return {
-					list: result,
-					prevCursor,
-					nextCursor,
-					totalCount,
-				};
+					return {
+						list: result,
+						prevCursor,
+						nextCursor,
+						totalCount,
+					};
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -158,11 +173,15 @@ export const ExamByIdQuery = extendType({
 			type: "Exam",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
-				return await prisma.exam.findUnique({
-					where: { id },
-				});
+					return await prisma.exam.findUniqueOrThrow({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -181,22 +200,26 @@ export const createExamMutation = extendType({
 				note: nullable(stringArg()),
 			},
 			resolve: async (_parent, { score, date, note, profileId }, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const newExam = {
-					score,
-					date,
-					note,
-					createdBy: user.id,
-					Profile: {
-						connect: {
-							id: profileId,
+					const newExam = {
+						score,
+						date,
+						note,
+						createdBy: user.id,
+						Profile: {
+							connect: {
+								id: profileId,
+							},
 						},
-					},
-				};
-				return await prisma.exam.create({
-					data: newExam,
-				});
+					};
+					return await prisma.exam.create({
+						data: newExam,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -220,35 +243,39 @@ export const createMultipleExamMutation = extendType({
 				{ score, note, date, profileIds, studentsAndScores },
 				{ prisma, user }
 			) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-				const newExams: Omit<exam, "id">[] = [];
-				const isEmpty = Object.keys(studentsAndScores).length === 0;
-				if (isEmpty) {
-					profileIds?.forEach((id: string) =>
-						newExams.push({
-							score: score || 0.001,
-							date,
-							note,
-							profileId: id,
-							createdBy: user.id,
-						})
-					);
-				} else {
-					Object.entries(studentsAndScores).map(([key, value]) => {
-						newExams.push({
-							score: Number(value),
-							date,
-							note,
-							profileId: key,
-							createdBy: user.id,
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+					const newExams: Omit<exam, "id">[] = [];
+					const isEmpty = Object.keys(studentsAndScores).length === 0;
+					if (isEmpty) {
+						profileIds?.forEach((id: string) =>
+							newExams.push({
+								score: score || 0.001,
+								date,
+								note,
+								profileId: id,
+								createdBy: user.id,
+							})
+						);
+					} else {
+						Object.entries(studentsAndScores).map(([key, value]) => {
+							newExams.push({
+								score: Number(value),
+								date,
+								note,
+								profileId: key,
+								createdBy: user.id,
+							});
 						});
-					});
-				}
+					}
 
-				return await prisma.exam.createMany({
-					data: newExams,
-					skipDuplicates: true,
-				});
+					return await prisma.exam.createMany({
+						data: newExams,
+						skipDuplicates: true,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -267,18 +294,22 @@ export const UpdateExamMutation = extendType({
 				note: stringArg(),
 			},
 			resolve: async (_parent, { id, score, date, note }, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const updateExam = {
-					score,
-					date,
-					note,
-					updatedBy: user.id,
-				};
-				return await prisma.exam.update({
-					where: { id },
-					data: { ...updateExam },
-				});
+					const updateExam = {
+						score,
+						date,
+						note,
+						updatedBy: user.id,
+					};
+					return await prisma.exam.update({
+						where: { id },
+						data: { ...updateExam },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -304,35 +335,39 @@ export const UpdateMultipleExamMutation = extendType({
 				{ dateCondition, scoreCondition, noteCondition, score, date, note, profileIds },
 				{ prisma, user }
 			) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const ANDConditions = [];
-				if (dateCondition) {
-					ANDConditions.push({ date: dateCondition });
-				}
-				if (scoreCondition) {
-					ANDConditions.push({ score: scoreCondition });
-				}
-				if (noteCondition) {
-					ANDConditions.push({ note: { contains: noteCondition } });
-				}
-				const ORConditions: { profileId: string }[] = [];
-				profileIds.forEach((id: string) => ORConditions.push({ profileId: id }));
+					const ANDConditions = [];
+					if (dateCondition) {
+						ANDConditions.push({ date: dateCondition });
+					}
+					if (scoreCondition) {
+						ANDConditions.push({ score: scoreCondition });
+					}
+					if (noteCondition) {
+						ANDConditions.push({ note: { contains: noteCondition } });
+					}
+					const ORConditions: { profileId: string }[] = [];
+					profileIds.forEach((id: string) => ORConditions.push({ profileId: id }));
 
-				const updateExam = {
-					date,
-					score,
-					note,
-					updatedBy: user.id,
-				};
-				const where = {
-					AND: ANDConditions,
-					OR: ORConditions,
-				};
-				return await prisma.exam.updateMany({
-					where,
-					data: updateExam,
-				});
+					const updateExam = {
+						date,
+						score,
+						note,
+						updatedBy: user.id,
+					};
+					const where = {
+						AND: ANDConditions,
+						OR: ORConditions,
+					};
+					return await prisma.exam.updateMany({
+						where,
+						data: updateExam,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -348,11 +383,15 @@ export const DeleteExamMutation = extendType({
 				id: nonNull(stringArg()),
 			},
 			async resolve(_parent, { id }, { prisma, user }) {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				return await prisma.exam.delete({
-					where: { id },
-				});
+					return await prisma.exam.delete({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},

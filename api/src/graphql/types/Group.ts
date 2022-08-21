@@ -40,7 +40,6 @@ export const Group = objectType({
 			async resolve(_parent, args, ctx) {
 				try {
 					const { data } = args;
-					console.log("🚀 ~ file: Group.ts ~ line 42 ~ resolve ~ data", data);
 
 					if (data) {
 						const query = await ctx.prisma.group
@@ -50,15 +49,13 @@ export const Group = objectType({
 								},
 							})
 							.profiles(queryArgs(data));
-						console.log("🚀 ~ file: Group.ts ~ line 52 ~ resolve ~ query", query);
 
 						const result = await paginationResult(query);
-						console.log("🚀 ~ file: Group.ts ~ line 54 ~ resolve ~ result", result);
 
 						if (!data?.myCursor) {
 							const {
 								_count: { profiles },
-							} = await ctx.prisma.group.findUnique({
+							} = await ctx.prisma.group.findUniqueOrThrow({
 								where: {
 									id: _parent.id,
 								},
@@ -78,30 +75,38 @@ export const Group = objectType({
 						})
 						.profiles();
 				} catch (error) {
-					console.log("🚀 ~ file: Group.ts ~ line 81 ~ resolve ~ error", error);
+					return Promise.reject("error");
 				}
 			},
 		});
 		t.list.field("attendance", {
 			type: Attendance,
 			async resolve(_parent, _args, ctx) {
-				return await ctx.prisma.grade
-					.findUnique({
-						where: {
-							id: _parent.id,
-						},
-					})
-					.attendance();
+				try {
+					return await ctx.prisma.grade
+						.findUniqueOrThrow({
+							where: {
+								id: _parent.id,
+							},
+						})
+						.attendance();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 		t.field("grade", {
 			type: "Grade",
 			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.group
-					.findUnique({
-						where: { id },
-					})
-					.grade();
+				try {
+					return await prisma.group
+						.findUniqueOrThrow({
+							where: { id },
+						})
+						.grade();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -114,9 +119,13 @@ export const GroupsQuery = extendType({
 		t.nonNull.list.field("Groups", {
 			type: "Group",
 			resolve: async (_parent, _args, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
-				return await prisma.Group.findMany();
+					return await prisma.Group.findMany();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -130,11 +139,15 @@ export const GroupByIdQuery = extendType({
 			type: "Group",
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
-				return await prisma.Group.findUnique({
-					where: { id },
-				});
+					return await prisma.Group.findUniqueOrThrow({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -158,24 +171,28 @@ export const createGroupMutation = extendType({
 				{ name, startAt, endAt, gradeId, isActive = true },
 				{ prisma, user }
 			) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const newGroup = {
-					name,
-					startAt,
-					endAt,
-					createdBy: user.id,
-					isActive,
+					const newGroup = {
+						name,
+						startAt,
+						endAt,
+						createdBy: user.id,
+						isActive,
 
-					grade: {
-						connect: {
-							id: gradeId,
+						grade: {
+							connect: {
+								id: gradeId,
+							},
 						},
-					},
-				};
-				return await prisma.Group.create({
-					data: newGroup,
-				});
+					};
+					return await prisma.Group.create({
+						data: newGroup,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -196,31 +213,35 @@ export const UpdateGroupMutation = extendType({
 				gradeId: stringArg(),
 			},
 			resolve: async (_parent, { id, name, startAt, endAt, gradeId, isActive }, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				let updateGroup: any = {
-					name,
-					startAt,
-					endAt,
-					isActive,
-					updatedBy: user.id,
-				};
-
-				if (gradeId) {
-					updateGroup = {
-						...updateGroup,
-						grade: {
-							connect: {
-								id: gradeId,
-							},
-						},
+					let updateGroup: any = {
+						name,
+						startAt,
+						endAt,
+						isActive,
+						updatedBy: user.id,
 					};
-				}
 
-				return await prisma.Group.update({
-					where: { id },
-					data: { ...updateGroup },
-				});
+					if (gradeId) {
+						updateGroup = {
+							...updateGroup,
+							grade: {
+								connect: {
+									id: gradeId,
+								},
+							},
+						};
+					}
+
+					return await prisma.Group.update({
+						where: { id },
+						data: { ...updateGroup },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -236,11 +257,15 @@ export const DeleteGroupMutation = extendType({
 				id: nonNull(stringArg()),
 			},
 			resolve(_parent, { id }, { prisma, user }) {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				return prisma.Group.delete({
-					where: { id },
-				});
+					return prisma.Group.delete({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},

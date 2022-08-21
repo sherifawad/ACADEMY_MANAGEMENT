@@ -43,7 +43,7 @@ export const Attendance = objectType({
 			type: "Profile",
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.attendance
-					.findUnique({
+					.findUniqueOrThrow({
 						where: { id },
 					})
 					.profile();
@@ -53,7 +53,7 @@ export const Attendance = objectType({
 			type: "Group",
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.attendance
-					.findUnique({
+					.findUniqueOrThrow({
 						where: { id },
 					})
 					.group();
@@ -291,17 +291,23 @@ export const AttendanceByUserQuery = extendType({
 				take: nullable(intArg()),
 			},
 			resolve: async (_parent, { studentId, take, skip = 1 }, { prisma, user }) => {
-                console.log("🚀 ~ file: Attendance.ts ~ line 294 ~ resolve: ~ studentId", studentId)
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
-					return null;
+				try {
+					if (
+						!user ||
+						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId)
+					)
+						return null;
 
-				return await prisma.attendance.findMany({
-					skip,
-					take,
-					where: {
-						Profile: { id: studentId },
-					},
-				});
+					return await prisma.attendance.findMany({
+						skip,
+						take,
+						where: {
+							Profile: { id: studentId },
+						},
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -320,18 +326,22 @@ export const createAttendanceMutation = extendType({
 				profileId: nonNull(stringArg()),
 			},
 			resolve: async (_parent, { startAt, endAt, note, profileId }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
-				const newAttendance = {
-					startAt,
-					endAt,
-					note,
-					profileId,
-					createdBy: user.id,
-				};
-				return await prisma.attendance.create({
-					data: newAttendance,
-				});
+					const newAttendance = {
+						startAt,
+						endAt,
+						note,
+						profileId,
+						createdBy: user.id,
+					};
+					return await prisma.attendance.create({
+						data: newAttendance,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -350,22 +360,26 @@ export const createMultipleAttendanceMutation = extendType({
 				profileIds: nonNull(list(nonNull(stringArg()))),
 			},
 			resolve: async (_parent, { startAt, endAt, note, profileIds }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-				const newAttendances: Omit<attendance, "id">[] = [];
-				profileIds.forEach((id: string) =>
-					newAttendances.push({
-						startAt,
-						endAt,
-						note,
-						profileId: id,
-						createdBy: user.id,
-					})
-				);
+				try {
+					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+					const newAttendances: Omit<attendance, "id">[] = [];
+					profileIds.forEach((id: string) =>
+						newAttendances.push({
+							startAt,
+							endAt,
+							note,
+							profileId: id,
+							createdBy: user.id,
+						})
+					);
 
-				return await prisma.attendance.createMany({
-					data: newAttendances,
-					skipDuplicates: true,
-				});
+					return await prisma.attendance.createMany({
+						data: newAttendances,
+						skipDuplicates: true,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -385,19 +399,23 @@ export const UpdateAttendanceMutation = extendType({
 				profileId: stringArg(),
 			},
 			resolve: async (_parent, { id, startAt, endAt, note, profileId }, { prisma, user }) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const updateAttendance = {
-					startAt,
-					endAt,
-					note,
-					profileId,
-					updatedBy: user.id,
-				};
-				return await prisma.attendance.update({
-					where: { id },
-					data: { ...updateAttendance },
-				});
+					const updateAttendance = {
+						startAt,
+						endAt,
+						note,
+						profileId,
+						updatedBy: user.id,
+					};
+					return await prisma.attendance.update({
+						where: { id },
+						data: { ...updateAttendance },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -423,35 +441,39 @@ export const UpdateMultipleAttendanceMutation = extendType({
 				{ startAtCondition, endAtCondition, noteCondition, startAt, endAt, note, profileIds },
 				{ prisma, user }
 			) => {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				const ANDConditions = [];
-				if (startAtCondition) {
-					ANDConditions.push({ startAt: startAtCondition });
-				}
-				if (endAtCondition) {
-					ANDConditions.push({ endAt: endAtCondition });
-				}
-				if (noteCondition) {
-					ANDConditions.push({ note: { contains: noteCondition } });
-				}
-				const ORConditions: { profileId: string }[] = [];
-				profileIds.forEach((id: string) => ORConditions.push({ profileId: id }));
+					const ANDConditions = [];
+					if (startAtCondition) {
+						ANDConditions.push({ startAt: startAtCondition });
+					}
+					if (endAtCondition) {
+						ANDConditions.push({ endAt: endAtCondition });
+					}
+					if (noteCondition) {
+						ANDConditions.push({ note: { contains: noteCondition } });
+					}
+					const ORConditions: { profileId: string }[] = [];
+					profileIds.forEach((id: string) => ORConditions.push({ profileId: id }));
 
-				const updateAttendance = {
-					startAt,
-					endAt,
-					note,
-					updatedBy: user.id,
-				};
-				const where = {
-					AND: ANDConditions,
-					OR: ORConditions,
-				};
-				return await prisma.attendance.updateMany({
-					where,
-					data: updateAttendance,
-				});
+					const updateAttendance = {
+						startAt,
+						endAt,
+						note,
+						updatedBy: user.id,
+					};
+					const where = {
+						AND: ANDConditions,
+						OR: ORConditions,
+					};
+					return await prisma.attendance.updateMany({
+						where,
+						data: updateAttendance,
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -467,11 +489,15 @@ export const DeleteAttendanceMutation = extendType({
 				id: nonNull(stringArg()),
 			},
 			async resolve(_parent, { id }, { prisma, user }) {
-				if (!user || user.role !== Role.ADMIN) return null;
+				try {
+					if (!user || user.role !== Role.ADMIN) return null;
 
-				return await prisma.attendance.delete({
-					where: { id },
-				});
+					return await prisma.attendance.delete({
+						where: { id },
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
