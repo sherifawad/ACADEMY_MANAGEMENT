@@ -58,7 +58,7 @@ export const GetAccessToken = extendType({
 							refresh_Token = token;
 						}
 					}
-					const refreshToken: RefreshToken = await ctx.prisma.refreshToken.findFirst({
+					const refreshToken: RefreshToken = await ctx.prisma.refreshToken.findFirstOrThrow({
 						where: {
 							userId,
 							valid: true,
@@ -79,9 +79,10 @@ export const GetAccessToken = extendType({
 					if (!user) throw new Error("RefreshAccessTokenError");
 					const { accessToken } = await createTokens(user, refreshToken, ctx);
 
-					return { ...accessToken };
+					return accessToken;
 				} catch (error) {
-					return Promise.reject("error");
+					console.log("🚀 ~ file: authPayload.ts ~ line 84 ~ resolve: ~ error", error);
+					return Promise.reject(new Error("RefreshAccessTokenError"));
 				}
 			},
 		});
@@ -105,14 +106,14 @@ export const RevokeRefreshToken = extendType({
 							refresh_Token = token;
 						}
 					}
-					const refreshToken: RefreshToken = await prisma.refreshToken.findFirst({
+					const refreshToken: RefreshToken = await prisma.refreshToken.findFirstOrThrow({
 						where: {
 							userId,
 							valid: true,
 							hash: refresh_Token,
 						},
 					});
-					if (!refreshToken) return null;
+					if (!refreshToken) throw new Error("RefreshAccessTokenError");
 					return await prisma.refreshToken.update({
 						where: {
 							id: refreshToken.id,
@@ -120,7 +121,8 @@ export const RevokeRefreshToken = extendType({
 						data: { valid: false },
 					});
 				} catch (error) {
-					return Promise.reject("error");
+					console.log("🚀 ~ file: authPayload.ts ~ line 123 ~ resolve: ~ error", error);
+					return Promise.reject(new Error("RefreshAccessTokenError"));
 				}
 			},
 		});

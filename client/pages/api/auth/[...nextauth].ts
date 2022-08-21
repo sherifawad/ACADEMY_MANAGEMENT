@@ -5,24 +5,31 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 const refreshAccessToken = async (token: any) => {
-	const {
-		user: { id },
-		refreshToken,
-	} = (token as any) || {};
-	const data = await getRefreshToken({ userId: id, token: refreshToken });
-	const { accessTokenExpiresIn, accessToken, hash, errors } = (data as any) || {};
-	if (errors) {
+	try {
+		const {
+			user: { id },
+			refreshToken,
+		} = (token as any) || {};
+		const data = await getRefreshToken({ userId: id, token: refreshToken });
+		const { accessTokenExpiresIn, accessToken, hash, errors } = (data as any) || {};
+		if (errors) {
+			return {
+				...token,
+				error: "RefreshAccessTokenError",
+			};
+		}
+		return {
+			...token,
+			accessToken,
+			accessTokenExpires: accessTokenExpiresIn,
+			refreshToken: hash ?? refreshToken,
+		};
+	} catch (error) {
 		return {
 			...token,
 			error: "RefreshAccessTokenError",
 		};
 	}
-	return {
-		...token,
-		accessToken: accessToken,
-		accessTokenExpires: accessTokenExpiresIn,
-		refreshToken: hash ?? refreshToken,
-	};
 };
 
 export const authOptions: NextAuthOptions = {
@@ -59,24 +66,26 @@ export const authOptions: NextAuthOptions = {
 			if (user) {
 				return {
 					...token,
+					...rest,
 					accessToken: accessToken,
 					accessTokenExpires: accessTokenExpiresIn,
 					refreshToken: hash,
-					...rest,
+					refreshExpireIn,
 				};
 			}
 			// Return previous token if the access token has not expired yet
 
-			if (Date.now() < (token.accessTokenExpires as number) * 1000) {
+			// add 10 seconds from currentTime
+			const afterNow = new Date().getTime() + 10 * 1000;
+			if (afterNow < Number(token.accessTokenExpires) * 1000) {
 				return token;
 			}
 
 			// Access token has expired, try to update it
-			return refreshAccessToken(token);
+			return await refreshAccessToken(token);
 		},
 		async session({ session, token, user }) {
 			// Send properties to the client, like an access_token from a provider.
-			session.accessToken = token;
 			session.user = token.user;
 			session.accessToken = token.accessToken || null;
 			session.error = token.error || null;

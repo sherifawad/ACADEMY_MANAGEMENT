@@ -51,7 +51,7 @@ export const getRefreshToken = async (variables: Variables) => {
 		query: REFRESH_TOKEN_MUTATION,
 		variables,
 	}).then((response) => response.data);
-	return { ...refreshToken, errors };
+	return { ...refreshToken?.refreshToken, errors };
 };
 
 export const userLogin = async (variables: Variables) => {
