@@ -22,6 +22,7 @@ export const createAccessToken = (payload: User) => {
 	expiration.setMinutes(expiration.getMinutes() + Number(constants.JWT_ACCESS_EXPIRATION_Minutes));
 	let accessTokenExpiresIn = Math.floor(expiration.getTime() / 1000);
 	const accessToken = sign(payload, constants.JWT_ACCESS_SECRET, {
+		//convert to seconds
 		expiresIn: Number(constants.JWT_ACCESS_EXPIRATION_Minutes) * 60000,
 	});
 
@@ -32,12 +33,17 @@ export const createAccessToken = (payload: User) => {
 };
 
 export const createRefreshToken = (payload: JwtRefreshPayload) => {
-	const calculatedExpiration = payload.expiration.getTime() - new Date().getTime();
-
-	return sign(payload, constants.JWT_REFRESH_SECRET, {
-		// expiresIn: constants.JWT_REFRESH_EXPIRATION,
-		expiresIn: calculatedExpiration,
+	const { expiration } = payload;
+	if (!expiration) {
+		throw new Error("RefreshAccessNoExpirationError");
+	}
+	const refreshToken = sign(payload, constants.JWT_REFRESH_SECRET, {
+		expiresIn: Number(constants.JWT_ACCESS_EXPIRATION_Minutes) * 24 * 60 * 60000,
 	});
+	return {
+		refreshTokenExpiresIn: expiration,
+		refreshToken,
+	};
 };
 
 // export const createRefreshCookie = (jwt: string): [string, string, CookieOptions] => {
@@ -74,11 +80,11 @@ export const removeRefreshCookie = (context: any) => {
 
 export const createTokens = async (
 	payload: User,
-	refreshTokenPayload?: JwtRefreshPayload,
+	refreshTokenPayload: JwtRefreshPayload,
 	context?: Context
 ) => {
 	const accessToken = createAccessToken(payload);
-	// const refreshToken = createRefreshToken(refreshTokenPayload);
+	const refreshToken = createRefreshToken(refreshTokenPayload);
 
 	if (!!context) {
 		if (refreshTokenPayload) {
@@ -89,7 +95,7 @@ export const createTokens = async (
 
 	return {
 		accessToken,
-		// refreshToken,
+		refreshToken,
 	};
 };
 

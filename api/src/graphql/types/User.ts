@@ -753,19 +753,17 @@ export const userLogin = extendType({
 					throw new LoginInvalidError("Invalid username or password");
 				}
 
-				const refreshToken: Pick<RefreshToken, "expiration" | "hash" | "userId"> =
+				const createdRefreshToken: Pick<RefreshToken, "expiration" | "hash" | "userId"> =
 					await CreateRefreshTokenForUser(ctx.prisma, user);
-				const { hash, expiration, userId } = refreshToken || {};
-				const { accessToken } = await createTokens(user, refreshToken, ctx);
+				const { accessToken, refreshToken } = await createTokens(user, createdRefreshToken, ctx);
 				// TODO: send refresh token with cookies
 				// // const token = CreateJWTForUser(user.user);
 				// // setTokenCookie(ctx.res, refreshToken.hash);
 
 				return {
 					...accessToken,
-					refreshExpireIn: expiration,
-					hash,
-					userId,
+					...refreshToken,
+					userId: user.id,
 				};
 			},
 		});

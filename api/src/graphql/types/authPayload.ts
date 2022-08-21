@@ -20,9 +20,8 @@ export const AuthPayload = objectType({
 	definition(t) {
 		t.int("accessTokenExpiresIn");
 		t.string("accessToken");
-		t.field("refreshExpireIn", { type: "DateTime" });
-		t.string("hash");
-		t.string("userId");
+		t.field("refreshTokenExpiresIn", { type: "DateTime" });
+		t.string("refreshToken");
 		t.string("userId");
 		t.field("user", {
 			type: "User",
