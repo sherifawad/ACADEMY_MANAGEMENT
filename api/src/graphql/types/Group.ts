@@ -38,41 +38,48 @@ export const Group = objectType({
 			type: ProfilesResponse,
 			args: { data: PaginationInputType },
 			async resolve(_parent, args, ctx) {
-				const { data } = args;
+				try {
+					const { data } = args;
+					console.log("🚀 ~ file: Group.ts ~ line 42 ~ resolve ~ data", data);
 
-				if (data) {
-					const query = await ctx.prisma.group
-						.findUnique({
+					if (data) {
+						const query = await ctx.prisma.group
+							.findUniqueOrThrow({
+								where: {
+									id: _parent.id,
+								},
+							})
+							.profiles(queryArgs(data));
+						console.log("🚀 ~ file: Group.ts ~ line 52 ~ resolve ~ query", query);
+
+						const result = await paginationResult(query);
+						console.log("🚀 ~ file: Group.ts ~ line 54 ~ resolve ~ result", result);
+
+						if (!data?.myCursor) {
+							const {
+								_count: { profiles },
+							} = await ctx.prisma.group.findUnique({
+								where: {
+									id: _parent.id,
+								},
+								include: {
+									_count: { select: { profiles: true } },
+								},
+							});
+							return { ...result, totalCount: profiles ? { _count: profiles } : undefined };
+						}
+						return result;
+					}
+					return await ctx.prisma.group
+						.findUniqueOrThrow({
 							where: {
 								id: _parent.id,
 							},
 						})
-						.profiles(queryArgs(data));
-
-					const result = await paginationResult(query);
-
-					if (!data?.myCursor) {
-						const {
-							_count: { profiles },
-						} = await ctx.prisma.group.findUnique({
-							where: {
-								id: _parent.id,
-							},
-							include: {
-								_count: { select: { profiles: true } },
-							},
-						});
-						return { ...result, totalCount: profiles ? { _count: profiles } : undefined };
-					}
-					return result;
+						.profiles();
+				} catch (error) {
+					console.log("🚀 ~ file: Group.ts ~ line 81 ~ resolve ~ error", error);
 				}
-				return await ctx.prisma.group
-					.findUnique({
-						where: {
-							id: _parent.id,
-						},
-					})
-					.profiles();
 			},
 		});
 		t.list.field("attendance", {

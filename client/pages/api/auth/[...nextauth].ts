@@ -1,3 +1,4 @@
+import Paths from "core/paths";
 import { ObjectFlatten } from "core/utils";
 import { getRefreshToken, userLogin } from "features/authFeature/authMutations";
 import NextAuth, { NextAuthOptions } from "next-auth";
@@ -45,12 +46,9 @@ export const authOptions: NextAuthOptions = {
 	],
 	secret: process.env.NEXTAUTH_SECRET,
 
-	jwt: {
-		maxAge: 60 * 60 * 24 * 30,
-	},
-	session: { strategy: "jwt", maxAge: 24 * 60 * 60, updateAge: 24 * 60 * 60 },
+	session: { strategy: "jwt" },
 	pages: {
-		signIn: "/auth/signin",
+		signIn: Paths.SignIn,
 		// error: '/auth/error',
 		// signOut: '/auth/signout'
 	},

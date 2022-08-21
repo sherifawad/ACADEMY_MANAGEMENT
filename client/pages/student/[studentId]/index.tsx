@@ -26,7 +26,7 @@ function Student({ user }) {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
 		const session = await unstable_getServerSession(req, res, authOptions);
 
@@ -39,13 +39,12 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 			};
 		}
 
-		const { user, accessToken } = session;
-
-		const { id } = (user as user) || {};
+		const { accessToken } = session;
+		const { studentId } = params;
 
 		const { User } = await studentDetailsQuery(
 			{
-				userId: id,
+				userId: studentId,
 				attendancesTake2: 5,
 				examsTake2: 5,
 			},

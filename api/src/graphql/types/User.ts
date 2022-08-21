@@ -265,7 +265,6 @@ export const FilteredUsersQuery = extendType({
 				role: nullable(list(arg({ type: "Role" }))),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
-				console.log("🚀 ~ file: User.ts ~ line 268 ~ resolve: ~ user", user);
 				try {
 					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 					// return await prisma.user.findMany({

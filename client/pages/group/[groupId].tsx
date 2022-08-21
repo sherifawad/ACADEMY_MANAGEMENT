@@ -14,7 +14,7 @@ import { unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import Paths from "core/paths";
 
-function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId }) {
+function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId, accessToken }) {
 	const AddExam = dynamic(() => import("features/examFeature/AddExam"), {
 		ssr: false,
 	});
@@ -51,7 +51,7 @@ function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId }) 
 		prevCursor,
 		nextCursor,
 		hasCheckBox: true,
-		sortList: [{ user: { currentSortProperty: "asc" } }],
+		sortList: [{ user: { id: "asc" } }],
 		_count,
 		edit: rowEditHandler,
 		queryVariables: { groupId },
@@ -59,6 +59,7 @@ function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId }) 
 		query: getGroupStudents,
 		tableHooks,
 		additionalHiddenColumns,
+		accessToken,
 	});
 
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel(false);
@@ -181,8 +182,6 @@ function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId }) 
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
-		const { groupId } = params;
-
 		const session = await unstable_getServerSession(req, res, authOptions);
 		if (!session) {
 			return {
@@ -193,6 +192,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 			};
 		}
 		const { accessToken } = session;
+		const { groupId } = params;
 
 		const variables = {
 			groupId,
@@ -215,9 +215,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 		}
 		return {
 			props: {
-				session,
+				accessToken,
 				list: flattenedList,
-				_count,
+				_count: _count ?? 0,
 				name,
 				prevCursor,
 				nextCursor,

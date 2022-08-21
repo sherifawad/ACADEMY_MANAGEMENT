@@ -1,3 +1,4 @@
+import Paths from "core/paths";
 import useAuth from "customHooks/useAuth";
 import { NextPage } from "next";
 import { signIn, useSession } from "next-auth/react";
@@ -25,6 +26,7 @@ const SignIn: NextPage = (props): JSX.Element => {
 			email: userInfo.email,
 			password: userInfo.password,
 			redirect: false,
+            callbackUrl: Paths.SignIn
 		});
 	};
 	return (

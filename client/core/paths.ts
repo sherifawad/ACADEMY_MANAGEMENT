@@ -1,7 +1,7 @@
 export enum Paths {
 	Admin = "/admin",
-	Login = "/auth",
-	Logout = "/auth",
+	Login = "/auth/signin",
+	Logout = "/auth/signin",
 	Home = "/",
 	SignIn = "/auth/signin",
 }

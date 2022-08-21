@@ -157,7 +157,7 @@ function usePagination({
 			const sortDirection = isAsc ? "asc" : "desc";
 			let sortObject: [{ [x: string]: string }];
 			if (sort && sort.length > 0) {
-				const result = renameKeyValue(sort[0], "currentSortProperty", sortProperty, sortDirection);
+				const result = renameKeyValue(sort[0], "id", sortProperty, sortDirection);
 				sortObject = [result];
 			} else {
 				sortObject = [{ [sortProperty]: sortDirection }];

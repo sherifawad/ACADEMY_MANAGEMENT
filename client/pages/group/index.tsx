@@ -37,7 +37,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 		const { Groups } = await getGroups(accessToken);
 		return {
 			props: {
-				groups: Groups,
+				groups: Groups ?? [],
 			},
 		};
 	} catch (error) {
