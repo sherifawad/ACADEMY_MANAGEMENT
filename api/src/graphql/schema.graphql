@@ -134,7 +134,7 @@ type Mutation {
   deleteGroup(id: String!): Group!
   deleteProfile(id: String!): Profile!
   refreshToken(token: String!, userId: String!): AuthPayload
-  revokeToken(token: String!, userId: String!): AuthPayload
+  revokeToken(id: String!, token: String!): AuthPayload
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateContact(address: String, email: String, emailConfirmed: Boolean, id: String!, note: String, parentsPhones: String, phone: String): Contact!
   updateExam(date: DateTime, id: String!, note: String, score: Float): Exam!

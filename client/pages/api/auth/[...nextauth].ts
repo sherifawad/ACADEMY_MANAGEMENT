@@ -1,6 +1,7 @@
 import Paths from "core/paths";
 import { ObjectFlatten } from "core/utils";
-import { getRefreshToken, userLogin } from "features/authFeature/authMutations";
+import { getRefreshToken, revokeRefreshToken, userLogin } from "features/authFeature/authMutations";
+import { user } from "features/userFeature/userTypes";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -37,7 +38,7 @@ const refreshAccessToken = async (token: any) => {
 };
 
 export const authOptions: NextAuthOptions = {
-	debug: true,
+	debug: process.env.NODE_ENV === "development",
 	providers: [
 		CredentialsProvider({
 			type: "credentials",
@@ -99,6 +100,24 @@ export const authOptions: NextAuthOptions = {
 			session.error = token.error || null;
 			return session;
 		},
+	},
+	events: {
+		// async signIn(message) { /* on successful sign in */ },
+		async signOut({ token }) {
+			try {
+				// console.log(
+				// 	"🚀 ~ file: [...nextauth].ts ~ line 107 ~ signOut ~ token",
+				// 	JSON.stringify(token, null, 2)
+				// );
+				const { user, refreshToken, accessToken } = token || {};
+				const { id } = (user as user) || {};
+				await revokeRefreshToken({ revokeTokenId: id, token: refreshToken }, accessToken);
+			} catch (error) {}
+		},
+		// async createUser(message) { /* user created */ },
+		// async updateUser(message) { /* user updated - e.g. their email was verified */ },
+		// async linkAccount(message) { /* account (e.g. Twitter) linked to a user */ },
+		// async session(message) { /* session is active */ },
 	},
 };
 

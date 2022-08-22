@@ -1,4 +1,4 @@
-import { RefreshToken, User } from "@prisma/client";
+import { RefreshToken, Role, User } from "@prisma/client";
 import { verify } from "jsonwebtoken";
 import { extendType, nonNull, objectType, stringArg } from "nexus";
 import { getTokenCookie } from "../../core/auth-cookies";
@@ -61,7 +61,7 @@ export const GetAccessToken = extendType({
 					}
 
 					const verifiedToken = verify(token, constants.JWT_REFRESH_SECRET) as JwtRefreshPayload;
-                    // console.log("🚀 ~ file: authPayload.ts ~ line 64 ~ resolve: ~ verifiedToken", verifiedToken)
+					// console.log("🚀 ~ file: authPayload.ts ~ line 64 ~ resolve: ~ verifiedToken", verifiedToken)
 					const { hash, userId } = verifiedToken || {};
 					const refreshToken: RefreshToken = await ctx.prisma.refreshToken.findFirstOrThrow({
 						where: {
@@ -82,11 +82,13 @@ export const GetAccessToken = extendType({
 						},
 					});
 					if (!user) throw new Error("RefreshAccessTokenError");
-					const { accessToken } = await createTokens(user, refreshToken, ctx);
+					const { accessToken } = (await createTokens(user, refreshToken, ctx)) as {
+						accessToken: { accessTokenExpiresIn: number; accessToken: string };
+					};
 
 					return accessToken;
 				} catch (error) {
-					console.log("🚀 ~ file: authPayload.ts ~ line 84 ~ resolve: ~ error", error);
+					// console.log("🚀 ~ file: authPayload.ts ~ line 84 ~ resolve: ~ error", error);
 					return Promise.reject(new Error("RefreshAccessTokenError"));
 				}
 			},
@@ -100,25 +102,35 @@ export const RevokeRefreshToken = extendType({
 		t.field("revokeToken", {
 			type: "AuthPayload",
 			args: {
-				userId: nonNull(stringArg()),
+				id: nonNull(stringArg()),
 				token: nonNull(stringArg()),
 			},
-			resolve: async (_parent, { userId, token }, { req, prisma }) => {
+			resolve: async (_parent, { id, token }, { req, prisma, user }) => {
 				try {
+					if (!user || (user.role !== Role.ADMIN && user.id !== id)) {
+						throw new Error("Not Allowed");
+					}
 					let refresh_Token = getTokenCookie(req);
 					if (!refresh_Token || refresh_Token.length < 2) {
 						if (token) {
 							refresh_Token = token;
 						}
 					}
+
+					const verifiedToken = verify(token, constants.JWT_REFRESH_SECRET) as JwtRefreshPayload;
+					// console.log(
+					// 	"🚀 ~ file: authPayload.ts ~ line 119 ~ resolve: ~ verifiedToken",
+					// 	verifiedToken
+					// );
+					const { hash, userId } = verifiedToken || {};
 					const refreshToken: RefreshToken = await prisma.refreshToken.findFirstOrThrow({
 						where: {
 							userId,
 							valid: true,
-							hash: refresh_Token,
+							hash,
 						},
 					});
-					if (!refreshToken) throw new Error("RefreshAccessTokenError");
+					if (!refreshToken) throw new Error("Not Allowed");
 					return await prisma.refreshToken.update({
 						where: {
 							id: refreshToken.id,
@@ -126,8 +138,8 @@ export const RevokeRefreshToken = extendType({
 						data: { valid: false },
 					});
 				} catch (error) {
-					console.log("🚀 ~ file: authPayload.ts ~ line 123 ~ resolve: ~ error", error);
-					return Promise.reject(new Error("RefreshAccessTokenError"));
+                    // console.log("🚀 ~ file: authPayload.ts ~ line 141 ~ resolve: ~ error", error)
+					return Promise.reject(new Error("Not Allowed"));
 				}
 			},
 		});

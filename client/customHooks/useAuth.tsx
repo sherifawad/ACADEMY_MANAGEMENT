@@ -1,4 +1,5 @@
 import Paths from "core/paths";
+import { revokeRefreshToken } from "features/authFeature/authMutations";
 import { user } from "features/userFeature/userTypes";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -14,7 +15,7 @@ function useAuth(shouldRedirect: boolean = false) {
 	const [currentUser, setCurrentUser] = useState<user>();
 	const [currentAccessToken, setCurrentAccessToken] = useState<string>(null);
 
-	const signOutHandler = (path: string = Paths.SignIn) => {
+	const signOutHandler = async (path: string = Paths.SignIn) => {
 		signOut({ redirect: shouldRedirect, callbackUrl: path }).then((data) => router.replace(data?.url));
 	};
 

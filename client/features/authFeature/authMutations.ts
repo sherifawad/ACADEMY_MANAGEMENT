@@ -30,19 +30,20 @@ export const REFRESH_TOKEN_MUTATION = `
 `;
 
 export const REVOKE_TOKEN_MUTATION = `
-    mutation RevokeToken($userId: String!, $token: String!) {
-        revokeToken(userId: $userId, token: $token) {
+    mutation RevokeToken($revokeTokenId: String!, $token: String!) {
+        revokeToken(id: $revokeTokenId, token: $token) {
             userId
         }
     }
 `;
 
-export const revokeRefreshToken = async (variables: Variables) => {
+export const revokeRefreshToken = async (variables: Variables, token = null) => {
 	const { data: refreshToken, errors } = await createAxiosService({
 		query: REVOKE_TOKEN_MUTATION,
 		variables,
+		token,
 	}).then((response) => response.data);
-	return { ...refreshToken, errors };
+	return { ...refreshToken?.refreshToken, errors };
 };
 
 export const getRefreshToken = async (variables: Variables) => {
