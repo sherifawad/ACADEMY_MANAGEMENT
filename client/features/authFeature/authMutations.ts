@@ -7,8 +7,8 @@ export const LOGIN_MUTATION = `
         userLogin(email: $email, password: $password) {
             accessTokenExpiresIn
             accessToken
-            refreshExpireIn
-            hash
+            refreshTokenExpiresIn
+            refreshToken
             user {
                 id
                 name
@@ -21,11 +21,10 @@ export const LOGIN_MUTATION = `
 `;
 
 export const REFRESH_TOKEN_MUTATION = `
-    mutation UserLogin($userId: String!, $token: String!) {
+    mutation Mutation($userId: String!, $token: String!) {
         refreshToken(userId: $userId, token: $token) {
             accessTokenExpiresIn
             accessToken
-            hash
         }
     }
 `;

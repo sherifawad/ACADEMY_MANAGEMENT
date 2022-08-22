@@ -1,8 +1,10 @@
 import { RefreshToken, User } from "@prisma/client";
+import { verify } from "jsonwebtoken";
 import { extendType, nonNull, objectType, stringArg } from "nexus";
 import { getTokenCookie } from "../../core/auth-cookies";
+import constants from "../../core/constants";
 import { encodeUser } from "../../core/jwt";
-import { createTokens } from "../../utils/auth";
+import { createTokens, JwtRefreshPayload } from "../../utils/auth";
 
 export const RefreshTokenObject = objectType({
 	name: "RefreshTokenObject",
@@ -57,11 +59,15 @@ export const GetAccessToken = extendType({
 							refresh_Token = token;
 						}
 					}
+
+					const verifiedToken = verify(token, constants.JWT_REFRESH_SECRET) as JwtRefreshPayload;
+                    // console.log("🚀 ~ file: authPayload.ts ~ line 64 ~ resolve: ~ verifiedToken", verifiedToken)
+					const { hash, userId } = verifiedToken || {};
 					const refreshToken: RefreshToken = await ctx.prisma.refreshToken.findFirstOrThrow({
 						where: {
 							userId,
 							valid: true,
-							hash: refresh_Token,
+							hash,
 						},
 					});
 					if (

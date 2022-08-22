@@ -116,7 +116,7 @@ function useDataPagination({
 				options = { ...options, data: { ...options.data, sort } };
 			}
 
-			console.log("🚀 ~ file: useDataPagination.tsx ~ line 120 ~ FirstToken", token);
+			// console.log("🚀 ~ file: useDataPagination.tsx ~ line 120 ~ FirstToken", token);
 			const { list, prevCursor, nextCursor } = await query(options, token);
 
 			if (list && list.length > 0) {

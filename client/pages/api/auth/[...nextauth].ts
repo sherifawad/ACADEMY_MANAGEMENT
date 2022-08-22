@@ -11,8 +11,13 @@ const refreshAccessToken = async (token: any) => {
 			refreshToken,
 		} = (token as any) || {};
 		const data = await getRefreshToken({ userId: id, token: refreshToken });
-		const { accessTokenExpiresIn, accessToken, hash, errors } = (data as any) || {};
+		// console.log(
+		// 	"🚀 ~ file: [...nextauth].ts ~ line 14 ~ refreshAccessToken ~ data",
+		// 	JSON.stringify(data, null, 2)
+		// );
+		const { accessTokenExpiresIn, accessToken, errors } = (data as any) || {};
 		if (errors) {
+			console.log("🚀 ~ file: [...nextauth].ts ~ line 16 ~ refreshAccessToken ~ errors", errors);
 			return {
 				...token,
 				error: "RefreshAccessTokenError",
@@ -22,7 +27,6 @@ const refreshAccessToken = async (token: any) => {
 			...token,
 			accessToken,
 			accessTokenExpires: accessTokenExpiresIn,
-			refreshToken: hash ?? refreshToken,
 		};
 	} catch (error) {
 		return {
@@ -61,7 +65,9 @@ export const authOptions: NextAuthOptions = {
 	},
 	callbacks: {
 		async jwt({ token, user }) {
-			const { accessTokenExpiresIn, accessToken, refreshExpireIn, hash, ...rest } = (user as any) || {};
+			// console.log("🚀 ~ file: [...nextauth].ts ~ line 64 ~ jwt ~ user", JSON.stringify(user, null, 2));
+			const { accessTokenExpiresIn, accessToken, refreshTokenExpiresIn, refreshToken, ...rest } =
+				(user as any) || {};
 			// Initial sign in
 			if (user) {
 				return {
@@ -69,8 +75,8 @@ export const authOptions: NextAuthOptions = {
 					...rest,
 					accessToken: accessToken,
 					accessTokenExpires: accessTokenExpiresIn,
-					refreshToken: hash,
-					refreshExpireIn,
+					refreshToken,
+					refreshTokenExpiresIn,
 				};
 			}
 			// Return previous token if the access token has not expired yet
@@ -78,8 +84,10 @@ export const authOptions: NextAuthOptions = {
 			// add 10 seconds from currentTime
 			const afterNow = new Date().getTime() + 10 * 1000;
 			if (afterNow < Number(token.accessTokenExpires) * 1000) {
+				// console.log("✅ValidToken", new Date().toLocaleTimeString());
 				return token;
 			}
+			// console.log("❌InValidToken", new Date().toLocaleTimeString());
 
 			// Access token has expired, try to update it
 			return await refreshAccessToken(token);
