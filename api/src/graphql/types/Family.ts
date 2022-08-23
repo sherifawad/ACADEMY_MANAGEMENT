@@ -14,9 +14,12 @@ export const Family = objectType({
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("users", {
 			type: User,
-			async resolve(_parent, _args, ctx) {
+			async resolve(_parent, _args, { user, prisma }) {
 				try {
-					return await ctx.prisma.family
+					const { role, id } = user || {};
+					if (!user || (role !== Role.ADMIN && role !== Role.USER && _parent.id !== id))
+						throw new Error("Not Allowed");
+					return await prisma.family
 						.findUniqueOrThrow({
 							where: {
 								id: _parent.id,

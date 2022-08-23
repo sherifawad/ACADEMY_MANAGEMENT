@@ -52,9 +52,9 @@ model Contact {
     id             String  @id
     email          String? @unique
     emailConfirmed Boolean @default(false)
-    phone          String  @unique
+    phone          String? @unique
     parentsPhones  String?
-    address        String
+    address        String?
     note           String?
 
     user User @relation(fields: [id], references: [id])

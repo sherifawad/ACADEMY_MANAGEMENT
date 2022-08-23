@@ -16,9 +16,11 @@ export const Grade = objectType({
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("groups", {
 			type: Group,
-			async resolve(_parent, _args, ctx) {
+			async resolve(_parent, _args, { user, prisma }) {
 				try {
-					return await ctx.prisma.grade
+					const { role } = user || {};
+					if (!user || (role !== Role.ADMIN && role !== Role.USER)) throw new Error("Not Allowed");
+					return await prisma.grade
 						.findUniqueOrThrow({
 							where: {
 								id: _parent.id,

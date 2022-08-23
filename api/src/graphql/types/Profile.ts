@@ -23,7 +23,7 @@ export const Profile = objectType({
 						!user ||
 						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
 					) {
-						return null;
+						throw new Error("Not Allowed");
 					}
 					const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 					let orderList: { [x: string]: string }[];
@@ -57,13 +57,13 @@ export const Profile = objectType({
 		});
 		t.field("user", {
 			type: User,
-			async resolve(_parent, _args, {user, prisma}) {
+			async resolve(_parent, _args, { user, prisma }) {
 				try {
 					if (
 						!user ||
 						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
 					) {
-						return null;
+						throw new Error("Not Allowed");
 					}
 					return await prisma.profile
 						.findUniqueOrThrow({
@@ -86,7 +86,7 @@ export const Profile = objectType({
 						!user ||
 						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
 					) {
-						return null;
+						throw new Error("Not Allowed");
 					}
 					const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 					let orderList: { [x: string]: string }[];
@@ -268,8 +268,7 @@ export const UpdateProfileMutation = extendType({
 			},
 			resolve: async (_parent, { id, bio }, { prisma, user }) => {
 				try {
-
-                    //TODO: role recheck
+					//TODO: role recheck
 					if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
 
 					const updateProfile = {
@@ -299,7 +298,7 @@ export const DeleteProfileMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, user }) {
 				try {
-                    //TODO: role recheck
+					//TODO: role recheck
 					if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
 
 					return await prisma.profile.delete({

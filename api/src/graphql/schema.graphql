@@ -148,7 +148,7 @@ type Mutation {
   refreshToken(token: String!, userId: String!): AuthPayload
   revokeToken(id: String!, token: String!): AuthPayload
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
-  updateContact(address: String, email: String, emailConfirmed: Boolean, id: String!, note: String, parentsPhones: String, phone: String): Contact!
+  updateContact(address: String, contactId: String!, email: String, emailConfirmed: Boolean, note: String, parentsPhones: String, phone: String): Contact!
   updateExam(date: DateTime, id: String!, note: String, score: Float): Exam!
   updateFamily(familyName: String!, id: String!): Family!
   updateGrade(id: String!, isActive: Boolean!, name: String!): Grade!
@@ -157,7 +157,7 @@ type Mutation {
   updateMultipleExam(date: DateTime, dateCondition: DateTime!, note: String, noteCondition: DateTime, profileIds: [String!]!, score: Float, scoreCondition: Float): ExamCUResponse!
   updateProfile(bio: String, id: String!): Profile!
   userLogin(email: String!, password: String!): AuthPayload!
-  userRegister(address: String!, avatar: String, email: String, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String!, role: Role!): User!
+  userRegister(address: String, avatar: String, email: String!, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, role: Role!): User!
   userUpdate(address: String, avatar: String, email: String, familyId: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, role: Role): User!
 }
 
@@ -201,7 +201,7 @@ type Query {
   AttendanceInDate(date: DateTime!, id: String!): Attendance!
   Attendances(skip: Int, studentId: String!, take: Int): [Attendance]
   AttendancesCount(studentId: String!): AttendancesCount
-  Contact(id: String!): Contact!
+  Contact(contactId: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
   FilteredUsers(data: PaginationInputType, family_Id: String, isActive: Boolean, user_role: [Role]): UsersResponse

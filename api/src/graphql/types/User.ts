@@ -570,6 +570,9 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 	try {
 		const hashedPassword = await hashPassword(userPassword);
 		const { name, avatar, groupId, role, familyId, familyName, ...rest } = userParam;
+		if (role === Role.Student) {
+			if (!familyId && !familyName) throw new Error("family name or id is null");
+		}
 		const profile = groupId
 			? {
 					create: {
@@ -582,17 +585,17 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 					},
 			  }
 			: undefined;
-		const family = familyName
+		const family = familyId
+			? {
+					connect: {
+						id: familyId,
+					},
+			  }
+			: familyName
 			? {
 					create: {
 						createdBy: ctx.user?.id || "",
 						familyName,
-					},
-			  }
-			: familyId
-			? {
-					connect: {
-						id: familyId,
 					},
 			  }
 			: undefined;
@@ -623,6 +626,7 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 			},
 		});
 	} catch (error) {
+		console.log("🚀 ~ file: User.ts ~ line 629 ~ CreateUser ~ error", error);
 		return Promise.reject("error");
 	}
 }
@@ -725,20 +729,51 @@ export const userUpdate = extendType({
 				{ id, name, email, password, address, parentsPhones, phone, groupId, avatar, role, familyId },
 				ctx
 			) => {
-				const studentParam = {
-					id,
-					email,
-					address,
-					phone,
-					parentsPhones: parentsPhones ?? phone,
-					name: name ?? email,
-					groupId: groupId,
-					avatar,
-					role,
-					familyId,
-				};
+				try {
+					const { user, prisma } = ctx || {};
+					if (!user) throw new Error("Not Allowed");
+					const userQuery = await prisma.user.findUniqueOrThrow({
+						where: { id },
+					});
+					const sameUser = user.id === id || user.familyId === userQuery.familyId;
+					switch (role) {
+						case Role.ADMIN:
+							if (userQuery.role === Role.ADMIN && !sameUser) {
+								throw new Error("Not Allowed");
+							}
+							break;
+						case Role.USER:
+							if (userQuery.role === Role.ADMIN) {
+								throw new Error("Not Allowed");
+							}
+							if (userQuery.role === Role.USER && !sameUser) {
+								throw new Error("Not Allowed");
+							}
+							break;
+						case Role.Student:
+							throw new Error("Not Allowed");
 
-				return await UpdateUser(ctx, studentParam, password);
+						default:
+							throw new Error("Not Allowed");
+					}
+
+					const studentParam = {
+						id,
+						email,
+						address,
+						phone,
+						parentsPhones: parentsPhones ?? phone,
+						name: name ?? email,
+						groupId: groupId,
+						avatar,
+						role,
+						familyId,
+					};
+
+					return await UpdateUser(ctx, studentParam, password);
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -753,11 +788,11 @@ export const userRegister = extendType({
 			args: {
 				name: nonNull(stringArg()),
 				role: nonNull(arg({ type: "Role" })),
-				email: nullable(stringArg()),
+				email: nonNull(stringArg()),
 				password: nonNull(stringArg()),
-				address: nonNull(stringArg()),
+				address: nullable(stringArg()),
 				parentsPhones: nullable(stringArg()),
-				phone: nonNull(stringArg()),
+				phone: nullable(stringArg()),
 				avatar: nullable(stringArg()),
 				groupId: nullable(stringArg()),
 				familyName: nullable(stringArg()),
@@ -780,20 +815,38 @@ export const userRegister = extendType({
 				},
 				ctx
 			) => {
-				const userParam = {
-					avatar,
-					email,
-					address,
-					phone,
-					parentsPhones: parentsPhones ?? phone,
-					name: name ?? email,
-					groupId,
-					role,
-					familyName,
-					familyId,
-				};
+				try {
+					const { user } = ctx || {};
+					if (!user) throw new Error("Not Allowed");
+					switch (user.role) {
+						case Role.Student:
+							throw new Error("Not Allowed");
+						case Role.USER:
+							if (role !== Role.Student) throw new Error("Not Allowed");
+							break;
+						case Role.ADMIN:
+							break;
 
-				return await CreateUser(ctx, userParam, password);
+						default:
+							throw new Error("Not Allowed");
+					}
+					const userParam = {
+						avatar,
+						email,
+						address,
+						phone,
+						parentsPhones,
+						name: name ?? email,
+						groupId,
+						role,
+						familyName,
+						familyId,
+					};
+
+					return await CreateUser(ctx, userParam, password);
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},

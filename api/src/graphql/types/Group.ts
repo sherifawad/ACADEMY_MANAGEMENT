@@ -37,12 +37,14 @@ export const Group = objectType({
 		t.field("profiles", {
 			type: ProfilesResponse,
 			args: { data: PaginationInputType },
-			async resolve(_parent, args, ctx) {
+			async resolve(_parent, args, { user, prisma }) {
 				try {
+					const { role } = user || {};
+					if (!user || (role !== Role.ADMIN && role !== Role.USER)) throw new Error("Not Allowed");
 					const { data } = args;
 
 					if (data) {
-						const query = await ctx.prisma.group
+						const query = await prisma.group
 							.findUniqueOrThrow({
 								where: {
 									id: _parent.id,
@@ -55,7 +57,7 @@ export const Group = objectType({
 						if (!data?.myCursor) {
 							const {
 								_count: { profiles },
-							} = await ctx.prisma.group.findUniqueOrThrow({
+							} = await prisma.group.findUniqueOrThrow({
 								where: {
 									id: _parent.id,
 								},
@@ -67,7 +69,7 @@ export const Group = objectType({
 						}
 						return result;
 					}
-					return await ctx.prisma.group
+					return await prisma.group
 						.findUniqueOrThrow({
 							where: {
 								id: _parent.id,
