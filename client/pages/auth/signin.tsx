@@ -12,7 +12,7 @@ const SignIn: NextPage = (props): JSX.Element => {
 
 	useEffect(() => {
 		if (user?.id && user?.role) {
-			router.push(`/${Paths.STUDENT}`);
+			router.push(`${Paths.STUDENT}`);
 		}
 	}, [user?.id, user?.role]);
 

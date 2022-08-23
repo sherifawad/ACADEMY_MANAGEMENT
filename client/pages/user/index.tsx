@@ -146,7 +146,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 		}
 		const { user, accessToken } = session;
 		const { role } = (user as user) || {};
-		const variables = role === "ADMIN" ? { role: ["USER", "ADMIN"] } : { role: ["USER"] };
+		const variables = role === "ADMIN" ? { userRole: ["USER", "ADMIN"] } : { userRole: ["USER"] };
 		const { list, rest } = await usersByRolesListQuery(variables, accessToken);
 		let flattenedList = [];
 		if (list?.length > 0) {

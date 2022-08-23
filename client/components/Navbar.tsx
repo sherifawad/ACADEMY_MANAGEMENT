@@ -30,9 +30,9 @@ const Navbar = () => {
 
 	const handleSignOut = async (e) => {
 		e.preventDefault();
-		signOutHandler();
+		router.push(`${Paths.Logout}`);
+		// signOutHandler();
 		// const data = await signOut({ redirect: false, callbackUrl: "/" });
-		// router.push(data?.url);
 		// if (mutation.isLoading) return;
 		// await mutation.mutateAsync();
 	};

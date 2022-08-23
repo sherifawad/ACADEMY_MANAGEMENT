@@ -2,8 +2,8 @@ import { createAxiosService } from "core/utils";
 import { userVariables } from "./userTypes";
 
 export const GET_USERS_BY_ROLES = `
-    query FilteredUsers($role: [Role]) {
-        FilteredUsers(role: $role) {
+    query FilteredUsers($userRole: [Role]) {
+        FilteredUsers(user_role: $userRole) {
             list {
                 id
                 name
@@ -57,10 +57,10 @@ export const GET_STUDENT_DETAILS = `
                     score
                     date
                 }
-                family{
-                    id
-                    familyName
-                }
+            }
+            family {
+                familyName
+                id
             }
         }
     }
@@ -145,7 +145,7 @@ export const GET_STUDENTS_LIST = `
     }
 `;
 
-export const usersByRolesListQuery = async (variables: { role: string[] }, token = null) => {
+export const usersByRolesListQuery = async (variables: { userRole: string[] }, token = null) => {
 	const {
 		data: {
 			data: { FilteredUsers },
