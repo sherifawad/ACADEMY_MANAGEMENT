@@ -86,6 +86,16 @@ type ExamsResponse {
   totalCount: ExamsCount
 }
 
+type Family {
+  createdAt: DateTime
+  createdBy: String
+  familyName: String
+  id: String!
+  updatedAt: DateTime
+  updatedBy: String
+  users: [User]
+}
+
 type Grade {
   createdAt: DateTime
   createdBy: String
@@ -122,6 +132,7 @@ type Mutation {
   createAttendance(endAt: DateTime, note: String, profileId: String!, startAt: DateTime!): Attendance!
   createContact(address: String!, email: String, note: String, parentsPhones: String, phone: String!): Contact!
   createExam(date: DateTime!, note: String, profileId: String!, score: Float!): Exam!
+  createFamily(familyName: String!): Family!
   createGrade(isActive: Boolean!, name: String!): Grade!
   createGroup(endAt: DateTime, gradeId: String, isActive: Boolean, name: String!, startAt: DateTime): Group!
   createMultipleAttendance(endAt: DateTime, note: String, profileIds: [String!]!, startAt: DateTime!): AttendancesCUResponse
@@ -130,6 +141,7 @@ type Mutation {
   deleteAttendance(id: String!): Attendance!
   deleteContact(id: String!): Contact!
   deleteExam(id: String!): Exam!
+  deleteFamily(id: String!): Family!
   deleteGrade(id: String!): Grade!
   deleteGroup(id: String!): Group!
   deleteProfile(id: String!): Profile!
@@ -138,14 +150,15 @@ type Mutation {
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateContact(address: String, email: String, emailConfirmed: Boolean, id: String!, note: String, parentsPhones: String, phone: String): Contact!
   updateExam(date: DateTime, id: String!, note: String, score: Float): Exam!
+  updateFamily(familyName: String!, id: String!): Family!
   updateGrade(id: String!, isActive: Boolean!, name: String!): Grade!
   updateGroup(endAt: DateTime, gradeId: String, id: String!, isActive: Boolean, name: String, startAt: DateTime): Group!
   updateMultipleAttendance(endAt: DateTime, endAtCondition: DateTime, note: String, noteCondition: String, profileIds: [String!]!, startAt: DateTime, startAtCondition: DateTime!): AttendancesCUResponse!
   updateMultipleExam(date: DateTime, dateCondition: DateTime!, note: String, noteCondition: DateTime, profileIds: [String!]!, score: Float, scoreCondition: Float): ExamCUResponse!
   updateProfile(bio: String, id: String!): Profile!
   userLogin(email: String!, password: String!): AuthPayload!
-  userRegister(address: String!, avatar: String, email: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String!, role: Role!): User!
-  userUpdate(address: String, avatar: String, email: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, role: Role): User!
+  userRegister(address: String!, avatar: String, email: String, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String!, role: Role!): User!
+  userUpdate(address: String, avatar: String, email: String, familyId: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, role: Role): User!
 }
 
 type PageCursor {
@@ -191,7 +204,7 @@ type Query {
   Contact(id: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
-  FilteredUsers(data: PaginationInputType, isActive: Boolean, role: [Role]): UsersResponse
+  FilteredUsers(data: PaginationInputType, family_Id: String, isActive: Boolean, user_role: [Role]): UsersResponse
   Grade(id: String!): Grade!
   Grades: [Grade]!
   Group(id: String!): Group!
@@ -201,6 +214,7 @@ type Query {
   SExams(data: PaginationInputType, studentId: String!): ExamsResponse
   User(id: String!, take: Int): User!
   Users: [User]
+  family(id: String!): Family!
   studentAttendances(data: PaginationInputType, studentId: String!): AttendanceResponse
   studentsGroup(data: PaginationInputType, groupId: String!, isActive: Boolean, role: Role): StudentsResponse
 }
@@ -233,6 +247,7 @@ type User {
   avatar: String
   contact: Contact
   createdAt: DateTime
+  family: Family
   id: String
   isActive: Boolean
   name: String
@@ -247,6 +262,7 @@ type UsersCount {
 
 input UsersFilterInputType {
   StudentId: String
+  familyId: String
   isActive: Boolean
   role: Role
 }

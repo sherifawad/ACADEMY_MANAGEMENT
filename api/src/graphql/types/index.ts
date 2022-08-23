@@ -14,6 +14,7 @@ export * from "./Profile";
 export * from "./UserPassword";
 export * from "./Attendance";
 export * from "./Contact";
+export * from "./Family";
 
 export const Role = enumType({
 	name: "Role",
