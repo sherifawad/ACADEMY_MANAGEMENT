@@ -4,10 +4,12 @@ import useModel from "customHooks/useModel";
 import useReactTable from "customHooks/useReactTable";
 import { format } from "date-fns";
 import { studentsListQuery } from "features/userFeature/usersQueries";
+import { user } from "features/userFeature/userTypes";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { getSession } from "next-auth/react";
 import dynamic from "next/dynamic";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -121,6 +123,11 @@ function index({ flattenedList }) {
 	});
 	return (
 		<div className="container">
+			<Head>
+				<title>Students</title>
+				<meta name="description" content="Students List Page" />
+				<link rel="icon" href="/favicon.ico" />
+			</Head>
 			<Model title="Student">
 				<AddStudent onProceed={onProceed} onClose={modelProps.onClose} />
 			</Model>
@@ -142,10 +149,13 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 			};
 		}
 
-		const { accessToken } = session;
+		const { accessToken, user } = session;
+
+		const { family } = (user as user) || {};
 
 		const variables = {
-			role: ["Student"],
+			userRole: ["Student"],
+			familyId: family.id,
 			attendancesTake2: 1,
 			take: 1,
 			orderByList: {
@@ -159,6 +169,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 			},
 		};
 		const { list, rest } = await studentsListQuery(variables, accessToken);
+
 		let flattenedList = [];
 		if (list?.length > 0) {
 			flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);

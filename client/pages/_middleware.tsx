@@ -27,7 +27,7 @@ export default withAuth(
 						return false;
 					}
 					case "Student": {
-						if (!name.startsWith("/student")) return false;
+						if (name.startsWith("/student")) return true;
 						if (params?.studentId === id) return true;
 						return false;
 					}

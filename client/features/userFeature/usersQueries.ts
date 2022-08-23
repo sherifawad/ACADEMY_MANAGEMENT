@@ -57,6 +57,10 @@ export const GET_STUDENT_DETAILS = `
                     score
                     date
                 }
+                family{
+                    id
+                    familyName
+                }
             }
         }
     }
@@ -94,8 +98,8 @@ export const GET_USERS_IDS = `
     }
 `;
 export const GET_STUDENTS_paginated_LIST = `
-    query FilteredUsers($role: [Role], $data: PaginationInputType, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
-        FilteredUsers(role: $role, data: $data) {
+    query FilteredUsers( $data: PaginationInputType, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject, $userRole: [Role], $familyId: String) {
+        FilteredUsers( data: $data, user_role: $userRole, family_Id: $familyId) {
             totalCount {
                 _count
             }
@@ -117,11 +121,11 @@ export const GET_STUDENTS_paginated_LIST = `
                 }
             }
         }
-    }
+}
 `;
 export const GET_STUDENTS_LIST = `
-    query FilteredUsers($role: [Role], $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
-        FilteredUsers(role: $role) {
+    query FilteredUsers($take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject, $familyId: String, $userRole: [Role]) {
+        FilteredUsers(family_Id: $familyId, user_role: $userRole) {
             list {
                 id
                 name

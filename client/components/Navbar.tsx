@@ -65,11 +65,10 @@ const Navbar = () => {
 						<a className="menu-line">Users</a>
 					</Link>
 				)}
-				{!isStudent && (
-					<Link href="/student">
-						<a className="menu-line">Students</a>
-					</Link>
-				)}
+				<Link href="/student">
+					<a className="menu-line">Students</a>
+				</Link>
+
 				{!isStudent && (
 					<Link href="/grade">
 						<a className="menu-line">Grade</a>

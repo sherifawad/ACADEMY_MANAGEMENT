@@ -12,7 +12,7 @@ const SignIn: NextPage = (props): JSX.Element => {
 
 	useEffect(() => {
 		if (user?.id && user?.role) {
-			router.replace(`/${user?.role?.toLocaleLowerCase()}/${user?.id}`);
+			router.push(`/${Paths.STUDENT}`);
 		}
 	}, [user?.id, user?.role]);
 
@@ -26,7 +26,7 @@ const SignIn: NextPage = (props): JSX.Element => {
 			email: userInfo.email,
 			password: userInfo.password,
 			redirect: false,
-            callbackUrl: Paths.SignIn
+			callbackUrl: Paths.SignIn,
 		});
 	};
 	return (

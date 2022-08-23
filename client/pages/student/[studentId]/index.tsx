@@ -6,20 +6,26 @@ import { studentDetailsQuery, studentsIdsQuery } from "features/userFeature/user
 import { user } from "features/userFeature/userTypes";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
+import Head from "next/head";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import { useMemo } from "react";
 
 function Student({ user }) {
-	const { id, profile } = user || {};
+	const { id, profile, name } = user || {};
 	const { attendances, exams, bio, group } = profile || {};
 
 	return (
 		<div className="container w-full">
+			<Head>
+				<title>{name}</title>
+				<meta name="description" content="Students Profile Page" />
+				<link rel="icon" href="/favicon.ico" />
+			</Head>
 			<div className="w-full">
 				<UserCard {...user} bio={bio} group={group} />
 				<div className="flex flex-wrap md:flex-nowrap w-full gap-4 items-start justify-between pt-8">
-					<AttendancesCard attendances={attendances} id={id} />
-					<ExamsCard exams={exams} id={id} />
+					{attendances && <AttendancesCard attendances={attendances} id={id} />}
+					{exams && <ExamsCard exams={exams} id={id} />}
 				</div>
 			</div>
 		</div>

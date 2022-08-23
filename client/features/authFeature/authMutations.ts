@@ -15,6 +15,9 @@ export const LOGIN_MUTATION = `
                 isActive
                 avatar
                 role
+                family {
+                    id
+                }            
             }
         }
     }

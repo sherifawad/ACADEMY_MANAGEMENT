@@ -8,6 +8,7 @@ export interface user {
 	contact?: any | null;
 	isActive?: boolean | null;
 	profile?: any | null;
+	family?: any | null;
 }
 
 export interface userInitialProperties {
