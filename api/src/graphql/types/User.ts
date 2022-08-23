@@ -515,12 +515,19 @@ export async function ValidateUserCredentials(
 export async function UpdateUser(ctx: Context, studentParam: any, userPassword?: string | null | undefined) {
 	try {
 		const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
-		const { name, id, groupId, role, avatar, familyId, ...rest } = studentParam;
+		const { name, id, groupId, role, avatar, familyName, ...rest } = studentParam;
 		const password = hashedPassword
 			? {
 					update: {
 						password: hashedPassword,
 						forceChange: false,
+					},
+			  }
+			: undefined;
+		const family = familyName
+			? {
+					update: {
+						familyName,
 					},
 			  }
 			: undefined;
@@ -550,15 +557,16 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 				name: name ? name : undefined,
 				role: role ? role : undefined,
 				avatar: avatar ? avatar : undefined,
-				familyId: familyId ? familyId : undefined,
 				password,
 				contact,
 				profile,
+				family,
 			},
 			include: {
 				password: hashedPassword ? true : false,
 				contact: allIsNull ? false : true,
 				profile: groupId ? true : false,
+				family: familyName ? true : false,
 			},
 		});
 	} catch (error) {
@@ -722,11 +730,23 @@ export const userUpdate = extendType({
 				parentsPhones: stringArg(),
 				phone: stringArg(),
 				groupId: stringArg(),
-				familyId: stringArg(),
+				familyName: stringArg(),
 			},
 			resolve: async (
 				_parent,
-				{ id, name, email, password, address, parentsPhones, phone, groupId, avatar, role, familyId },
+				{
+					id,
+					name,
+					email,
+					password,
+					address,
+					parentsPhones,
+					phone,
+					groupId,
+					avatar,
+					role,
+					familyName,
+				},
 				ctx
 			) => {
 				try {
@@ -767,7 +787,7 @@ export const userUpdate = extendType({
 						groupId: groupId,
 						avatar,
 						role,
-						familyId,
+						familyName,
 					};
 
 					return await UpdateUser(ctx, studentParam, password);

@@ -3,16 +3,17 @@ import { useMutation } from "react-query";
 import { userVariables } from "./userTypes";
 
 export const CREATE_USER_MUTATION = `
-    mutation UserRegister($name: String!, $role: Role!, $password: String!, $address: String!, $phone: String!, $email: String, $parentsPhones: String, $avatar: String, $groupId: String) {
-        userRegister(name: $name, role: $role, password: $password, address: $address, phone: $phone, email: $email, parentsPhones: $parentsPhones, avatar: $avatar, groupId: $groupId) {
+    mutation UserRegister($name: String!, $role: Role!, $email: String!, $password: String!, $address: String, $parentsPhones: String, $phone: String, $avatar: String, $groupId: String, $familyName: String, $familyId: String) {
+        userRegister(name: $name, role: $role, email: $email, password: $password, address: $address, parentsPhones: $parentsPhones, phone: $phone, avatar: $avatar, groupId: $groupId, familyName: $familyName, familyId: $familyId) {
             id
         }
+    }
 }
 `;
 
 export const UPDATE_USER_MUTATION = `
-    mutation UserUpdate($userUpdateId: String!, $avatar: String, $role: Role, $name: String, $email: String, $password: String, $address: String, $parentsPhones: String, $phone: String, $groupId: String) {
-        userUpdate(id: $userUpdateId, avatar: $avatar, role: $role, name: $name, email: $email, password: $password, address: $address, parentsPhones: $parentsPhones, phone: $phone, groupId: $groupId) {
+    mutation UserUpdate($userUpdateId: String!, $avatar: String, $role: Role, $name: String, $email: String, $password: String, $address: String, $parentsPhones: String, $phone: String, $groupId: String, $familyName: String) {
+        userUpdate(id: $userUpdateId, avatar: $avatar, role: $role, name: $name, email: $email, password: $password, address: $address, parentsPhones: $parentsPhones, phone: $phone, groupId: $groupId, familyName: $familyName,) {
             id
         }
     }

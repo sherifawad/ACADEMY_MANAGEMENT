@@ -158,7 +158,7 @@ type Mutation {
   updateProfile(bio: String, id: String!): Profile!
   userLogin(email: String!, password: String!): AuthPayload!
   userRegister(address: String, avatar: String, email: String!, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, role: Role!): User!
-  userUpdate(address: String, avatar: String, email: String, familyId: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, role: Role): User!
+  userUpdate(address: String, avatar: String, email: String, familyName: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, role: Role): User!
 }
 
 type PageCursor {

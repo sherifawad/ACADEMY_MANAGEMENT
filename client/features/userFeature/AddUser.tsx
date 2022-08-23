@@ -9,7 +9,8 @@ import { userInitialProperties } from "./userTypes";
 function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }: userInitialProperties) {
 	const { accessToken } = useAuth();
 
-	const { profile, isActive, contact, avatar, name, id, password, groupId, role } = initialUser || {};
+	const { profile, isActive, contact, avatar, name, id, password, groupId, role, family } =
+		initialUser || {};
 	const { email, phone, parentsPhones, address } = contact || {};
 
 	const mainRef = useRef();
@@ -27,6 +28,8 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 		parentsPhones,
 		address,
 		role,
+		familyId: family?.id ?? null,
+		familyName: family?.familyName ?? null,
 		error: "",
 	});
 
@@ -41,8 +44,10 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 			isActive,
 			avatar,
 			role,
+			familyId: family?.id ?? null,
+			familyName: family?.familyName ?? null,
 		});
-	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar, role]);
+	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar, role, family]);
 
 	const createMutation = createUserMutation({ ...formState, groupId, role }, accessToken);
 	const { error, ...rest } = formState;
@@ -102,6 +107,21 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 					})
 				}
 			/>
+			{isStudent && (
+				<LabelInput
+					name={"familyName"}
+					label={"Your Family Name"}
+					placeholder={"Ibn Nas"}
+					value={formState?.familyName}
+					onChange={(e) =>
+						setFormState({
+							...formState,
+							error: "",
+							familyName: e.target.value,
+						})
+					}
+				/>
+			)}
 			<LabelInput
 				name={"phone"}
 				label={"Your phone"}
