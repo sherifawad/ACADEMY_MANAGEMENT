@@ -6,7 +6,6 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 
-
 const refreshAccessToken = async (token: any) => {
 	try {
 		const {
@@ -57,10 +56,10 @@ export const authOptions: NextAuthOptions = {
 				return data;
 			},
 		}),
-        GitHubProvider({
-            clientId: process.env.GITHUB_ID,
-            clientSecret: process.env.GITHUB_SECRET
-        }),
+		GitHubProvider({
+			clientId: process.env.GITHUB_ID,
+			clientSecret: process.env.GITHUB_SECRET,
+		}),
 	],
 	secret: process.env.NEXTAUTH_SECRET,
 
@@ -72,8 +71,9 @@ export const authOptions: NextAuthOptions = {
 	},
 	callbacks: {
 		async jwt({ token, user }) {
-			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ token", token)
-			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ user", user)
+			//TODO: pass account data to backend if no user connected add onetime hash then connect else get connected user accessToken
+			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ token", token);
+			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ user", user);
 			// console.log("🚀 ~ file: [...nextauth].ts ~ line 64 ~ jwt ~ user", JSON.stringify(user, null, 2));
 			const { accessTokenExpiresIn, accessToken, refreshTokenExpiresIn, refreshToken, ...rest } =
 				(user as any) || {};
@@ -102,7 +102,7 @@ export const authOptions: NextAuthOptions = {
 			return await refreshAccessToken(token);
 		},
 		async session({ session, token, user }) {
-			console.log("🚀 ~ file: [...nextauth].ts ~ line 104 ~ session ~ session", session)
+			console.log("🚀 ~ file: [...nextauth].ts ~ line 104 ~ session ~ session", session);
 			// Send properties to the client, like an access_token from a provider.
 			session.user = token.user;
 			session.accessToken = token.accessToken || null;
