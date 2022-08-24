@@ -4,6 +4,8 @@ export enum Paths {
 	Logout = "/api/auth/signout?csrf=true",
 	STUDENT = "/student",
 	USER = "/user",
+	GRADE = "/grade",
+	GROUP = "/group",
 	Home = "/",
 	SignIn = "/auth/signin",
 }

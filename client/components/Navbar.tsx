@@ -57,25 +57,27 @@ const Navbar = () => {
 					menuOpen ? "flex flex-col " : "hidden"
 				} md:flex md:flex-row md:items-center md:justify-center md:row-start-1 md:col-start-2 md:col-end-3  col-start-1 col-span-3 row-start-2 items-start justify-center content-center space-x-8`}
 			>
-				<Link href="#">
+				<Link href={`${Paths.Home}`}>
 					<a className="md:mx-0 mx-8 menu-line">Home</a>
 				</Link>
 				{!isStudent && (
-					<Link href="/user">
+					<Link href={`${Paths.USER}`}>
 						<a className="menu-line">Users</a>
 					</Link>
 				)}
-				<Link href="/student">
-					<a className="menu-line">Students</a>
-				</Link>
+				{isAuthenticated && (
+					<Link href={`${Paths.STUDENT}`}>
+						<a className="menu-line">Students</a>
+					</Link>
+				)}
 
 				{!isStudent && (
-					<Link href="/grade">
+					<Link href={`${Paths.GRADE}`}>
 						<a className="menu-line">Grade</a>
 					</Link>
 				)}
 				{!isStudent && (
-					<Link href="/group">
+					<Link href={`${Paths.GROUP}`}>
 						<a className="menu-line">Group</a>
 					</Link>
 				)}
