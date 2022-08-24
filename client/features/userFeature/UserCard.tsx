@@ -27,6 +27,7 @@ function UserCard({
 	avatar,
 	isStudent = true,
 	role,
+    family
 }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 	const AddUser = dynamic(() => import("./AddUser"), {
@@ -64,6 +65,7 @@ function UserCard({
 										isActive,
 										avatar,
 										role,
+                                        family
 									}}
 								/>
 							</Model>

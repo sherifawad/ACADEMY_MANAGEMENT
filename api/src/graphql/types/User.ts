@@ -288,10 +288,13 @@ export const FilteredUsersQuery = extendType({
 
 					if (
 						!user ||
-						(user.role !== Role.ADMIN && user.role !== Role.USER) ||
-						(role === Role.Student && familyId !== family_Id)
-					)
+						(role === Role.Student &&
+							familyId !== family_Id &&
+							user.role !== Role.ADMIN &&
+							user.role !== Role.USER)
+					) {
 						throw new Error("Not Allowed");
+					}
 					// return await prisma.user.findMany({
 					// 	where: {
 					// 		role: args.data?.role,
@@ -318,7 +321,7 @@ export const FilteredUsersQuery = extendType({
 								}
 							}
 						});
-						where = { ...where, OR: ORConditions };
+						if (ORConditions && ORConditions.length > 0) where = { ...where, OR: ORConditions };
 					}
 					if (family_Id) {
 						where = { ...where, familyId: family_Id };
@@ -515,7 +518,7 @@ export async function ValidateUserCredentials(
 export async function UpdateUser(ctx: Context, studentParam: any, userPassword?: string | null | undefined) {
 	try {
 		const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
-		const { name, id, groupId, role, avatar, familyName, ...rest } = studentParam;
+		const { name, id, groupId, role, avatar, familyName, familyId, ...rest } = studentParam;
 		const password = hashedPassword
 			? {
 					update: {
@@ -526,8 +529,15 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 			: undefined;
 		const family = familyName
 			? {
-					update: {
-						familyName,
+					upsert: {
+						create: {
+							createdBy: ctx.user?.id || "",
+							familyName: familyName,
+						},
+						update: {
+							updatedBy: ctx.user?.id || "",
+							familyName: familyName,
+						},
 					},
 			  }
 			: undefined;
@@ -551,23 +561,25 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 					},
 			  }
 			: undefined;
+		const data = {
+			name: name ? name : undefined,
+			role: role ? role : undefined,
+			avatar: avatar ? avatar : undefined,
+			password,
+			contact,
+			profile,
+			family,
+		};
+		const include = {
+			password: hashedPassword ? true : false,
+			contact: allIsNull ? false : true,
+			profile: groupId ? true : false,
+			family: family ? true : false,
+		};
 		return await ctx.prisma.user.update({
 			where: { id },
-			data: {
-				name: name ? name : undefined,
-				role: role ? role : undefined,
-				avatar: avatar ? avatar : undefined,
-				password,
-				contact,
-				profile,
-				family,
-			},
-			include: {
-				password: hashedPassword ? true : false,
-				contact: allIsNull ? false : true,
-				profile: groupId ? true : false,
-				family: familyName ? true : false,
-			},
+			data,
+			include,
 		});
 	} catch (error) {
 		return Promise.reject("error");
@@ -677,8 +689,8 @@ export const UserByIdQuery = extendType({
 			args: { id: nonNull(stringArg()), take: nullable(intArg()) },
 			resolve: async (_parent, { id }, { user, prisma }) => {
 				try {
-					if (!user) return null;
-					const userQuery = await prisma.user.findUniqueOrThrow({
+					if (!user) throw new Error("Not Allowed");
+					const userQuery: any = await prisma.user.findUniqueOrThrow({
 						where: { id },
 					});
 					const sameUser = user.id === id || user.familyId === userQuery.familyId;
@@ -756,13 +768,15 @@ export const userUpdate = extendType({
 						where: { id },
 					});
 					const sameUser = user.id === id || user.familyId === userQuery.familyId;
-					switch (role) {
+					switch (user.role) {
 						case Role.ADMIN:
 							if (userQuery.role === Role.ADMIN && !sameUser) {
 								throw new Error("Not Allowed");
 							}
 							break;
 						case Role.USER:
+							if (role !== Role.Student) throw new Error("Not Allowed");
+
 							if (userQuery.role === Role.ADMIN) {
 								throw new Error("Not Allowed");
 							}
