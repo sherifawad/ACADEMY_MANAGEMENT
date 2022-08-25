@@ -1,3 +1,19 @@
 module.exports = {
-  ...require('gts/.prettierrc.json')
+  ...require('gts/.prettierrc.json'),
+  
+	eslintIntegration: true,
+	tslintIntegration: true,
+	trailingComma: "none",
+	singleQuote: false,
+	semi: true,
+	endOfLine: "auto",
+	useTabs: true,
+	tabWidth: 4,
+	quoteProps: "consistent",
+	jsxSingleQuote: false,
+	bracketSpacing: true,
+	arrowParens: "avoid",
+	proseWrap: "always",
+	printWidth: 80
 }
+
