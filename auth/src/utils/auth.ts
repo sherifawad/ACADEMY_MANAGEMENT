@@ -1,7 +1,7 @@
 import { CookieOptions, Request } from "express";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
 import constants from "../core/constants";
-import { User } from "../typings/interface";
+import { Context, User } from "../typings/interface";
 export type JwtRefreshPayload = {
 	userId: string;
 	hash: string;
@@ -31,14 +31,14 @@ export const createAccessToken = (payload: User) => {
 	};
 };
 
-export const createRefreshToken = (payload: JwtRefreshPayload) => {
-	const { expiration } = payload;
-	if (!expiration) {
-		throw new Error("RefreshAccessNoExpirationError");
-	}
+export const createRefreshToken = (payload: string) => {
+	let expiration = new Date();
+	expiration.setDate(
+		expiration.getDate() + Number(constants.JWT_REFRESH_EXPIRATION_DAYS)
+	);
 	const refreshToken = sign(payload, constants.JWT_REFRESH_SECRET, {
 		expiresIn:
-			Number(constants.JWT_ACCESS_EXPIRATION_Minutes) * 24 * 60 * 60000
+			Number(constants.JWT_REFRESH_EXPIRATION_DAYS) * 24 * 60 * 60000
 	});
 	return {
 		refreshTokenExpiresIn: expiration,
@@ -60,21 +60,18 @@ export const createRefreshToken = (payload: JwtRefreshPayload) => {
 // };
 
 export const createRefreshCookie = (
-	payload: JwtRefreshPayload
+	payload: string
 ): [string, string, CookieOptions] => {
-	const calculatedExpiration =
-		payload.expiration.getTime() - new Date().getTime();
-
 	const isProd = process.env.NODE_ENV === "production";
 	const cookieOptions: CookieOptions = {
 		secure: isProd ? true : false,
 		httpOnly: true,
-		expires: new Date(calculatedExpiration)
+		expires: new Date()
 		// Same site if frontend and backend are not separate
 		// sameSite: true
 	};
 
-	return ["refresh", payload.hash, cookieOptions];
+	return ["refresh", payload, cookieOptions];
 };
 
 export const removeRefreshCookie = (context: any) => {
@@ -83,11 +80,17 @@ export const removeRefreshCookie = (context: any) => {
 
 export const createTokens = async (
 	payload: User,
-	refreshTokenPayload: JwtRefreshPayload,
+	refreshTokenPayload?: string,
 	context?: Context
 ) => {
 	const accessToken = createAccessToken(payload);
-	const refreshToken = createRefreshToken(refreshTokenPayload);
+
+	let refreshToken:
+		| undefined
+		| { refreshTokenExpiresIn: Date; refreshToken: string };
+	if (refreshTokenPayload) {
+		refreshToken = createRefreshToken(refreshTokenPayload);
+	}
 
 	if (!!context) {
 		if (refreshTokenPayload) {

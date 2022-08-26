@@ -1,7 +1,7 @@
 import Express from "express";
 const authRouter = Express.Router();
 
-authRouter.post("/", authController);
+authRouter.post("/login", authController);
 
 // orderRouter.get(
 // 	"/:order_id",
