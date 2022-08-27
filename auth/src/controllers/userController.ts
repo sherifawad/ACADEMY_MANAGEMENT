@@ -11,6 +11,7 @@ import {
 } from "../services/userAcountsService";
 
 import { User } from "../typings/interface";
+import { createTokens } from "../utils/auth";
 
 /**
  *
@@ -100,9 +101,52 @@ export const registerController = async (
 		}
 		return res.status(201).json({
 			status: 201,
-			message: "LoggedIn Successfully",
+			message: "Registered Successfully",
 			...result
 		});
+	} catch (error) {
+		// check if instance of error not throw string but => throw new Error("")
+		if (error instanceof Error) {
+			return res.status(400).json({
+				message: error.stack
+			});
+		}
+		// error is string
+		return res.status(500).json({
+			message: `${error}`
+		});
+	}
+};
+export const accessTokenController = async (
+	req: Request,
+	res: Response
+): Promise<Response> => {
+	try {
+		const { provider, providerAccountId, refreshToken } = req.body;
+
+		const account = await prisma.account.findUniqueOrThrow({
+			where: {
+				provider_providerAccountId: {
+					provider,
+					providerAccountId
+				}
+			},
+			include: { user: true }
+		});
+
+		const { refresh_token, expires_at, user } = account;
+		if (
+			Date.now() <= (expires_at as number) &&
+			refresh_token === refreshToken
+		) {
+			const token = createTokens(user);
+			return res.status(201).json({
+				status: 201,
+				message: "Registered Successfully",
+				...token
+			});
+		}
+		throw new Error("Not Allowed");
 	} catch (error) {
 		// check if instance of error not throw string but => throw new Error("")
 		if (error instanceof Error) {
