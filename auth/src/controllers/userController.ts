@@ -11,7 +11,7 @@ import {
 } from "../services/userAcountsService";
 
 import { User } from "../typings/interface";
-import { createTokens } from "../utils/auth";
+import { createAccessToken, createTokens } from "../utils/auth";
 
 /**
  *
@@ -30,7 +30,12 @@ export const loginController = async (
 
 		let result;
 		if (password) {
-			result = await handleCredentialProviderLogin(password, email);
+			result = await handleCredentialProviderLogin(
+				password,
+				email,
+				provider,
+				providerAccountId
+			);
 		} else {
 			result = handleUserAccountLogin(
 				email,
@@ -40,6 +45,7 @@ export const loginController = async (
 				providerAccountId
 			);
 		}
+		console.log("🚀 ~ file: userController.ts ~ line 34 ~ result", result);
 		return res.status(201).json({
 			status: 201,
 			message: "LoggedIn Successfully",
@@ -139,7 +145,7 @@ export const accessTokenController = async (
 			Math.floor(Date.now() / 1000) <= (expires_at as number) &&
 			refresh_token === refreshToken
 		) {
-			const token = createTokens(user);
+			const token = createAccessToken(user);
 			return res.status(201).json({
 				status: 201,
 				message: "Registered Successfully",

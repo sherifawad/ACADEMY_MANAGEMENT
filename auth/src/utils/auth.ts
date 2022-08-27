@@ -50,10 +50,13 @@ export const createRefreshToken = (payload: string) => {
 	expiration.setDate(
 		expiration.getDate() + Number(constants.JWT_REFRESH_EXPIRATION_DAYS)
 	);
-	const refreshToken = sign(payload, constants.JWT_REFRESH_SECRET, {
-		expiresIn:
-			Number(constants.JWT_REFRESH_EXPIRATION_DAYS) * 24 * 60 * 60000
+	const tokenExpire =
+		Number(constants.JWT_REFRESH_EXPIRATION_DAYS) * 24 * 60 * 60000;
+
+	const refreshToken = sign({ payload }, constants.JWT_REFRESH_SECRET, {
+		expiresIn: tokenExpire
 	});
+
 	return {
 		refreshTokenExpiresIn: Math.floor(expiration.getTime() / 1000),
 		refreshToken
@@ -94,17 +97,12 @@ export const removeRefreshCookie = (context: any) => {
 
 export const createTokens = async (
 	payload: User,
-	refreshTokenPayload?: string,
+	refreshTokenPayload: string,
 	context?: Context
 ) => {
 	const accessToken = createAccessToken(payload);
 
-	let refreshToken:
-		| undefined
-		| { refreshTokenExpiresIn: Number; refreshToken: string };
-	if (refreshTokenPayload) {
-		refreshToken = createRefreshToken(refreshTokenPayload);
-	}
+	const refreshToken = createRefreshToken(refreshTokenPayload);
 
 	if (!!context) {
 		if (refreshTokenPayload) {
@@ -132,16 +130,16 @@ export function getUserId({ request, connection }: GetUserIdContext) {
 	}
 }
 
-export function getRefreshCookie({
-	request
-}: Pick<GetUserIdContext, "request">) {
-	const refreshToken = request.cookies["refresh"];
-	if (refreshToken) {
-		return refreshToken;
-		const jwtContent = verify(
-			refreshToken,
-			constants.JWT_REFRESH_SECRET
-		) as JwtPayload;
-		return jwtContent;
-	}
-}
+// export function getRefreshCookie({
+// 	request
+// }: Pick<GetUserIdContext, "request">) {
+// 	const refreshToken = request.cookies["refresh"];
+// 	if (refreshToken) {
+// 		// return refreshToken;
+// 		const jwtContent = verify(
+// 			refreshToken,
+// 			constants.JWT_REFRESH_SECRET
+// 		) as JwtPayload;
+// 		return jwtContent;
+// 	}
+// }

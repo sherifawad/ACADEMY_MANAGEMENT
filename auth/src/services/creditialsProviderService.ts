@@ -81,7 +81,9 @@ export const handleCredentialProviderRegister = async (
  */
 export const handleCredentialProviderLogin = async (
 	user_password: string,
-	email: string
+	email: string,
+	provider: string,
+	providerAccountId: string
 ) => {
 	try {
 		const { refresh_token, expires_at } = randomRefreshHashGenerations();
@@ -100,8 +102,8 @@ export const handleCredentialProviderLogin = async (
 				const account = await prisma.account.update({
 					where: {
 						provider_providerAccountId: {
-							provider: providerTypes.CREDENTIALS,
-							providerAccountId: user.id
+							provider,
+							providerAccountId
 						}
 					},
 					data: {
@@ -110,12 +112,13 @@ export const handleCredentialProviderLogin = async (
 					}
 				});
 				if (account) {
-					const tokens = createTokens(
-						rest,
-						account.refresh_token as string
+					const tokens = await createTokens(
+						{ ...rest },
+						refresh_token
 					);
+
 					return {
-						user,
+						user: { ...rest },
 						...tokens
 					};
 				}
@@ -125,6 +128,10 @@ export const handleCredentialProviderLogin = async (
 		}
 		throw new Error("Not Allowed");
 	} catch (error) {
+		console.log(
+			"🚀 ~ file: creditialsProviderService.ts ~ line 127 ~ error",
+			error
+		);
 		throw error;
 	}
 };
