@@ -62,7 +62,6 @@ export const handleUserAccountLogin = async (
  * @param token_type type of used token
  * @param name user name
  * @param image user Image
- * @param role user role
  * @param userId user id
  * @param scope provider scope
  * @returns user and tokens{access, refresh}
@@ -72,23 +71,18 @@ export const handleUserAccountRegister = async (
 	provider: string,
 	providerAccountId: string,
 	type: string,
-	token_type: string,
 	name: string,
 	image: string,
 	userId: string,
+	token_type?: string,
 	scope?: string
 ) => {
 	try {
 		let refresh_token = srs({ length: 100 });
+
 		const user = await prisma.account
-			.upsert({
-				where: {
-					provider_providerAccountId: {
-						provider,
-						providerAccountId
-					}
-				},
-				create: {
+			.create({
+				data: {
 					provider,
 					providerAccountId,
 					type,
@@ -99,16 +93,17 @@ export const handleUserAccountRegister = async (
 						connectOrCreate: {
 							where: { id: userId },
 							create: {
+								id: userId,
 								name,
 								image,
 								email
 							}
 						}
 					}
-				},
-				update: {}
+				}
 			})
 			.user();
+
 		if (user) {
 			const tokens = createTokens(user, refresh_token);
 			return {
@@ -116,7 +111,7 @@ export const handleUserAccountRegister = async (
 				...tokens
 			};
 		}
-		throw new Error("Not Allowed");
+		throw new Error(`${provider} provider  register error`);
 	} catch (error) {
 		throw error;
 	}

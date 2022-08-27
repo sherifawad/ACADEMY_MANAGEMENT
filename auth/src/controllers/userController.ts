@@ -5,7 +5,10 @@ import {
 	handleCredentialProviderLogin,
 	handleCredentialProviderRegister
 } from "../services/creditialsProviderService";
-import { handleUserAccountLogin } from "../services/userAcountsService";
+import {
+	handleUserAccountLogin,
+	handleUserAccountRegister
+} from "../services/userAcountsService";
 
 import { User } from "../typings/interface";
 
@@ -67,7 +70,9 @@ export const registerController = async (
 			password,
 			image,
 			provider,
-			providerAccountId
+			providerAccountId,
+			token_type,
+			scope
 		} = req.body;
 		const { type } = req.params;
 
@@ -81,12 +86,16 @@ export const registerController = async (
 				{ id: userId, name, email }
 			);
 		} else {
-			result = handleUserAccountLogin(
+			result = handleUserAccountRegister(
 				email,
+				provider,
+				providerAccountId,
+				type,
 				name,
 				image,
-				provider,
-				providerAccountId
+				userId,
+				token_type,
+				scope
 			);
 		}
 		return res.status(201).json({

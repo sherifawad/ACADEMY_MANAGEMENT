@@ -64,7 +64,7 @@ export const handleCredentialProviderRegister = async (
 				...tokens
 			};
 		}
-		throw new Error("credentials register error");
+		throw new Error(`${provider} provider  register error`);
 	} catch (error) {
 		throw error;
 	}
