@@ -1,5 +1,6 @@
 import srs from "secure-random-string";
 import prisma from "../../lib/prisma";
+import { AccountLoginsInputs, AccountRegisterInputs } from "../typings/types";
 import { createTokens, randomRefreshHashGenerations } from "../utils/auth";
 
 /**
@@ -11,13 +12,13 @@ import { createTokens, randomRefreshHashGenerations } from "../utils/auth";
  * @param image provider user image
  * @returns user and tokens{access, refresh}
  */
-export const handleUserAccountLogin = async (
-	providerAccountId: string,
-	provider: string,
-	email: string,
-	name: string,
-	image: string
-) => {
+export const handleUserAccountLogin = async ({
+	providerAccountId,
+	provider,
+	email,
+	name,
+	image
+}: AccountLoginsInputs) => {
 	try {
 		const { refresh_token, expires_at } = randomRefreshHashGenerations();
 
@@ -44,7 +45,7 @@ export const handleUserAccountLogin = async (
 			})
 			.user();
 		if (user) {
-			const tokens = createTokens(user, refresh_token);
+			const tokens = await createTokens(user, refresh_token);
 			return {
 				user,
 				...tokens
@@ -69,30 +70,36 @@ export const handleUserAccountLogin = async (
  * @param scope provider scope
  * @returns user and tokens{access, refresh}
  */
-export const handleUserAccountRegister = async (
-	email: string,
-	provider: string,
-	providerAccountId: string,
-	type: string,
-	name: string,
-	image: string,
-	userId: string,
-	token_type?: string,
-	scope?: string
-) => {
+export const handleUserAccountRegister = async ({
+	email,
+	provider,
+	providerAccountId,
+	name,
+	image,
+	userId,
+	type,
+	token_type,
+	scope
+}: AccountRegisterInputs) => {
 	try {
 		const { refresh_token, expires_at } = randomRefreshHashGenerations();
 
 		const user = await prisma.account
-			.create({
-				data: {
+			.upsert({
+				where: {
+					provider_providerAccountId: {
+						provider,
+						providerAccountId
+					}
+				},
+				create: {
 					provider,
 					providerAccountId,
 					type,
 					scope,
 					token_type,
 					refresh_token,
-                    expires_at,
+					expires_at,
 					user: {
 						connectOrCreate: {
 							where: { id: userId },
@@ -104,12 +111,22 @@ export const handleUserAccountRegister = async (
 							}
 						}
 					}
+				},
+				update: {
+					user: {
+						update: {
+							name,
+							image,
+							email
+						}
+					}
 				}
 			})
 			.user();
 
 		if (user) {
-			const tokens = createTokens(user, refresh_token);
+			const tokens = await createTokens(user, refresh_token);
+
 			return {
 				user,
 				...tokens

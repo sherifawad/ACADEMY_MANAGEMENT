@@ -1,8 +1,9 @@
-import srs from "secure-random-string";
 import prisma from "../../lib/prisma";
-import constants, { providerTypes } from "../core/constants";
 import { hashPassword, verifyPassword } from "../core/crypto";
-import { User } from "../typings/interface";
+import {
+	CredentialsLoginsInputs,
+	CredentialsRegisterInputs
+} from "../typings/types";
 import { createTokens, randomRefreshHashGenerations } from "../utils/auth";
 
 /**
@@ -13,13 +14,13 @@ import { createTokens, randomRefreshHashGenerations } from "../utils/auth";
  * @param providerAccountId
  * @returns user and tokens{access, refresh}
  */
-export const handleCredentialProviderRegister = async (
-	user_password: string,
-	provider: string,
-	providerAccountId: string,
-	type: string,
-	user_data: User
-) => {
+export const handleCredentialProviderRegister = async ({
+	user_password,
+	provider,
+	providerAccountId,
+	type,
+	user_data
+}: CredentialsRegisterInputs) => {
 	try {
 		const { email, name, image, id } = user_data;
 
@@ -59,7 +60,7 @@ export const handleCredentialProviderRegister = async (
 			})
 			.user();
 		if (user) {
-			const tokens = createTokens(user, refresh_token);
+			const tokens = await createTokens(user, refresh_token);
 			return {
 				user,
 				...tokens
@@ -79,12 +80,13 @@ export const handleCredentialProviderRegister = async (
  * @param user_data
  * @returns user data
  */
-export const handleCredentialProviderLogin = async (
-	user_password: string,
-	email: string,
-	provider: string,
-	providerAccountId: string
-) => {
+export const handleCredentialProviderLogin = async ({
+	user_password,
+	email,
+	provider,
+	providerAccountId,
+	type
+}: CredentialsLoginsInputs) => {
 	try {
 		const { refresh_token, expires_at } = randomRefreshHashGenerations();
 
@@ -99,14 +101,22 @@ export const handleCredentialProviderLogin = async (
 				password.password
 			);
 			if (isVerified) {
-				const account = await prisma.account.update({
+				const account = await prisma.account.upsert({
 					where: {
 						provider_providerAccountId: {
 							provider,
 							providerAccountId
 						}
 					},
-					data: {
+					create: {
+						userId: user.id,
+						provider,
+						providerAccountId,
+						type,
+						refresh_token,
+						expires_at
+					},
+					update: {
 						refresh_token,
 						expires_at
 					}

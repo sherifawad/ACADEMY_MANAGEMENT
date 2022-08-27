@@ -24,28 +24,35 @@ export const loginController = async (
 	res: Response
 ): Promise<Response> => {
 	try {
-		const { name, email, password, image, provider, providerAccountId } =
-			req.body;
-		const { type } = req.params;
+		const {
+			name,
+			email,
+			password,
+			image,
+			provider,
+			providerAccountId,
+			type
+		} = req.body;
 
 		let result;
 		if (password) {
-			result = await handleCredentialProviderLogin(
-				password,
+			result = await handleCredentialProviderLogin({
+				user_password: password,
 				email,
 				provider,
-				providerAccountId
-			);
+				providerAccountId,
+				type
+			});
 		} else {
-			result = handleUserAccountLogin(
+			result = await handleUserAccountLogin({
 				email,
 				name,
 				image,
 				provider,
 				providerAccountId
-			);
+			});
 		}
-		console.log("🚀 ~ file: userController.ts ~ line 34 ~ result", result);
+
 		return res.status(201).json({
 			status: 201,
 			message: "LoggedIn Successfully",
@@ -79,32 +86,33 @@ export const registerController = async (
 			provider,
 			providerAccountId,
 			token_type,
-			scope
+			scope,
+			type
 		} = req.body;
-		const { type } = req.params;
 
 		let result;
 		if (password) {
-			result = await handleCredentialProviderRegister(
-				password,
+			result = await handleCredentialProviderRegister({
+				user_password: password,
 				provider,
 				providerAccountId,
 				type,
-				{ id: userId, name, email }
-			);
+				user_data: { id: userId, name, email, image }
+			});
 		} else {
-			result = handleUserAccountRegister(
+			result = await handleUserAccountRegister({
 				email,
 				provider,
 				providerAccountId,
-				type,
 				name,
 				image,
 				userId,
+				type,
 				token_type,
 				scope
-			);
+			});
 		}
+		console.log("🚀 ~ file: userController.ts ~ line 104 ~ result", result);
 		return res.status(201).json({
 			status: 201,
 			message: "Registered Successfully",
