@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { JwtPayload } from "jsonwebtoken";
 import prisma from "../../lib/prisma";
 import { providerTypes } from "../core/constants";
 import {
@@ -11,7 +12,11 @@ import {
 } from "../services/userAcountsService";
 
 import { User } from "../typings/interface";
-import { createAccessToken, createTokens } from "../utils/auth";
+import {
+	createAccessToken,
+	createTokens,
+	getRefreshToken
+} from "../utils/auth";
 
 /**
  *
@@ -112,7 +117,6 @@ export const registerController = async (
 				scope
 			});
 		}
-		console.log("🚀 ~ file: userController.ts ~ line 104 ~ result", result);
 		return res.status(201).json({
 			status: 201,
 			message: "Registered Successfully",
@@ -149,14 +153,21 @@ export const accessTokenController = async (
 		});
 
 		const { refresh_token, expires_at, user } = account;
+		const { decoded } = getRefreshToken(refreshToken) as JwtPayload;
+		const { payload } = decoded || ({} as { payload: string });
+
+		if (!payload) {
+			throw new Error("token error");
+		}
+
 		if (
 			Math.floor(Date.now() / 1000) <= (expires_at as number) &&
-			refresh_token === refreshToken
+			refresh_token === payload
 		) {
 			const token = createAccessToken(user);
 			return res.status(201).json({
 				status: 201,
-				message: "Registered Successfully",
+				message: "token created Successfully",
 				...token
 			});
 		}

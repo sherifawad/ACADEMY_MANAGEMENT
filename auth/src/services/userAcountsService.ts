@@ -41,7 +41,7 @@ export const handleUserAccountLogin = async ({
 						}
 					}
 				},
-				include: { user: true }
+				select: { user: true }
 			})
 			.user();
 		if (user) {

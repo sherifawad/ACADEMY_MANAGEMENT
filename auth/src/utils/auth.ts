@@ -62,6 +62,13 @@ export const createRefreshToken = (payload: string) => {
 		refreshToken
 	};
 };
+export const getRefreshToken = (payload: string) => {
+	const decoded = verify(payload, constants.JWT_REFRESH_SECRET);
+
+	return {
+		decoded
+	};
+};
 
 // export const createRefreshCookie = (jwt: string): [string, string, CookieOptions] => {
 // 	const isProd = process.env.NODE_ENV === "production";
