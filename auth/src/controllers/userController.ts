@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import prisma from "../../lib/prisma";
 import { providerTypes } from "../core/constants";
-import { handleCredentialProviderLogin } from "../services/creditialsProviderService";
+import {
+	handleCredentialProviderLogin,
+	handleCredentialProviderRegister
+} from "../services/creditialsProviderService";
 import { handleUserAccountLogin } from "../services/userAcountsService";
 
 import { User } from "../typings/interface";
@@ -59,7 +62,6 @@ export const registerController = async (
 	try {
 		const {
 			userId,
-			role,
 			name,
 			email,
 			password,
@@ -71,7 +73,13 @@ export const registerController = async (
 
 		let result;
 		if (password) {
-			result = await handleCredentialProviderLogin(password, email);
+			result = await handleCredentialProviderRegister(
+				password,
+				provider,
+				providerAccountId,
+				type,
+				{ id: userId, name, email }
+			);
 		} else {
 			result = handleUserAccountLogin(
 				email,

@@ -1,42 +1,70 @@
+import srs from "secure-random-string";
 import prisma from "../../lib/prisma";
-import { providerTypes } from "../core/constants";
+import constants, { providerTypes } from "../core/constants";
 import { hashPassword, verifyPassword } from "../core/crypto";
 import { User } from "../typings/interface";
 import { createTokens } from "../utils/auth";
 
 /**
- * Handle using credentials Providers Register.
- * hash the password
- * create user
+ *
  * @param user_password
  * @param user_data
- * @returns user
+ * @param provider
+ * @param providerAccountId
+ * @returns user and tokens{access, refresh}
  */
 export const handleCredentialProviderRegister = async (
 	user_password: string,
-	user_data: Omit<User, "id">
+	provider: string,
+	providerAccountId: string,
+	type: string,
+	user_data: User
 ) => {
 	try {
-		const { email, name, image, role } = user_data;
+		const { email, name, image, id } = user_data;
 
 		const password = await hashPassword(user_password);
-		return await prisma.user.create({
-			data: {
-				email,
-				image,
-				name,
-				role,
-				password: {
-					create: {
-						password,
-						forceChange: false
+		let refresh_token = srs({ length: 100 });
+
+		const user = await prisma.account
+			.create({
+				data: {
+					provider,
+					providerAccountId,
+					type,
+					refresh_token,
+					user: {
+						create: {
+							password: {
+								create: {
+									password: password,
+									forceChange: false
+								}
+							}
+						},
+						connectOrCreate: {
+							where: {
+								id
+							},
+							create: {
+								id,
+								email,
+								name,
+								image
+							}
+						}
 					}
 				}
-			},
-			include: {
-				password: true
-			}
-		});
+			})
+			.user();
+		if (user) {
+			const tokens = createTokens(user, refresh_token);
+			return {
+				user,
+				...tokens
+			};
+		}
+		throw new Error("credentials register error");
 	} catch (error) {
 		throw error;
 	}

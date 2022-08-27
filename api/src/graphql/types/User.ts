@@ -321,7 +321,7 @@ export const FilteredUsersQuery = extendType({
 								}
 							}
 						});
-						if (ORConditions && ORConditions.length > 0) @where = { ...where, OR: ORConditions };
+						if (ORConditions && ORConditions.length > 0) where = { ...where, OR: ORConditions };
 					}
 					if (family_Id) {
 						where = { ...where, familyId: family_Id };
