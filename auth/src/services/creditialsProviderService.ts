@@ -3,7 +3,7 @@ import prisma from "../../lib/prisma";
 import constants, { providerTypes } from "../core/constants";
 import { hashPassword, verifyPassword } from "../core/crypto";
 import { User } from "../typings/interface";
-import { createTokens } from "../utils/auth";
+import { createTokens, randomRefreshHashGenerations } from "../utils/auth";
 
 /**
  *
@@ -24,7 +24,7 @@ export const handleCredentialProviderRegister = async (
 		const { email, name, image, id } = user_data;
 
 		const password = await hashPassword(user_password);
-		let refresh_token = srs({ length: 100 });
+		const { refresh_token, expires_at } = randomRefreshHashGenerations();
 
 		const user = await prisma.account
 			.create({
@@ -33,6 +33,7 @@ export const handleCredentialProviderRegister = async (
 					providerAccountId,
 					type,
 					refresh_token,
+					expires_at,
 					user: {
 						create: {
 							password: {
@@ -83,6 +84,8 @@ export const handleCredentialProviderLogin = async (
 	email: string
 ) => {
 	try {
+		const { refresh_token, expires_at } = randomRefreshHashGenerations();
+
 		const user = await prisma.user.findUniqueOrThrow({
 			where: { email },
 			include: { password: true }
@@ -94,22 +97,29 @@ export const handleCredentialProviderLogin = async (
 				password.password
 			);
 			if (isVerified) {
-				const account = await prisma.account.findUniqueOrThrow({
+				const account = await prisma.account.update({
 					where: {
 						provider_providerAccountId: {
 							provider: providerTypes.CREDENTIALS,
 							providerAccountId: user.id
 						}
+					},
+					data: {
+						refresh_token,
+						expires_at
 					}
 				});
-				const tokens = createTokens(
-					rest,
-					account.refresh_token as string
-				);
-				return {
-					user,
-					...tokens
-				};
+				if (account) {
+					const tokens = createTokens(
+						rest,
+						account.refresh_token as string
+					);
+					return {
+						user,
+						...tokens
+					};
+				}
+				throw new Error("Not Allowed");
 			}
 			throw new Error("Not Allowed");
 		}

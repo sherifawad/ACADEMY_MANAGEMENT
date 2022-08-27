@@ -1,6 +1,6 @@
 import srs from "secure-random-string";
 import prisma from "../../lib/prisma";
-import { createTokens } from "../utils/auth";
+import { createTokens, randomRefreshHashGenerations } from "../utils/auth";
 
 /**
  *
@@ -19,29 +19,32 @@ export const handleUserAccountLogin = async (
 	image: string
 ) => {
 	try {
-		const account = await prisma.account.findUniqueOrThrow({
-			where: {
-				provider_providerAccountId: {
-					provider,
-					providerAccountId
-				}
-			},
-			include: { user: true }
-		});
-		if (account) {
-			const { user } = account;
-			const updatedUser = await prisma.user.update({
-				where: { id: user.id },
+		const { refresh_token, expires_at } = randomRefreshHashGenerations();
+
+		const user = await prisma.account
+			.update({
+				where: {
+					provider_providerAccountId: {
+						provider,
+						providerAccountId
+					}
+				},
 				data: {
-					name: name || undefined,
-					image: image || undefined,
-					email: email || undefined
-				}
-			});
-			const tokens = createTokens(
-				updatedUser,
-				account.refresh_token as string
-			);
+					refresh_token,
+					expires_at,
+					user: {
+						update: {
+							name: name || undefined,
+							image: image || undefined,
+							email: email || undefined
+						}
+					}
+				},
+				include: { user: true }
+			})
+			.user();
+		if (user) {
+			const tokens = createTokens(user, refresh_token);
 			return {
 				user,
 				...tokens
@@ -78,7 +81,7 @@ export const handleUserAccountRegister = async (
 	scope?: string
 ) => {
 	try {
-		let refresh_token = srs({ length: 100 });
+		const { refresh_token, expires_at } = randomRefreshHashGenerations();
 
 		const user = await prisma.account
 			.create({
@@ -89,6 +92,7 @@ export const handleUserAccountRegister = async (
 					scope,
 					token_type,
 					refresh_token,
+                    expires_at,
 					user: {
 						connectOrCreate: {
 							where: { id: userId },

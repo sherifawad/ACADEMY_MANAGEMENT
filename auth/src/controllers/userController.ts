@@ -136,7 +136,7 @@ export const accessTokenController = async (
 
 		const { refresh_token, expires_at, user } = account;
 		if (
-			Date.now() <= (expires_at as number) &&
+			Math.floor(Date.now() / 1000) <= (expires_at as number) &&
 			refresh_token === refreshToken
 		) {
 			const token = createTokens(user);

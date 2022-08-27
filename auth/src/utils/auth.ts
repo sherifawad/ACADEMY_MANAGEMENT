@@ -1,5 +1,6 @@
 import { CookieOptions, Request } from "express";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
+import srs from "secure-random-string";
 import constants from "../core/constants";
 import { Context, User } from "../typings/interface";
 export type JwtRefreshPayload = {
@@ -11,6 +12,19 @@ export type JwtRefreshPayload = {
 type GetUserIdContext = {
 	request: Request;
 	connection?: any;
+};
+
+export const randomRefreshHashGenerations = () => {
+	let expiration = new Date();
+	expiration.setDate(
+		expiration.getDate() + Number(constants.JWT_REFRESH_EXPIRATION_DAYS)
+	);
+	const refresh_token = srs({ length: 100 });
+
+	return {
+		expires_at: Math.floor(expiration.getTime() / 1000),
+		refresh_token
+	};
 };
 
 export const createAccessToken = (payload: User) => {
@@ -41,7 +55,7 @@ export const createRefreshToken = (payload: string) => {
 			Number(constants.JWT_REFRESH_EXPIRATION_DAYS) * 24 * 60 * 60000
 	});
 	return {
-		refreshTokenExpiresIn: expiration,
+		refreshTokenExpiresIn: Math.floor(expiration.getTime() / 1000),
 		refreshToken
 	};
 };
@@ -87,7 +101,7 @@ export const createTokens = async (
 
 	let refreshToken:
 		| undefined
-		| { refreshTokenExpiresIn: Date; refreshToken: string };
+		| { refreshTokenExpiresIn: Number; refreshToken: string };
 	if (refreshTokenPayload) {
 		refreshToken = createRefreshToken(refreshTokenPayload);
 	}
