@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core, list } from "nexus";
 // @ts-ignore
 import { prismaOffsetPagination } from "prisma-offset-pagination";

@@ -1,4 +1,4 @@
-import { Exam as studentExam, Role } from "@prisma/client";
+import { Exam as studentExam, Role } from "@internal/prisma/client";
 import {
 	nonNull,
 	objectType,

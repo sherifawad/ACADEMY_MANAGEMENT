@@ -1,12 +1,4 @@
-import {
-	Contact,
-	Group,
-	PrismaClient,
-	Profile,
-	RefreshToken,
-	Role,
-	User as prismaUser,
-} from "@prisma/client";
+import { Contact, Group, PrismaClient, Profile, Role, User as prismaUser } from "@internal/prisma/client";
 import { hashPassword, verifyPassword } from "../../core/crypto";
 import {
 	nonNull,
@@ -21,9 +13,7 @@ import {
 	list,
 } from "nexus";
 import { Context } from ".";
-import { GetUserPassword } from "./UserPassword";
-import { Role as userRole } from "@prisma/client";
-import srs from "secure-random-string";
+import { Role as userRole } from "@internal/prisma/client";
 import { assert } from "../utils/assert";
 import { encodeUser } from "../../core/jwt";
 import LoginInvalidError from "../utils/errors/loginInvalid";
@@ -466,20 +456,6 @@ export async function GetUserByEmail(prisma: PrismaClient, email: string): Promi
 	});
 }
 
-export async function ValidateUserCredentials(
-	prisma: PrismaClient,
-	user: prismaUser | Contact,
-	password: string
-): Promise<boolean> {
-	const userPassword = await GetUserPassword(prisma, user);
-
-	if (userPassword == null) {
-		return false;
-	}
-
-	return await verifyPassword(password, userPassword.password);
-}
-
 // export async function CreateStudent(ctx: Context, studentParam: StudentParam, password: string) {
 // 	const hashedPassword = await hashPassword(password);
 // 	const { name, id, ...rest } = studentParam;
@@ -624,12 +600,6 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 				name,
 				avatar,
 				role,
-				password: {
-					create: {
-						password: hashedPassword,
-						forceChange: false,
-					},
-				},
 				contact: {
 					create: {
 						...rest,
@@ -639,7 +609,6 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 				family,
 			},
 			include: {
-				password: true,
 				contact: true,
 				profile: groupId ? true : false,
 				family: familyName ? true : false,
@@ -647,28 +616,6 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 		});
 	} catch (error) {
 		console.log("🚀 ~ file: User.ts ~ line 629 ~ CreateUser ~ error", error);
-		return Promise.reject("error");
-	}
-}
-
-export async function CreateRefreshTokenForUser(
-	prisma: PrismaClient,
-	user: prismaUser | Contact
-): Promise<RefreshToken> {
-	try {
-		let hash = srs({ length: 100 });
-		let expiration = new Date();
-
-		expiration.setDate(expiration.getDate() + (constants.JWT_REFRESH_EXPIRATION_DAYS as number));
-		return await prisma.refreshToken.create({
-			data: {
-				expiration,
-				hash,
-				label: "Login",
-				userId: user.id,
-			},
-		});
-	} catch (error) {
 		return Promise.reject("error");
 	}
 }
@@ -875,45 +822,12 @@ export const userRegister = extendType({
 						role,
 						familyName,
 						familyId,
-					};
+					} as any;
 
 					return await CreateUser(ctx, userParam, password);
 				} catch (error) {
 					return Promise.reject("error");
 				}
-			},
-		});
-	},
-});
-
-export const userLogin = extendType({
-	type: "Mutation",
-	definition(t) {
-		t.nonNull.field("userLogin", {
-			type: "AuthPayload",
-			args: {
-				email: nonNull(stringArg()),
-				password: nonNull(stringArg()),
-			},
-			resolve: async (_, { email, password }, ctx) => {
-				const user = (await GetUserByEmail(ctx.prisma, email)) as prismaUser | null;
-
-				if (user == null || !(await ValidateUserCredentials(ctx.prisma, user, password))) {
-					throw new LoginInvalidError("Invalid username or password");
-				}
-
-				const createdRefreshToken: Pick<RefreshToken, "expiration" | "hash" | "userId"> =
-					await CreateRefreshTokenForUser(ctx.prisma, user);
-				const { accessToken, refreshToken } = await createTokens(user, createdRefreshToken, ctx);
-				// TODO: send refresh token with cookies
-				// // const token = CreateJWTForUser(user.user);
-				// // setTokenCookie(ctx.res, refreshToken.hash);
-
-				return {
-					...accessToken,
-					...refreshToken,
-					userId: user.id,
-				};
 			},
 		});
 	},

@@ -26,7 +26,7 @@ const SignIn: NextPage = (props): JSX.Element => {
 			email: userInfo.email,
 			password: userInfo.password,
 			redirect: false,
-			callbackUrl: Paths.SignIn,
+			callbackUrl: Paths.Auth,
 		});
 	};
 	return (

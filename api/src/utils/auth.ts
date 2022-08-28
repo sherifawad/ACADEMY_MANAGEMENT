@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { User } from "@internal/prisma/client";
 import { addMilliseconds } from "date-fns";
 import { CookieOptions, Request } from "express";
 import { JwtPayload, sign, verify } from "jsonwebtoken";

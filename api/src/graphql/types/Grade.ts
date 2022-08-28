@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, booleanArg } from "nexus";
 import { Group } from "./Group";
 import { Profile } from "./Profile";

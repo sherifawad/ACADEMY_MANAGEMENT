@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, booleanArg } from "nexus";
 
 //generates Contact type at schema.graphql

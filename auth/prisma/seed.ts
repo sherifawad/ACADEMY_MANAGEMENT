@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@internal/prisma/client";
 import bcrypt from "bcrypt";
 
 const client = new PrismaClient();
@@ -17,6 +17,7 @@ async function seed() {
 
 	const admin = await client.user.create({
 		data: {
+			id: "cl7au537v001443vyn6n56fbm",
 			name: "sherif awad",
 			email: "eng.sherifawad@gmail.com",
 			emailVerified: new Date(),

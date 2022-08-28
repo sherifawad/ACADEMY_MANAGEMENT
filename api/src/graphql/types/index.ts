@@ -1,17 +1,14 @@
-import { PrismaClient, User } from "@prisma/client";
+import { PrismaClient, User } from "@internal/prisma/client";
 import { DateTimeResolver, GraphQLJSONObject, TimeResolver } from "graphql-scalars";
 import { Jwt } from "jsonwebtoken";
 import { asNexusMethod, enumType } from "nexus";
 import { Request, Response } from "express";
 
 export * from "./User";
-export * from "./authPayload";
-export * from "./User";
 export * from "./Exam";
 export * from "./Grade";
 export * from "./Group";
 export * from "./Profile";
-export * from "./UserPassword";
 export * from "./Attendance";
 export * from "./Contact";
 export * from "./Family";

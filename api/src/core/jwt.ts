@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { User } from "@internal/prisma/client";
 import Jwt, { Jwt as JWType, decode, JwtPayload } from "jsonwebtoken";
 import { AccessTokenState, nextAuthToken } from "../graphql/types";
 
