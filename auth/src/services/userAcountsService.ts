@@ -22,32 +22,33 @@ export const handleUserAccountLogin = async ({
 	try {
 		const { refresh_token, expires_at } = randomRefreshHashGenerations();
 
-		const user = await prisma.account
-			.update({
-				where: {
-					provider_providerAccountId: {
-						provider,
-						providerAccountId
+		const account = await prisma.account.update({
+			where: {
+				provider_providerAccountId: {
+					provider,
+					providerAccountId
+				}
+			},
+			data: {
+				refresh_token,
+				expires_at,
+				user: {
+					update: {
+						name: name || undefined,
+						image: image || undefined,
+						email: email || undefined
 					}
-				},
-				data: {
-					refresh_token,
-					expires_at,
-					user: {
-						update: {
-							name: name || undefined,
-							image: image || undefined,
-							email: email || undefined
-						}
-					}
-				},
-				select: { user: true }
-			})
-			.user();
+				}
+			},
+			include: { user: true }
+		});
+		const user = account.user;
 		if (user) {
 			const tokens = await createTokens(user, refresh_token);
 			return {
 				user,
+				provider: account.provider,
+				providerAccountId: account.providerAccountId,
 				...tokens
 			};
 		}

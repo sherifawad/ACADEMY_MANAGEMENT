@@ -49,12 +49,17 @@ export const revokeRefreshToken = async (variables: Variables, token = null) => 
 	return { ...refreshToken?.refreshToken, errors };
 };
 
-export const getRefreshToken = async (variables: Variables) => {
-	const { data: refreshToken, errors } = await createAxiosService({
-		query: REFRESH_TOKEN_MUTATION,
-		variables,
-	}).then((response) => response.data);
-	return { ...refreshToken?.refreshToken, errors };
+export const getAccessToken = async (variables: Variables, token = null) => {
+	try {
+		const { data } = await createAxiosService({
+			url: "http://localhost:7010/api/auth/accesstoken    ",
+			variables,
+			token: `Bearer ${token}`,
+		});
+		return { data, error: null };
+	} catch (error) {
+		return { data: null, error: error.message };
+	}
 };
 
 export const userLogin = async (variables: Variables) => {

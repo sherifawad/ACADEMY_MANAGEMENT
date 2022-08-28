@@ -150,7 +150,7 @@ const Navbar = () => {
 							</svg>
 						)}
 						{avatar && (
-							<Image src={`/${avatar}`} alt="user account image" width="40" height="40" />
+							<Image src={`${avatar}`} alt="user account image" width="40" height="40" />
 						)}
 
 						<div

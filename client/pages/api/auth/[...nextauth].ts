@@ -1,6 +1,6 @@
 import Paths from "core/paths";
 import { ObjectFlatten } from "core/utils";
-import { getRefreshToken, revokeRefreshToken, userLogin } from "features/authFeature/authMutations";
+import { getAccessToken, revokeRefreshToken, userLogin } from "features/authFeature/authMutations";
 import { user } from "features/userFeature/userTypes";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -8,16 +8,18 @@ import GitHubProvider from "next-auth/providers/github";
 
 const refreshAccessToken = async (token: any) => {
 	try {
-		const {
-			user: { id },
-			refreshToken,
-		} = (token as any) || {};
-		const data = await getRefreshToken({ userId: id, token: refreshToken });
+		const { provider, providerAccountId, refreshToken, accessToken } = (token as any) || {};
+		console.log(
+			"🚀 ~ file: [...nextauth].ts ~ line 12 ~ refreshAccessToken ~ providerAccountId",
+			providerAccountId
+		);
+		const data = await getAccessToken({ provider, providerAccountId, refreshToken }, accessToken);
 		// console.log(
 		// 	"🚀 ~ file: [...nextauth].ts ~ line 14 ~ refreshAccessToken ~ data",
 		// 	JSON.stringify(data, null, 2)
 		// );
-		const { accessTokenExpiresIn, accessToken, errors } = (data as any) || {};
+		const { errors, ...rest } = (data as any) || {};
+		console.log("🚀 ~ file: [...nextauth].ts ~ line 18 ~ refreshAccessToken ~ rest", rest);
 		if (errors) {
 			console.log("🚀 ~ file: [...nextauth].ts ~ line 16 ~ refreshAccessToken ~ errors", errors);
 			return {
@@ -26,9 +28,8 @@ const refreshAccessToken = async (token: any) => {
 			};
 		}
 		return {
-			...token,
-			accessToken,
-			accessTokenExpires: accessTokenExpiresIn,
+			accessTokenExpiresIn: rest.accessTokenExpiresIn,
+			accessToken: rest.accessToken,
 		};
 	} catch (error) {
 		return {
@@ -44,7 +45,7 @@ export const authOptions: NextAuthOptions = {
 		CredentialsProvider({
 			type: "credentials",
 			credentials: {},
-			async authorize(credentials, req) {
+			async authorize(credentials, _req) {
 				const { email, password } = credentials as {
 					email: string;
 					password: string;
@@ -76,12 +77,14 @@ export const authOptions: NextAuthOptions = {
 			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ token", token);
 			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ user", user);
 			// console.log("🚀 ~ file: [...nextauth].ts ~ line 64 ~ jwt ~ user", JSON.stringify(user, null, 2));
-			const { accessToken, refreshToken } = (user as any) || {};
+			const { accessToken, refreshToken, provider, providerAccountId } = (user as any) || {};
 			// Initial sign in
-			if (user.user) {
+			if (user?.user) {
 				return {
 					...token,
-					user: user.user,
+					user: { ...(user as any).user, avatar: user.image },
+					provider,
+					providerAccountId,
 					...accessToken,
 					...refreshToken,
 				};
@@ -90,7 +93,7 @@ export const authOptions: NextAuthOptions = {
 
 			// add 10 seconds from currentTime
 			const afterNow = new Date().getTime() + 10 * 1000;
-			if (afterNow < Number(token.accessTokenExpires) * 1000) {
+			if (afterNow < Number(token.accessTokenExpiresIn) * 1000) {
 				// console.log("✅ValidToken", new Date().toLocaleTimeString());
 				return token;
 			}
@@ -100,11 +103,11 @@ export const authOptions: NextAuthOptions = {
 			return await refreshAccessToken(token);
 		},
 		async session({ session, token, user }) {
-			console.log("🚀 ~ file: [...nextauth].ts ~ line 104 ~ session ~ session", session);
 			// Send properties to the client, like an access_token from a provider.
 			session.user = token.user;
 			session.accessToken = token.accessToken || null;
 			session.error = token.error || null;
+			console.log("🚀 ~ file: [...nextauth].ts ~ line 104 ~ session ~ session", session);
 			return session;
 		},
 	},

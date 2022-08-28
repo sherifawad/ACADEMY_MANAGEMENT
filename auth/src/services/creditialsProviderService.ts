@@ -125,6 +125,8 @@ export const handleCredentialProviderLogin = async ({
 
 						return {
 							user: { ...rest },
+							provider: account.provider,
+							providerAccountId: account.providerAccountId,
 							...tokens
 						};
 					}
