@@ -29,16 +29,6 @@ type AttendancesCount {
   _count: Int
 }
 
-"""Payload containing auth token"""
-type AuthPayload {
-  accessToken: String
-  accessTokenExpiresIn: Int
-  refreshToken: String
-  refreshTokenExpiresIn: DateTime
-  user: User
-  userId: String
-}
-
 type Contact {
   address: String
   email: String
@@ -145,8 +135,6 @@ type Mutation {
   deleteGrade(id: String!): Grade!
   deleteGroup(id: String!): Group!
   deleteProfile(id: String!): Profile!
-  refreshToken(token: String!, userId: String!): AuthPayload
-  revokeToken(id: String!, token: String!): AuthPayload
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateContact(address: String, contactId: String!, email: String, emailConfirmed: Boolean, note: String, parentsPhones: String, phone: String): Contact!
   updateExam(date: DateTime, id: String!, note: String, score: Float): Exam!
@@ -156,7 +144,6 @@ type Mutation {
   updateMultipleAttendance(endAt: DateTime, endAtCondition: DateTime, note: String, noteCondition: String, profileIds: [String!]!, startAt: DateTime, startAtCondition: DateTime!): AttendancesCUResponse!
   updateMultipleExam(date: DateTime, dateCondition: DateTime!, note: String, noteCondition: DateTime, profileIds: [String!]!, score: Float, scoreCondition: Float): ExamCUResponse!
   updateProfile(bio: String, id: String!): Profile!
-  userLogin(email: String!, password: String!): AuthPayload!
   userRegister(address: String, avatar: String, email: String!, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, role: Role!): User!
   userUpdate(address: String, avatar: String, email: String, familyName: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, role: Role): User!
 }
@@ -217,13 +204,6 @@ type Query {
   family(id: String!): Family!
   studentAttendances(data: PaginationInputType, studentId: String!): AttendanceResponse
   studentsGroup(data: PaginationInputType, groupId: String!, isActive: Boolean, role: Role): StudentsResponse
-}
-
-"""Refresh token"""
-type RefreshTokenObject {
-  hash: String
-  refreshExpireIn: DateTime
-  userId: String
 }
 
 """User Role"""
