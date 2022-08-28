@@ -8,6 +8,7 @@ export enum Paths {
 	GROUP = "/group",
 	Home = "/",
 	SignIn = "/auth/signin",
+	SignUp = "/auth/signup",
 }
 
 export default Paths;

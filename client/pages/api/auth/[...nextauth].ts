@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
 
 	session: { strategy: "jwt" },
 	pages: {
-		// signIn: Paths.SignIn,
+		signIn: Paths.SignIn,
 		// error: '/auth/error',
 		// signOut: '/auth/signout'
 	},

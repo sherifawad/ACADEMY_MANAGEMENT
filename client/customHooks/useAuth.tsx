@@ -15,7 +15,7 @@ function useAuth(shouldRedirect: boolean = false) {
 	const [currentUser, setCurrentUser] = useState<user>();
 	const [currentAccessToken, setCurrentAccessToken] = useState<string>(null);
 
-	const signOutHandler = async (path: string = Paths.SignIn) => {
+	const signOutHandler = async (path: string = undefined) => {
 		signOut({ redirect: shouldRedirect, callbackUrl: path }).then((data) => router.replace(data?.url));
 	};
 
