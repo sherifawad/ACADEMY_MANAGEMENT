@@ -1,4 +1,3 @@
-import { SIGN_UP_MUTATION } from "core/mutations/userMutations";
 import React, { useState } from "react";
 import { BiLock } from "react-icons/bi";
 import { FaRegUser } from "react-icons/fa";
@@ -18,7 +17,7 @@ function Register({ setLogin }) {
 		error: "",
 	});
 
-	const { data, error } = useMutation(SIGN_UP_MUTATION);
+	// const { data, error } = useMutation(SIGN_UP_MUTATION);
 	const submitContact = async (e) => {
 		e.preventDefault();
 		// if password not equal confirmPassword return
