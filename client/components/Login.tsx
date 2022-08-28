@@ -16,20 +16,24 @@ function Login({ setLogin }) {
 
 	const [loading, setLoading] = useState(false);
 	const submitContact = async (e) => {
-		e.preventDefault();
-		if (loading) return;
-		setLoading(true);
-		e.target.set;
+		try {
+			e.preventDefault();
+			console.log("🚀 ~ file: Login.tsx ~ line 22 ~ submitContact ~ loading", loading)
+			if (loading) return;
+			setLoading(true);
+			e.target.set;
 
-		const { error, ok } = await signIn("credentials", {
-			redirect: false,
-			email: formState.email,
-			password: formState.password,
-		});
-		if (ok) {
-			router.push(Paths.Home);
-		} else if (error) {
-			console.log("🚀 ~ file: Login.tsx ~ line 53 ~ submitContact ~ error", error);
+			const { error, ok, status } = await signIn("credentials", {
+				redirect: false,
+				email: formState.email,
+				password: formState.password,
+			});
+			if (ok) {
+				router.push(Paths.Home);
+			} else if (error) {
+				console.log("🚀 ~ file: Login.tsx ~ line 53 ~ submitContact ~ error", error);
+			}
+		} finally {
 		}
 		setLoading(false);
 	};

@@ -101,36 +101,34 @@ export const handleCredentialProviderLogin = async ({
 				password.password
 			);
 			if (isVerified) {
-				const account = await prisma.account.upsert({
-					where: {
-						provider_providerAccountId: {
-							provider,
-							providerAccountId
+				const credentialsAccount =
+					await prisma.account.findFirstOrThrow({
+						where: {
+							AND: { userId: user.id, provider }
 						}
-					},
-					create: {
-						userId: user.id,
-						provider,
-						providerAccountId,
-						type,
-						refresh_token,
-						expires_at
-					},
-					update: {
-						refresh_token,
-						expires_at
-					}
-				});
-				if (account) {
-					const tokens = await createTokens(
-						{ ...rest },
-						refresh_token
-					);
+					});
+				if (credentialsAccount) {
+					const account = await prisma.account.update({
+						where: {
+							id: credentialsAccount.id
+						},
+						data: {
+							refresh_token,
+							expires_at
+						}
+					});
+					if (account) {
+						const tokens = await createTokens(
+							{ ...rest },
+							refresh_token
+						);
 
-					return {
-						user: { ...rest },
-						...tokens
-					};
+						return {
+							user: { ...rest },
+							...tokens
+						};
+					}
+					throw new Error("Not Allowed");
 				}
 				throw new Error("Not Allowed");
 			}

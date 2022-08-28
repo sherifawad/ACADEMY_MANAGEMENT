@@ -58,10 +58,13 @@ export const getRefreshToken = async (variables: Variables) => {
 };
 
 export const userLogin = async (variables: Variables) => {
-	const { userLogin = {}, err = null } = await createAxiosService({ query: LOGIN_MUTATION, variables })
-		.then((response) => response.data.data)
-		.catch((err) => {
-			err;
+	try {
+		const { data } = await createAxiosService({
+			url: "http://localhost:7010/api/auth/login",
+			variables,
 		});
-	return { ...userLogin, err };
+		return { data, error: null };
+	} catch (error) {
+		return { data: null, error: error.message };
+	}
 };

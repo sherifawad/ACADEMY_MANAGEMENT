@@ -188,7 +188,7 @@ const Navbar = () => {
 					</button>
 				</div>
 			) : (
-				<Link href="/auth/signin">
+				<Link href={`${Paths.Auth}`}>
 					<a className="bg-green-400 w-20 rounded-full text-white text-center py-2">Log In</a>
 				</Link>
 			)}

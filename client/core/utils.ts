@@ -2,17 +2,17 @@ import axios from "axios";
 import constants from "./constants";
 
 export interface axiosProps {
-	query: string;
+	query?: string;
 	variables?: any;
 	token?: string;
-	endPoint?: string;
+	url?: string;
 }
 
 export const createAxiosService = async ({
 	query,
 	variables = {},
 	token = null,
-	endPoint = constants.END_POINT,
+	url = constants.END_POINT,
 }: axiosProps) => {
 	let headers: any = {
 		"content-type": "application/json",
@@ -26,16 +26,12 @@ export const createAxiosService = async ({
 		variables: { ...variables },
 	};
 
-	try {
-		return await axios({
-			url: endPoint,
-			method: "post",
-			headers: headers,
-			data: graphqlQuery,
-		});
-	} catch (error) {
-		return error.message;
-	}
+	return await axios({
+		url,
+		method: "post",
+		headers: headers,
+		data: query ? graphqlQuery : variables,
+	});
 };
 
 export const getDayNames = (date: String, firstThreeLetter: boolean = false): string => {

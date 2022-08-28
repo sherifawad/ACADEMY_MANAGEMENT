@@ -51,9 +51,10 @@ export const authOptions: NextAuthOptions = {
 				};
 				// perform you login logic
 				// find out user from db
-				const data = await userLogin({ email, password });
+				const { data, error } = await userLogin({ email, password, provider: "credentials" });
 				// const result = ObjectFlatten(data);
-				return data;
+				if (!error) return data;
+				return null;
 			},
 		}),
 		GitHubProvider({
@@ -75,17 +76,14 @@ export const authOptions: NextAuthOptions = {
 			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ token", token);
 			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ user", user);
 			// console.log("🚀 ~ file: [...nextauth].ts ~ line 64 ~ jwt ~ user", JSON.stringify(user, null, 2));
-			const { accessTokenExpiresIn, accessToken, refreshTokenExpiresIn, refreshToken, ...rest } =
-				(user as any) || {};
+			const { accessToken, refreshToken } = (user as any) || {};
 			// Initial sign in
-			if (user) {
+			if (user.user) {
 				return {
 					...token,
-					...rest,
-					accessToken: accessToken,
-					accessTokenExpires: accessTokenExpiresIn,
-					refreshToken,
-					refreshTokenExpiresIn,
+					user: user.user,
+					...accessToken,
+					...refreshToken,
 				};
 			}
 			// Return previous token if the access token has not expired yet

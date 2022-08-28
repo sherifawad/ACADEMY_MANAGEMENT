@@ -38,7 +38,7 @@ async function seed() {
 		data: {
 			userId: admin.id,
 			type: "credentials",
-			provider: "Credentials",
+			provider: "credentials",
 			providerAccountId: "domain-login"
 		}
 	});
