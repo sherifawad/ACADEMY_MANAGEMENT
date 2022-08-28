@@ -3,7 +3,7 @@ import { GetServerSideProps } from "next";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import useReactTable from "customHooks/useReactTable";
-import { ObjectFlatten } from "core/utils";
+import { checkSession, ObjectFlatten } from "core/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
@@ -13,7 +13,7 @@ import useModel from "customHooks/useModel";
 import { getSession } from "next-auth/react";
 import Paths from "core/paths";
 import { getToken } from "next-auth/jwt";
-import { unstable_getServerSession } from "next-auth";
+import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import { user } from "features/userFeature/userTypes";
 
@@ -135,16 +135,8 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
 		// If you don't have NEXTAUTH_SECRET set, you will have to pass your secret as `secret` to `getToken`
 
-		const session = await unstable_getServerSession(req, res, authOptions);
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
-		const { user, accessToken } = session;
+		const { user, accessToken } = (await checkSession(req, res, authOptions)) as Session;
+
 		const { role } = (user as user) || {};
 		const variables = role === "ADMIN" ? { userRole: ["USER", "ADMIN"] } : { userRole: ["USER"] };
 		const { list, rest } = await usersByRolesListQuery(variables, accessToken);
@@ -154,7 +146,6 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 		}
 		return {
 			props: {
-				session,
 				flattenedList,
 				...rest,
 			},

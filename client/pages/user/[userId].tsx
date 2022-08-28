@@ -1,9 +1,10 @@
 import Paths from "core/paths";
+import { checkSession } from "core/utils";
 import UserCard from "features/userFeature/UserCard";
 import { userDetailsQuery } from "features/userFeature/usersQueries";
 import { user } from "features/userFeature/userTypes";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 
 function User({ user }) {
@@ -22,16 +23,8 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
 		// If you don't have NEXTAUTH_SECRET set, you will have to pass your secret as `secret` to `getToken`
 
-		const session = await unstable_getServerSession(req, res, authOptions);
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
-		const { user, accessToken } = session;
+		const { user, accessToken } = (await checkSession(req, res, authOptions)) as Session;
+
 		const { id } = (user as user) || {};
 		const { User } = await userDetailsQuery(
 			{
@@ -42,7 +35,6 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 
 		return {
 			props: {
-				session,
 				user: User,
 			},
 		};

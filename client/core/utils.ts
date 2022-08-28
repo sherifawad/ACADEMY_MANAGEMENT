@@ -1,5 +1,7 @@
 import axios from "axios";
+import { getSession } from "next-auth/react";
 import constants from "./constants";
+import Paths from "./paths";
 
 export interface axiosProps {
 	query?: string;
@@ -122,3 +124,16 @@ export function renameKeyValue(obj: any, oldKey: string, newKey: string, newValu
 	});
 	return Object.fromEntries(keyValues);
 }
+
+export const checkSession = async (req: any, res: any, authOptions: any) => {
+	const session = await getSession(req);
+	if (!session) {
+		return {
+			redirect: {
+				destination: Paths.SignIn,
+				permanent: false,
+			},
+		};
+	}
+	return session;
+};

@@ -1,9 +1,9 @@
 import Paths from "core/paths";
-import { createAxiosService } from "core/utils";
+import { checkSession, createAxiosService } from "core/utils";
 import { getGradeGroups, getGradeIds, GRADE_GROUPS_QUERY } from "features/gradeFeature/gradeQueries";
 import GroupContents from "features/groupFeature/GroupContents";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { Session } from "next-auth";
 import Head from "next/head";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 
@@ -24,16 +24,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 	try {
 		const { gradeId } = params;
 
-		const session = await unstable_getServerSession(req, res, authOptions);
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
-		const { accessToken } = session;
+		const { accessToken } = (await checkSession(req, res, authOptions)) as Session;
 
 		const { groups, name } = await getGradeGroups({ gradeId }, accessToken);
 

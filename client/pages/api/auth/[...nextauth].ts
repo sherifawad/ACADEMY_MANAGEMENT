@@ -74,15 +74,16 @@ export const authOptions: NextAuthOptions = {
 	callbacks: {
 		async jwt({ token, user }) {
 			//TODO: pass account data to backend if no user connected add onetime hash then connect else get connected user accessToken
-			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ token", token);
-			console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ user", user);
+			// console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ token", token);
+			// console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ user", user);
 			// console.log("🚀 ~ file: [...nextauth].ts ~ line 64 ~ jwt ~ user", JSON.stringify(user, null, 2));
 			const { accessToken, refreshToken, provider, providerAccountId } = (user as any) || {};
 			// Initial sign in
 			if (user?.user) {
+                
 				return {
 					...token,
-					user: { ...(user as any).user, avatar: user.image },
+					user: { ...(user as any).user, avatar: (user as any).user.image },
 					provider,
 					providerAccountId,
 					...accessToken,
@@ -107,7 +108,7 @@ export const authOptions: NextAuthOptions = {
 			session.user = token.user;
 			session.accessToken = token.accessToken || null;
 			session.error = token.error || null;
-			console.log("🚀 ~ file: [...nextauth].ts ~ line 104 ~ session ~ session", session);
+			// console.log("🚀 ~ file: [...nextauth].ts ~ line 104 ~ session ~ session", session);
 			return session;
 		},
 	},

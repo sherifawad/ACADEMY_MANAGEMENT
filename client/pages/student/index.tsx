@@ -1,12 +1,12 @@
 import Paths from "core/paths";
-import { getDayNames, ObjectFlatten } from "core/utils";
+import { checkSession, getDayNames, ObjectFlatten } from "core/utils";
 import useModel from "customHooks/useModel";
 import useReactTable from "customHooks/useReactTable";
 import { format } from "date-fns";
 import { studentsListQuery } from "features/userFeature/usersQueries";
 import { user } from "features/userFeature/userTypes";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { Session, unstable_getServerSession } from "next-auth";
 import { getSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
@@ -138,18 +138,7 @@ function index({ flattenedList }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
-		const session = await unstable_getServerSession(req, res, authOptions);
-
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
-
-		const { accessToken, user } = session;
+		const { user, accessToken } = (await checkSession(req, res, authOptions)) as Session;
 
 		const { family } = (user as user) || {};
 

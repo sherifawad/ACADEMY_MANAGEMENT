@@ -1,11 +1,12 @@
 import Paths from "core/paths";
+import { checkSession } from "core/utils";
 import AttendancesCard from "features/attendanceFeature/AttendancesCard";
 import ExamsCard from "features/examFeature/ExamsCard";
 import UserCard from "features/userFeature/UserCard";
 import { studentDetailsQuery, studentsIdsQuery } from "features/userFeature/usersQueries";
 import { user } from "features/userFeature/userTypes";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { Session, unstable_getServerSession } from "next-auth";
 import Head from "next/head";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import { useMemo } from "react";
@@ -34,18 +35,8 @@ function Student({ user }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
-		const session = await unstable_getServerSession(req, res, authOptions);
+		const { accessToken } = (await checkSession(req, res, authOptions)) as Session;
 
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
-
-		const { accessToken } = session;
 		const { studentId } = params;
 
 		const { User } = await studentDetailsQuery(
@@ -58,7 +49,6 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 		);
 		return {
 			props: {
-				session,
 				user: User,
 			},
 		};

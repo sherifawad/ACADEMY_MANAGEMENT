@@ -13,7 +13,7 @@ async function seed() {
 	const salt = await bcrypt.genSalt(
 		parseInt(process.env.SALT_ROUNDS || "10", 10)
 	);
-	const hashedPassword = await bcrypt.hash("adminPassword@root#1", salt);
+	const hashedPassword = await bcrypt.hash("      ", salt);
 
 	const admin = await client.user.create({
 		data: {

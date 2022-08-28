@@ -3,11 +3,12 @@ import useModel from "customHooks/useModel";
 import usePagination from "customHooks/usePagination";
 import dynamic from "next/dynamic";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import Paths from "core/paths";
 import { useCallback } from "react";
 import useAuth from "customHooks/useAuth";
+import { checkSession } from "core/utils";
 
 function Attendance({ list, prevCursor, nextCursor, _count, profileId, accessToken }) {
 	const AddAttendance = dynamic(() => import("features/attendanceFeature/AddAttendance"), {
@@ -54,20 +55,9 @@ function Attendance({ list, prevCursor, nextCursor, _count, profileId, accessTok
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
-		const session = await unstable_getServerSession(req, res, authOptions);
-
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
+		const { accessToken } = (await checkSession(req, res, authOptions)) as Session;
 
 		const { studentId } = params;
-
-		const { accessToken } = session;
 
 		const variables = {
 			studentId,

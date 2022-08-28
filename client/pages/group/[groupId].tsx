@@ -1,4 +1,4 @@
-import { ObjectFlatten } from "core/utils";
+import { checkSession, ObjectFlatten } from "core/utils";
 import useModel from "customHooks/useModel";
 import usePagination from "customHooks/usePagination";
 import Head from "next/head";
@@ -10,7 +10,7 @@ import { useRowSelect } from "react-table";
 import { getGroupsIds, getGroupStudents, GROUPS_IDS_QUERY } from "features/groupFeature/groupQueries";
 import dynamic from "next/dynamic";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import Paths from "core/paths";
 
@@ -182,16 +182,8 @@ function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId, ac
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
-		const session = await unstable_getServerSession(req, res, authOptions);
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
-		const { accessToken } = session;
+		const { accessToken } = (await checkSession(req, res, authOptions)) as Session;
+
 		const { groupId } = params;
 
 		const variables = {

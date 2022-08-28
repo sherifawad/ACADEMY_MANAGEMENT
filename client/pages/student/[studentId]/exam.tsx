@@ -1,11 +1,11 @@
 import { GET_STUDENT_EXAMS, studentExamsQuery } from "features/examFeature/examsQueries";
-import { createAxiosService } from "core/utils";
+import { checkSession, createAxiosService } from "core/utils";
 import { useRouter } from "next/router";
 import useReactTable from "customHooks/useReactTable";
 import useModel from "customHooks/useModel";
 import { GET_USERS_IDS, studentsIdsQuery } from "features/userFeature/usersQueries";
 import dynamic from "next/dynamic";
-import { unstable_getServerSession } from "next-auth";
+import { Session, unstable_getServerSession } from "next-auth";
 import { GetServerSideProps } from "next";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import Paths from "core/paths";
@@ -52,20 +52,9 @@ function studentExams({ exams = [], profileId }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
-		const session = await unstable_getServerSession(req, res, authOptions);
-
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
+		const { accessToken } = (await checkSession(req, res, authOptions)) as Session;
 
 		const { studentId } = params;
-
-		const { accessToken } = session;
 
 		const { list } = await studentExamsQuery({ studentId }, accessToken);
 

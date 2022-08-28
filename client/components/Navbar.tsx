@@ -1,14 +1,9 @@
 import Paths from "core/paths";
-import { createAxiosService } from "core/utils";
 import useAuth from "customHooks/useAuth";
-import { REVOKE_TOKEN_MUTATION } from "features/authFeature/authMutations";
-import { User } from "next-auth";
-import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useMutation } from "react-query";
 
 const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -17,6 +12,7 @@ const Navbar = () => {
 	const { isAuthenticated, user, signOutHandler } = useAuth();
 
 	const { id, avatar, role } = user || {};
+	console.log("🚀 ~ file: Navbar.tsx ~ line 15 ~ Navbar ~ avatar", avatar)
 
 	const router = useRouter();
 
@@ -60,27 +56,22 @@ const Navbar = () => {
 				<Link href={`${Paths.Home}`}>
 					<a className="md:mx-0 mx-8 menu-line">Home</a>
 				</Link>
-				{!isStudent && (
-					<Link href={`${Paths.USER}`}>
-						<a className="menu-line">Users</a>
-					</Link>
-				)}
-				{isAuthenticated && (
-					<Link href={`${Paths.STUDENT}`}>
-						<a className="menu-line">Students</a>
-					</Link>
-				)}
 
-				{!isStudent && (
-					<Link href={`${Paths.GRADE}`}>
-						<a className="menu-line">Grade</a>
-					</Link>
-				)}
-				{!isStudent && (
-					<Link href={`${Paths.GROUP}`}>
-						<a className="menu-line">Group</a>
-					</Link>
-				)}
+				<Link href={`${Paths.USER}`}>
+					<a className="menu-line">Users</a>
+				</Link>
+
+				<Link href={`${Paths.STUDENT}`}>
+					<a className="menu-line">Students</a>
+				</Link>
+
+				<Link href={`${Paths.GRADE}`}>
+					<a className="menu-line">Grade</a>
+				</Link>
+
+				<Link href={`${Paths.GROUP}`}>
+					<a className="menu-line">Group</a>
+				</Link>
 			</div>
 			{
 				//#endregion

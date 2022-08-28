@@ -2,7 +2,7 @@ import AddGrade from "features/gradeFeature/AddGrade";
 import AddModel from "components/AddModel";
 import GradesList from "components/GradesList";
 import constants from "core/constants";
-import { createAxiosService } from "core/utils";
+import { checkSession, createAxiosService } from "core/utils";
 import { getGradeList, GRADES_QUERY } from "features/gradeFeature/gradeQueries";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
@@ -10,6 +10,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Paths from "core/paths";
+import { authOptions } from "pages/api/auth/[...nextauth]";
+import { Session } from "next-auth";
 
 function grade({ grades }) {
 	// eslint-disable-next-line react-hooks/rules-of-hooks
@@ -66,24 +68,13 @@ function grade({ grades }) {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
-		const session = await getSession({ req });
-
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
-		const { accessToken } = session;
+		const { accessToken } = (await checkSession(req, res, authOptions)) as Session;
 
 		const { Grades } = await getGradeList(accessToken);
 		return {
 			props: {
-				session,
 				grades: Grades ?? [],
 			},
 		};

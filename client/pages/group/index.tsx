@@ -6,7 +6,8 @@ import GroupContents from "features/groupFeature/GroupContents";
 import Paths from "core/paths";
 import { getSession } from "next-auth/react";
 import { authOptions } from "pages/api/auth/[...nextauth]";
-import { unstable_getServerSession } from "next-auth";
+import { Session, unstable_getServerSession } from "next-auth";
+import { checkSession } from "core/utils";
 
 function group({ groups = [] }) {
 	return (
@@ -23,16 +24,7 @@ function group({ groups = [] }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
-		const session = await unstable_getServerSession(req, res, authOptions);
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.SignIn,
-					permanent: false,
-				},
-			};
-		}
-		const { accessToken } = session;
+		const { accessToken } = (await checkSession(req, res, authOptions)) as Session;
 
 		const { Groups } = await getGroups(accessToken);
 		return {
