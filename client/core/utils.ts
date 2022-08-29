@@ -27,7 +27,6 @@ export const createAxiosService = async ({
 		query: query,
 		variables: { ...variables },
 	};
-
 	return await axios({
 		url,
 		method: "post",

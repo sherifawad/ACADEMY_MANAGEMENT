@@ -63,9 +63,11 @@ export const getGroups = async (token = null) => {
 				data: { Groups },
 			},
 		} = await createAxiosService({ query: GROUPS_QUERY, token });
-		return { Groups };
+		return { Groups, error: null };
 	} catch (error) {
-		return {};
+		return {
+			error: error.message,
+		};
 	}
 };
 export const getGroupsIds = async (token = null) => {
@@ -75,9 +77,11 @@ export const getGroupsIds = async (token = null) => {
 				data: { Groups },
 			},
 		} = await createAxiosService({ query: GROUPS_IDS_QUERY, token });
-		return { Groups };
+		return { Groups, error: null };
 	} catch (error) {
-		return {};
+		return {
+			error: error.message,
+		};
 	}
 };
 
@@ -90,8 +94,10 @@ export const getGroupStudents = async (variables: groupVariables, token = null) 
 				},
 			},
 		} = await createAxiosService({ query: GROUP_STUDENTS_QUERY, variables, token });
-		return { name, ...profiles };
+		return { name, ...profiles, error: null };
 	} catch (error) {
-		return {};
+		return {
+			error: error.message,
+		};
 	}
 };

@@ -146,50 +146,80 @@ export const GET_STUDENTS_LIST = `
 `;
 
 export const usersByRolesListQuery = async (variables: { userRole: string[] }, token = null) => {
-	const {
-		data: {
-			data: { FilteredUsers },
-		},
-	} = await createAxiosService({ query: GET_USERS_BY_ROLES, variables, token });
+	try {
+		const {
+			data: {
+				data: { FilteredUsers },
+			},
+		} = await createAxiosService({ query: GET_USERS_BY_ROLES, variables, token });
 
-	return { ...FilteredUsers };
+		return { ...FilteredUsers, error: null };
+	} catch (error) {
+		return {
+			error: error.message,
+		};
+	}
 };
 
 export const studentsListQuery = async (variables: userVariables, token = null) => {
-	const {
-		data: {
-			data: { FilteredUsers },
-		},
-	} = await createAxiosService({ query: GET_STUDENTS_LIST, variables, token });
+	try {
+		const {
+			data: {
+				data: { FilteredUsers },
+			},
+		} = await createAxiosService({ query: GET_STUDENTS_LIST, variables, token });
 
-	return { ...FilteredUsers };
+		return { ...FilteredUsers, error: null };
+	} catch (error) {
+		return {
+			error: error.message,
+		};
+	}
 };
 
 export const studentsIdsQuery = async (variables: userVariables, token = null) => {
-	const {
-		data: {
+	try {
+		const {
 			data: {
-				FilteredUsers: { list },
+				data: {
+					FilteredUsers: { list },
+				},
 			},
-		},
-	} = await createAxiosService({ query: GET_USERS_IDS, variables, token });
-	return { list };
+		} = await createAxiosService({ query: GET_USERS_IDS, variables, token });
+		return { list, error: null };
+	} catch (error) {
+		return {
+			error: error.message,
+		};
+	}
 };
 
 export const userDetailsQuery = async (variables: userVariables, token = null) => {
-	const {
-		data: {
-			data: { User },
-		},
-	} = await createAxiosService({ query: GET_USER_DETAILS, variables, token });
-	return { User };
+	try {
+		const {
+			data: {
+				data: { User },
+			},
+		} = await createAxiosService({ query: GET_USER_DETAILS, variables, token });
+		return { User, error: null };
+	} catch (error) {
+		return {
+			error: error.message,
+		};
+	}
 };
 
 export const studentDetailsQuery = async (variables: userVariables, token = null) => {
-	const {
-		data: {
-			data: { User },
-		},
-	} = await createAxiosService({ query: GET_STUDENT_DETAILS, variables, token });
-	return { User };
+	try {
+		const {
+			data: {
+				data: { User },
+			},
+		} = await createAxiosService({ query: GET_STUDENT_DETAILS, variables, token });
+		return { User, error: null };
+	} catch (error) {
+		return {
+			error: error.message,
+		};
+	}
 };

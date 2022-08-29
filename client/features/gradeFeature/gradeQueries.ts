@@ -52,9 +52,11 @@ export const getActiveGradesList = async (token = null) => {
 				data: { ActiveGrades },
 			},
 		} = await createAxiosService({ query: ACTIVE_GRADES_QUERY, token });
-		return { grades: ActiveGrades };
+		return { grades: ActiveGrades, error: null };
 	} catch (error) {
-		return {};
+		return {
+			error: error.message,
+		};
 	}
 };
 
@@ -65,9 +67,11 @@ export const getGradeList = async (token = null) => {
 				data: { Grades },
 			},
 		} = await createAxiosService({ query: GRADES_QUERY, token });
-		return { Grades };
+		return { Grades, error: null };
 	} catch (error) {
-		return {};
+		return {
+			error: error.message,
+		};
 	}
 };
 
@@ -78,9 +82,11 @@ export const getGradeIds = async (token = null) => {
 				data: { Grades },
 			},
 		} = await createAxiosService({ query: GRADES_IDS, token });
-		return { Grades };
+		return { Grades, error: null };
 	} catch (error) {
-		return {};
+		return {
+			error: error.message,
+		};
 	}
 };
 export const getGradeGroups = async (variables: gradeVariables, token = null) => {
@@ -90,8 +96,10 @@ export const getGradeGroups = async (variables: gradeVariables, token = null) =>
 				data: { Grade },
 			},
 		} = await createAxiosService({ query: GRADE_GROUPS_QUERY, variables, token });
-		return { ...Grade };
+		return { ...Grade, error: null };
 	} catch (error) {
-		return {};
+		return {
+			error: error.message,
+		};
 	}
 };

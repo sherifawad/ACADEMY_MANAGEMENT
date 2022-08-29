@@ -15,12 +15,18 @@ export const GET_STUDENT_EXAMS = `
 `;
 
 export const studentExamsQuery = async (variables: examMutationVariables, token = null) => {
-	const {
-		data: {
+	try {
+		const {
 			data: {
-				SExams: { list },
+				data: {
+					SExams: { list },
+				},
 			},
-		},
-	} = await createAxiosService({ query: GET_STUDENT_EXAMS, variables, token });
-	return { list };
+		} = await createAxiosService({ query: GET_STUDENT_EXAMS, variables, token });
+		return { list, error: null };
+	} catch (error) {
+		return {
+			error: error.message,
+		};
+	}
 };
