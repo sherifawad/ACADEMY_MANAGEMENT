@@ -7,15 +7,18 @@ import { checkSession } from "core/utils";
 import { GetServerSideProps } from "next";
 import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
+import { useMemo } from "react";
 
 function index() {
-	const tabs = [
-		{ header: "Login", body: <Login setLogin={true} /> },
-		{
-			header: "SIGN Up",
-			body: <Register setLogin={false} />,
-		},
-	];
+	const tabs = useMemo(() => {
+		return [
+			{ header: "Login", body: <Login setLogin={true} /> },
+			{
+				header: "SIGN Up",
+				body: <Register setLogin={false} />,
+			},
+		];
+	}, []);
 	return (
 		<div>
 			<TabsLayout color="pink" tabsList={tabs} />
@@ -23,9 +26,10 @@ function index() {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
-		const session = (await checkSession(req, res, authOptions)) as Session;
+		const session = await unstable_getServerSession(req, res, authOptions);
+
 		if (session) {
 			return {
 				redirect: {
@@ -34,6 +38,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 				},
 			};
 		}
+
 		return {
 			props: {},
 		};

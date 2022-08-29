@@ -138,8 +138,17 @@ function index({ flattenedList }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
-		const { user, accessToken } = (await checkSession(req, res, authOptions)) as Session;
+		const session = await unstable_getServerSession(req, res, authOptions);
 
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.Auth,
+					permanent: false,
+				},
+			};
+		}
+		const { user, accessToken } = session;
 		const { family } = (user as user) || {};
 
 		const variables = {
@@ -158,7 +167,14 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 			},
 		};
 
-		const { list, rest } = await studentsListQuery(variables, accessToken);
+		const { list, rest, error } = await studentsListQuery(variables, accessToken);
+		if (error) {
+			return {
+				props: {
+					error,
+				},
+			};
+		}
 
 		let flattenedList = [];
 		if (list?.length > 0) {

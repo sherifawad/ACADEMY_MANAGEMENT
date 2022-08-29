@@ -182,8 +182,17 @@ function groupItemData({ list, _count, name, nextCursor, prevCursor, groupId, ac
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
-		const { accessToken } = (await checkSession(req, res, authOptions)) as Session;
+		const session = await unstable_getServerSession(req, res, authOptions);
 
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.Auth,
+					permanent: false,
+				},
+			};
+		}
+		const { accessToken } = session;
 		const { groupId } = params;
 
 		const variables = {

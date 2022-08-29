@@ -12,10 +12,9 @@ import dynamic from "next/dynamic";
 import useModel from "customHooks/useModel";
 import { getSession } from "next-auth/react";
 import Paths from "core/paths";
-import { getToken } from "next-auth/jwt";
-import { Session, unstable_getServerSession } from "next-auth";
-import { authOptions } from "pages/api/auth/[...nextauth]";
 import { user } from "features/userFeature/userTypes";
+import { unstable_getServerSession } from "next-auth";
+import { authOptions } from "pages/api/auth/[...nextauth]";
 
 export default function Index({ flattenedList }) {
 	const AddUser = dynamic(() => import("features/userFeature/AddUser"), {
@@ -135,7 +134,17 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
 		// If you don't have NEXTAUTH_SECRET set, you will have to pass your secret as `secret` to `getToken`
 
-		const { user, accessToken } = (await checkSession(req, res, authOptions)) as Session;
+		const session = await unstable_getServerSession(req, res, authOptions);
+
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.Auth,
+					permanent: false,
+				},
+			};
+		}
+		const { user, accessToken } = session;
 
 		const { role } = (user as user) || {};
 		const variables = role === "ADMIN" ? { userRole: ["USER", "ADMIN"] } : { userRole: ["USER"] };

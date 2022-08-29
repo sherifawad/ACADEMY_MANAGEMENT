@@ -23,7 +23,17 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
 		// If you don't have NEXTAUTH_SECRET set, you will have to pass your secret as `secret` to `getToken`
 
-		const { user, accessToken } = (await checkSession(req, res, authOptions)) as Session;
+		const session = await unstable_getServerSession(req, res, authOptions);
+
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.Auth,
+					permanent: false,
+				},
+			};
+		}
+		const { user, accessToken } = session;
 
 		const { id } = (user as user) || {};
 		const { User } = await userDetailsQuery(

@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Paths from "core/paths";
 import { authOptions } from "pages/api/auth/[...nextauth]";
-import { Session } from "next-auth";
+import { Session, unstable_getServerSession } from "next-auth";
 
 function grade({ grades }) {
 	// eslint-disable-next-line react-hooks/rules-of-hooks
@@ -70,8 +70,17 @@ function grade({ grades }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
-		const { accessToken } = (await checkSession(req, res, authOptions)) as Session;
+		const session = await unstable_getServerSession(req, res, authOptions);
 
+		if (!session) {
+			return {
+				redirect: {
+					destination: Paths.Auth,
+					permanent: false,
+				},
+			};
+		}
+		const { accessToken } = session;
 		const { Grades } = await getGradeList(accessToken);
 		return {
 			props: {
