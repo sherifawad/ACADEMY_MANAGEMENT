@@ -85,26 +85,26 @@ export const authOptions: NextAuthOptions = {
 		// signOut: '/auth/signout'
 	},
 	callbacks: {
-		async signIn({ user, account, profile, email, credentials }) {
-			if (account?.provider === "githubLogin") {
-				const { data, error } = await getHubLogin({
-					provider: "github",
-					providerAccountId: account.providerAccountId,
-					type: account.type,
-					name: profile?.name,
-				});
-				// const result = ObjectFlatten(data);
-				if (!error) {
-					user = { ...data };
-					account = { ...data };
-					profile = { ...data };
-					return true;
-				}
-				return false;
-			}
+		// async signIn({ user, account, profile, email, credentials }) {
+		// 	if (account?.provider === "githubLogin") {
+		// 		const { data, error } = await getHubLogin({
+		// 			provider: "github",
+		// 			providerAccountId: account.providerAccountId,
+		// 			type: account.type,
+		// 			name: profile?.name,
+		// 		});
+		// 		// const result = ObjectFlatten(data);
+		// 		if (!error) {
+		// 			user = { ...data };
+		// 			account = { ...data };
+		// 			profile = { ...data };
+		// 			return true;
+		// 		}
+		// 		return false;
+		// 	}
 
-			return false;
-		},
+		// 	return false;
+		// },
 
 		async jwt({ token, user, profile, account }) {
 			//TODO: pass account data to backend if no user connected add onetime hash then connect else get connected user accessToken
@@ -127,6 +127,18 @@ export const authOptions: NextAuthOptions = {
 						return {
 							...token,
 							user: { ...(data as any)?.user, avatar: (data as any)?.user?.image },
+							provider,
+							providerAccountId,
+							...accessToken,
+							...refreshToken,
+						};
+					}
+				} else if (account?.provider === "credentialsId") {
+					const { accessToken, refreshToken, provider, providerAccountId } = (user as any) || {};
+					if (user?.user) {
+						return {
+							...token,
+							user: { ...(user as any)?.user, avatar: (user as any)?.user?.image },
 							provider,
 							providerAccountId,
 							...accessToken,

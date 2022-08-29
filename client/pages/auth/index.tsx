@@ -23,4 +23,27 @@ function index() {
 	);
 }
 
+export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
+	try {
+		const session = (await checkSession(req, res, authOptions)) as Session;
+		if (session) {
+			return {
+				redirect: {
+					destination: Paths.Home,
+					permanent: false,
+				},
+			};
+		}
+		return {
+			props: {},
+		};
+	} catch (error) {
+		return {
+			props: {
+				session: null,
+			},
+		};
+	}
+};
+
 export default index;
