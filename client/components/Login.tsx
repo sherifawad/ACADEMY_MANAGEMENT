@@ -5,6 +5,7 @@ import { FaRegUser } from "react-icons/fa";
 import { getCsrfToken, getSession, signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Paths from "core/paths";
+import { AiFillGithub } from "react-icons/ai";
 
 function Login({ setLogin }) {
 	const router = useRouter();
@@ -18,12 +19,10 @@ function Login({ setLogin }) {
 	const submitContact = async (e) => {
 		try {
 			e.preventDefault();
-			console.log("🚀 ~ file: Login.tsx ~ line 22 ~ submitContact ~ loading", loading)
 			if (loading) return;
 			setLoading(true);
-			e.target.set;
 
-			const { error, ok, status } = await signIn("credentials", {
+			const { error, ok, status } = await signIn("credentialsId", {
 				redirect: false,
 				email: formState.email,
 				password: formState.password,
@@ -34,8 +33,18 @@ function Login({ setLogin }) {
 				console.log("🚀 ~ file: Login.tsx ~ line 53 ~ submitContact ~ error", error);
 			}
 		} finally {
+			setLoading(false);
 		}
-		setLoading(false);
+	};
+	const gitHubLogIn = async (e) => {
+		try {
+			e.preventDefault();
+			if (loading) return;
+			setLoading(true);
+			await signIn("githubLogin");
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return (
@@ -106,13 +115,26 @@ function Login({ setLogin }) {
 					LOGIN
 				</button>
 			</form>
-			<Link href="#">
+			<div className="flex items-center justify-center space-x-2 my-5">
+				<span className="h-px w-full bg-gray-700"></span>
+				<span className="font-semibold text-gray-400">OR</span>
+				<span className="h-px w-full bg-gray-700"></span>
+			</div>
+			<div className="flex">
+				<button
+					className="mr-5 bg-gray-200  hover:bg-slate-500 border border-gray-400  text-blue-600 font-bold py-2 px-6 rounded-lg children:hover:text-white"
+					onClick={gitHubLogIn}
+				>
+					<AiFillGithub className="text-black" />
+				</button>
+			</div>
+			{/* <Link href="#">
 				<a className="text-end py-4 text-slate-500">Forget Password</a>
 			</Link>
 
 			<a onClick={() => setLogin(false)} className="text-center py-4 text-slate-500 cursor-pointer">
 				SIGN UP
-			</a>
+			</a> */}
 		</div>
 	);
 }

@@ -20,7 +20,7 @@ function useAuth(shouldRedirect: boolean = false) {
 	};
 
 	useEffect(() => {
-		if (!session || session?.error === "RefreshAccessTokenError") {
+		if (session?.error === "RefreshAccessTokenError") {
 			setIsAuthenticated(false);
 			signOutHandler();
 			return;

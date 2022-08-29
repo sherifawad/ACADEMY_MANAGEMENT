@@ -73,3 +73,14 @@ export const userLogin = async (variables: Variables) => {
 		return { data: null, error: error.message };
 	}
 };
+export const getHubLogin = async (variables: Variables) => {
+	try {
+		const { data } = await createAxiosService({
+			url: "http://localhost:7010/api/auth/login",
+			variables,
+		});
+		return { data, error: null };
+	} catch (error) {
+		return { data: null, error: error.message };
+	}
+};

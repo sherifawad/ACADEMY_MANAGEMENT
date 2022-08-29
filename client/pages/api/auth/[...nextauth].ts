@@ -1,6 +1,11 @@
 import Paths from "core/paths";
 import { ObjectFlatten } from "core/utils";
-import { getAccessToken, revokeRefreshToken, userLogin } from "features/authFeature/authMutations";
+import {
+	getAccessToken,
+	getHubLogin,
+	revokeRefreshToken,
+	userLogin,
+} from "features/authFeature/authMutations";
 import { user } from "features/userFeature/userTypes";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -9,19 +14,19 @@ import GitHubProvider from "next-auth/providers/github";
 const refreshAccessToken = async (token: any) => {
 	try {
 		const { provider, providerAccountId, refreshToken, accessToken } = (token as any) || {};
-		console.log(
-			"🚀 ~ file: [...nextauth].ts ~ line 12 ~ refreshAccessToken ~ providerAccountId",
-			providerAccountId
-		);
+		// console.log(
+		// 	"🚀 ~ file: [...nextauth].ts ~ line 12 ~ refreshAccessToken ~ providerAccountId",
+		// 	providerAccountId
+		// );
 		const data = await getAccessToken({ provider, providerAccountId, refreshToken }, accessToken);
 		// console.log(
 		// 	"🚀 ~ file: [...nextauth].ts ~ line 14 ~ refreshAccessToken ~ data",
 		// 	JSON.stringify(data, null, 2)
 		// );
 		const { errors, ...rest } = (data as any) || {};
-		console.log("🚀 ~ file: [...nextauth].ts ~ line 18 ~ refreshAccessToken ~ rest", rest);
+		// console.log("🚀 ~ file: [...nextauth].ts ~ line 18 ~ refreshAccessToken ~ rest", rest);
 		if (errors) {
-			console.log("🚀 ~ file: [...nextauth].ts ~ line 16 ~ refreshAccessToken ~ errors", errors);
+			// console.log("🚀 ~ file: [...nextauth].ts ~ line 16 ~ refreshAccessToken ~ errors", errors);
 			return {
 				...token,
 				error: "RefreshAccessTokenError",
@@ -40,10 +45,11 @@ const refreshAccessToken = async (token: any) => {
 };
 
 export const authOptions: NextAuthOptions = {
-	debug: process.env.NODE_ENV === "development",
+	// debug: process.env.NODE_ENV === "development",
 	providers: [
 		CredentialsProvider({
 			type: "credentials",
+			id: "credentialsId",
 			credentials: {},
 			async authorize(credentials, _req) {
 				const { email, password } = credentials as {
@@ -52,6 +58,7 @@ export const authOptions: NextAuthOptions = {
 				};
 				// perform you login logic
 				// find out user from db
+				// console.log("🚀 ~ file: [...nextauth].ts ~ line 57 ~ authorize ~ email", email);
 				const { data, error } = await userLogin({ email, password, provider: "credentials" });
 				// const result = ObjectFlatten(data);
 				if (!error) return data;
@@ -59,6 +66,12 @@ export const authOptions: NextAuthOptions = {
 			},
 		}),
 		GitHubProvider({
+			id: "githubLogin",
+			clientId: process.env.GITHUB_ID,
+			clientSecret: process.env.GITHUB_SECRET,
+		}),
+		GitHubProvider({
+			id: "githubRegister",
 			clientId: process.env.GITHUB_ID,
 			clientSecret: process.env.GITHUB_SECRET,
 		}),
@@ -72,24 +85,67 @@ export const authOptions: NextAuthOptions = {
 		// signOut: '/auth/signout'
 	},
 	callbacks: {
-		async jwt({ token, user }) {
+		async signIn({ user, account, profile, email, credentials }) {
+			if (account?.provider === "githubLogin") {
+				const { data, error } = await getHubLogin({
+					provider: "github",
+					providerAccountId: account.providerAccountId,
+					type: account.type,
+					name: profile?.name,
+				});
+				// const result = ObjectFlatten(data);
+				if (!error) {
+					user = { ...data };
+					account = { ...data };
+					profile = { ...data };
+					return true;
+				}
+				return false;
+			}
+
+			return false;
+		},
+
+		async jwt({ token, user, profile, account }) {
 			//TODO: pass account data to backend if no user connected add onetime hash then connect else get connected user accessToken
 			// console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ token", token);
-			// console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ user", user);
 			// console.log("🚀 ~ file: [...nextauth].ts ~ line 64 ~ jwt ~ user", JSON.stringify(user, null, 2));
-			const { accessToken, refreshToken, provider, providerAccountId } = (user as any) || {};
 			// Initial sign in
-			if (user?.user) {
-                
-				return {
-					...token,
-					user: { ...(user as any).user, avatar: (user as any).user.image },
-					provider,
-					providerAccountId,
-					...accessToken,
-					...refreshToken,
-				};
+			if (user) {
+				if (account?.provider === "githubLogin") {
+					const { data, error } = await getHubLogin({
+						provider: "github",
+						providerAccountId: account.providerAccountId,
+						type: account.type,
+						name: profile?.name,
+					});
+					// const result = ObjectFlatten(data);
+					if (!error) {
+						const { accessToken, refreshToken, provider, providerAccountId } =
+							(data as any) || {};
+
+						return {
+							...token,
+							user: { ...(data as any)?.user, avatar: (data as any)?.user?.image },
+							provider,
+							providerAccountId,
+							...accessToken,
+							...refreshToken,
+						};
+					}
+				}
+				return token;
 			}
+			// if (user?.user) {
+			// 	return {
+			// 		...token,
+			// 		user: { ...(user as any)?.user, avatar: (user as any)?.user?.image },
+			// 		provider,
+			// 		providerAccountId,
+			// 		...accessToken,
+			// 		...refreshToken,
+			// 	};
+			// }
 			// Return previous token if the access token has not expired yet
 
 			// add 10 seconds from currentTime
@@ -113,7 +169,9 @@ export const authOptions: NextAuthOptions = {
 		},
 	},
 	events: {
-		// async signIn(message) { /* on successful sign in */ },
+		async signIn(message) {
+			/* on successful sign in */
+		},
 		async signOut({ token }) {
 			try {
 				// console.log(

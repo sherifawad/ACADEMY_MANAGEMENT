@@ -1,5 +1,10 @@
 module.exports = {
-	content: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}", "./customHooks/**/*.{js,ts,jsx,tsx}", "./features/**/*.{js,ts,jsx,tsx}"],
+	content: [
+		"./pages/**/*.{js,ts,jsx,tsx}",
+		"./components/**/*.{js,ts,jsx,tsx}",
+		"./customHooks/**/*.{js,ts,jsx,tsx}",
+		"./features/**/*.{js,ts,jsx,tsx}",
+	],
 	theme: {
 		extend: {
 			container: {
@@ -11,5 +16,10 @@ module.exports = {
 			},
 		},
 	},
-	plugins: [require("tailwindcss-logical")],
+	plugins: [
+		require("tailwindcss-logical"),
+		function ({ addVariant }) {
+			addVariant("children", "& > *");
+		},
+	],
 };

@@ -12,7 +12,6 @@ const Navbar = () => {
 	const { isAuthenticated, user, signOutHandler } = useAuth();
 
 	const { id, avatar, role } = user || {};
-	console.log("🚀 ~ file: Navbar.tsx ~ line 15 ~ Navbar ~ avatar", avatar)
 
 	const router = useRouter();
 
