@@ -3,6 +3,7 @@ import { ObjectFlatten } from "core/utils";
 import {
 	getAccessToken,
 	getHubLogin,
+	getHubRegister,
 	revokeRefreshToken,
 	userLogin,
 } from "features/authFeature/authMutations";
@@ -23,9 +24,9 @@ const refreshAccessToken = async (token: any) => {
 		// 	"🚀 ~ file: [...nextauth].ts ~ line 14 ~ refreshAccessToken ~ data",
 		// 	JSON.stringify(data, null, 2)
 		// );
-		const { errors, ...rest } = (data as any) || {};
+		const { error, ...rest } = (data as any) || {};
 		// console.log("🚀 ~ file: [...nextauth].ts ~ line 18 ~ refreshAccessToken ~ rest", rest);
-		if (errors) {
+		if (error) {
 			// console.log("🚀 ~ file: [...nextauth].ts ~ line 16 ~ refreshAccessToken ~ errors", errors);
 			return {
 				...token,
@@ -86,7 +87,7 @@ export const authOptions: NextAuthOptions = {
 	},
 	callbacks: {
 		// async signIn({ user, account, profile, email, credentials }) {
-		// 	if (account?.provider === "githubLogin") {
+		// 	if (account?.provider === "githubRegister") {
 		// 		const { data, error } = await getHubLogin({
 		// 			provider: "github",
 		// 			providerAccountId: account.providerAccountId,
@@ -133,6 +134,23 @@ export const authOptions: NextAuthOptions = {
 							...refreshToken,
 						};
 					}
+				} else if (account?.provider === "githubRegister") {
+					if (user && account && profile) {
+						const providerRegisterData = {
+							provider: "github",
+							type: account.type,
+							providerAccountId: account.providerAccountId,
+							token_type: account.tokenType,
+							scope: account.scope,
+							name: profile.name,
+							email: profile.email,
+							image: profile.image,
+						};
+						return {
+							...token,
+							providerRegisterData,
+						};
+					}
 				} else if (account?.provider === "credentialsId") {
 					const { accessToken, refreshToken, provider, providerAccountId } = (user as any) || {};
 					if (user?.user) {
@@ -173,17 +191,22 @@ export const authOptions: NextAuthOptions = {
 		},
 		async session({ session, token, user }) {
 			// Send properties to the client, like an access_token from a provider.
-			session.user = token.user;
+			session.user = token.user || null;
+			session.account = token.userAccount || null;
+			session.profile = token.userProfile || null;
 			session.accessToken = token.accessToken || null;
 			session.error = token.error || null;
+			session.providerRegisterData = token.providerRegisterData || null;
+
+
+			// const storageName = localStorage.getItem("name");
+			// console.log("🚀 ~ file: [...nextauth].ts ~ line 208 ~ session ~ storageName", storageName);
 			// console.log("🚀 ~ file: [...nextauth].ts ~ line 104 ~ session ~ session", session);
 			return session;
 		},
 	},
 	events: {
-		async signIn(message) {
-			/* on successful sign in */
-		},
+		async signIn({ account, profile }) {},
 		async signOut({ token }) {
 			try {
 				// console.log(

@@ -20,6 +20,10 @@ function useAuth(shouldRedirect: boolean = false) {
 	};
 
 	useEffect(() => {
+		if (session?.providerRegisterData && localStorage) {
+			const json = JSON.stringify(session.providerRegisterData);
+			localStorage.setItem("providerRegisterData", json);
+		}
 		if (session?.error === "RefreshAccessTokenError") {
 			setIsAuthenticated(false);
 			signOutHandler();

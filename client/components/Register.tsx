@@ -1,10 +1,14 @@
+import { signIn } from "next-auth/react";
 import React, { useState } from "react";
+import { AiFillGithub } from "react-icons/ai";
 import { BiLock } from "react-icons/bi";
 import { FaRegUser } from "react-icons/fa";
 import { GoMail } from "react-icons/go";
 import { useMutation } from "react-query";
 
 function Register({ setLogin }) {
+	const [loading, setLoading] = useState(false);
+
 	const [formState, setFormState] = useState({
 		email: "",
 		password: "",
@@ -40,6 +44,20 @@ function Register({ setLogin }) {
 		// 	},
 		// });
 	};
+
+	const gitHubLogIn = async (e) => {
+		try {
+			e.preventDefault();
+			if (loading) return;
+			setLoading(true);
+			await signIn("githubRegister", {
+				callbackUrl: "http://localhost:3000/usercode",
+			});
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	return (
 		<div
 			className="container py-4 flex flex-col overflow-hidden
@@ -249,10 +267,23 @@ function Register({ setLogin }) {
 					SIGN UP
 				</button>
 			</form>
+			<div className="flex items-center justify-center space-x-2 my-5">
+				<span className="h-px w-full bg-gray-700"></span>
+				<span className="font-semibold text-gray-400">OR</span>
+				<span className="h-px w-full bg-gray-700"></span>
+			</div>
+			<div className="flex">
+				<button
+					className="mr-5 bg-gray-200  hover:bg-slate-500 border border-gray-400  text-blue-600 font-bold py-2 px-6 rounded-lg children:hover:text-white"
+					onClick={gitHubLogIn}
+				>
+					<AiFillGithub className="text-black" />
+				</button>
+			</div>
 
-			<a onClick={() => setLogin(true)} className="text-center py-4 text-slate-500 cursor-pointer">
+			{/* <a onClick={() => setLogin(true)} className="text-center py-4 text-slate-500 cursor-pointer">
 				LOGIN
-			</a>
+			</a> */}
 			{/* {loading && <h1>loading.......</h1>} */}
 		</div>
 	);

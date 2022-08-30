@@ -21,7 +21,7 @@ function Login({ setLogin }) {
 			e.preventDefault();
 			if (loading) return;
 			setLoading(true);
-
+			// Set a cookie
 			const { error, ok, status } = await signIn("credentialsId", {
 				redirect: false,
 				email: formState.email,
