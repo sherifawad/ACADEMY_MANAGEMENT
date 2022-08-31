@@ -69,9 +69,18 @@ export const User = objectType({
 		t.string("name");
 		t.boolean("isActive");
 		t.string("avatar");
-		t.field("role", { type: "Role" });
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
+		t.nullable.field("roles", {
+			type: "Role",
+			resolve: async ({ id }, _, { prisma }) => {
+				return await prisma.user
+					.findUniqueOrThrow({
+						where: { id },
+					})
+					.roles();
+			},
+		});
 		t.nullable.field("profile", {
 			type: "Profile",
 			resolve: async ({ id }, _, { prisma }) => {
