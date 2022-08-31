@@ -9,6 +9,78 @@ async function seed() {
 	await client.account.deleteMany();
 	await client.session.deleteMany();
 	await client.verificationToken.deleteMany();
+	await client.domain.deleteMany();
+	await client.permission.deleteMany();
+	await client.role.deleteMany();
+
+	const Roles = await client.role.createMany({
+		data: [
+			{
+				name: "systemAdmin"
+			},
+			{
+				name: "admin"
+			},
+			{
+				name: "teacher"
+			},
+			{
+				name: "parent"
+			},
+			{
+				name: "student"
+			},
+			{
+				name: "guest"
+			}
+		]
+	});
+
+	const domains = await client.domain.createMany({
+		data: [
+			{
+				name: "user"
+			},
+			{
+				name: "student"
+			},
+			{
+				name: "grade"
+			},
+			{
+				name: "group"
+			},
+			{
+				name: "attendance"
+			},
+			{
+				name: "exam"
+			},
+			{
+				name: "assignment"
+			}
+		]
+	});
+
+	const permissions = await client.permission.createMany({
+		data: [
+			{
+				name: "full"
+			},
+			{
+				name: "delete"
+			},
+			{
+				name: "edit"
+			},
+			{
+				name: "deActivate"
+			},
+			{
+				name: "read"
+			}
+		]
+	});
 
 	const salt = await bcrypt.genSalt(
 		parseInt(process.env.SALT_ROUNDS || "10", 10)
@@ -21,7 +93,6 @@ async function seed() {
 			name: "sherif awad",
 			email: "eng.sherifawad@gmail.com",
 			emailVerified: new Date(),
-			isAdmin: true,
 			password: {
 				create: {
 					password: hashedPassword,
