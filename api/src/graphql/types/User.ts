@@ -177,7 +177,6 @@ export const UsersQuery = extendType({
 			type: "User",
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
-					if (!user || user.role !== Role.ADMIN) throw new Error("Not Allowed");
 					return await prisma.user.findMany();
 				} catch (error) {
 					return Promise.reject("error");
@@ -285,22 +284,6 @@ export const FilteredUsersQuery = extendType({
 					const { data, isActive, user_role, family_Id } = args;
 					const { familyId, role } = user || {};
 
-					if (
-						!user ||
-						(role === Role.Student &&
-							familyId !== family_Id &&
-							user.role !== Role.ADMIN &&
-							user.role !== Role.USER)
-					) {
-						throw new Error("Not Allowed");
-					}
-					// return await prisma.user.findMany({
-					// 	where: {
-					// 		role: args.data?.role,
-					// 		isActive: args.data?.isActive,
-					// 	},
-					// });
-
 					let where = {};
 					if (user_role) {
 						const ORConditions: { role: string }[] = [];
@@ -379,8 +362,6 @@ export const GroupStudentsQuery = extendType({
 				role: nullable(arg({ type: "Role" })),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-
 				const { data, isActive, groupId, role } = args;
 				let where = {};
 				if (role) {
@@ -503,7 +484,7 @@ export async function GetUserByEmail(prisma: PrismaClient, email: string): Promi
 export async function UpdateUser(ctx: Context, studentParam: any, userPassword?: string | null | undefined) {
 	try {
 		const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
-		const { name, id, groupId, role, avatar, familyName, familyId, ...rest } = studentParam;
+		const { name, id, groupId, rolesList, avatar, familyName, familyId, ...rest } = studentParam;
 		const password = hashedPassword
 			? {
 					update: {
@@ -512,6 +493,15 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 					},
 			  }
 			: undefined;
+
+		const roles =
+			rolesList?.length > 0
+				? {
+						connect: rolesList.map((role: Role) => ({
+							id: role.id,
+						})),
+				  }
+				: undefined;
 		const family = familyName
 			? {
 					upsert: {
@@ -548,8 +538,8 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 			: undefined;
 		const data = {
 			name: name ? name : undefined,
-			role: role ? role : undefined,
 			avatar: avatar ? avatar : undefined,
+			roles,
 			password,
 			contact,
 			profile,
@@ -560,6 +550,7 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 			contact: allIsNull ? false : true,
 			profile: groupId ? true : false,
 			family: family ? true : false,
+			roles: rolesList?.length > 0 ? true : false,
 		};
 		return await ctx.prisma.user.update({
 			where: { id },
@@ -574,10 +565,16 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 export async function CreateUser(ctx: Context, userParam: any, userPassword: string) {
 	try {
 		const hashedPassword = await hashPassword(userPassword);
-		const { name, avatar, groupId, role, familyId, familyName, ...rest } = userParam;
-		if (role === Role.Student) {
-			if (!familyId && !familyName) throw new Error("family name or id is null");
-		}
+		const { name, avatar, groupId, rolesList, familyId, familyName, ...rest } = userParam;
+
+		const roles =
+			rolesList?.length > 0
+				? {
+						connect: rolesList.map((role: Role) => ({
+							id: role.id,
+						})),
+				  }
+				: undefined;
 		const profile = groupId
 			? {
 					create: {
@@ -608,7 +605,6 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 			data: {
 				name,
 				avatar,
-				role,
 				contact: {
 					create: {
 						...rest,
@@ -621,6 +617,7 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 				contact: true,
 				profile: groupId ? true : false,
 				family: familyName ? true : false,
+				roles: rolesList?.length > 0 ? true : false,
 			},
 		});
 	} catch (error) {
@@ -649,30 +646,7 @@ export const UserByIdQuery = extendType({
 					const userQuery: any = await prisma.user.findUniqueOrThrow({
 						where: { id },
 					});
-					const sameUser = user.id === id || user.familyId === userQuery.familyId;
-					switch (user.role) {
-						case userRole.ADMIN:
-							if (userQuery.role === userRole.ADMIN && !sameUser) {
-								return null;
-							}
-							return userQuery;
-						case userRole.USER:
-							if (userQuery.role === userRole.ADMIN) {
-								return null;
-							}
-							if (userQuery.role === userRole.USER && !sameUser) {
-								return null;
-							}
-							return userQuery;
-						case userRole.Student:
-							if (sameUser) {
-								return userQuery;
-							}
-							throw new Error("Not Allowed");
-
-						default:
-							throw new Error("Not Allowed");
-					}
+					return userQuery;
 				} catch (error) {
 					return Promise.reject("error");
 				}
@@ -690,7 +664,7 @@ export const userUpdate = extendType({
 			args: {
 				id: nonNull(stringArg()),
 				avatar: stringArg(),
-				role: arg({ type: "Role" }),
+				roles: list(arg({ type: "Role" })),
 				name: stringArg(),
 				email: stringArg(),
 				password: stringArg(),
@@ -712,7 +686,7 @@ export const userUpdate = extendType({
 					phone,
 					groupId,
 					avatar,
-					role,
+					roles,
 					familyName,
 				},
 				ctx
@@ -723,29 +697,6 @@ export const userUpdate = extendType({
 					const userQuery = await prisma.user.findUniqueOrThrow({
 						where: { id },
 					});
-					const sameUser = user.id === id || user.familyId === userQuery.familyId;
-					switch (user.role) {
-						case Role.ADMIN:
-							if (userQuery.role === Role.ADMIN && !sameUser) {
-								throw new Error("Not Allowed");
-							}
-							break;
-						case Role.USER:
-							if (role !== Role.Student) throw new Error("Not Allowed");
-
-							if (userQuery.role === Role.ADMIN) {
-								throw new Error("Not Allowed");
-							}
-							if (userQuery.role === Role.USER && !sameUser) {
-								throw new Error("Not Allowed");
-							}
-							break;
-						case Role.Student:
-							throw new Error("Not Allowed");
-
-						default:
-							throw new Error("Not Allowed");
-					}
 
 					const studentParam = {
 						id,
@@ -756,7 +707,7 @@ export const userUpdate = extendType({
 						name: name ?? email,
 						groupId: groupId,
 						avatar,
-						role,
+						rolesList: roles,
 						familyName,
 					};
 
@@ -777,7 +728,7 @@ export const userRegister = extendType({
 			type: "User",
 			args: {
 				name: nonNull(stringArg()),
-				role: nonNull(arg({ type: "Role" })),
+				roles: nonNull(list(arg({ type: "Role" }))),
 				email: nonNull(stringArg()),
 				password: nonNull(stringArg()),
 				address: nullable(stringArg()),
@@ -799,7 +750,7 @@ export const userRegister = extendType({
 					parentsPhones,
 					phone,
 					groupId,
-					role,
+					roles,
 					familyName,
 					familyId,
 				},
@@ -808,18 +759,7 @@ export const userRegister = extendType({
 				try {
 					const { user } = ctx || {};
 					if (!user) throw new Error("Not Allowed");
-					switch (user.role) {
-						case Role.Student:
-							throw new Error("Not Allowed");
-						case Role.USER:
-							if (role !== Role.Student) throw new Error("Not Allowed");
-							break;
-						case Role.ADMIN:
-							break;
 
-						default:
-							throw new Error("Not Allowed");
-					}
 					const userParam = {
 						avatar,
 						email,
@@ -828,7 +768,7 @@ export const userRegister = extendType({
 						parentsPhones,
 						name: name ?? email,
 						groupId,
-						role,
+						rolesList: roles,
 						familyName,
 						familyId,
 					} as any;
