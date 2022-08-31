@@ -1,4 +1,3 @@
-import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core, list } from "nexus";
 // @ts-ignore
 import { prismaOffsetPagination } from "prisma-offset-pagination";
@@ -152,8 +151,6 @@ export const AttendanceByUserDateQuery = extendType({
 				date: nonNull(arg({ type: "DateTime" })),
 			},
 			resolve: async (_parent, { id, date }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-
 				return await prisma.attendance.findMany({
 					where: { profileId: id, startAt: { gte: date } },
 				});
@@ -162,43 +159,6 @@ export const AttendanceByUserDateQuery = extendType({
 	},
 });
 
-// export const AttendanceByUserIdQuery = extendType({
-// 	type: "Query",
-// 	definition(t) {
-// 		t.field("PaginatedAttendances", {
-// 			type: "AttendanceResponse",
-// 			args: {
-// 				studentId: nonNull(stringArg()),
-// 				myCursor: nullable(stringArg()),
-// 				orderByKey: nullable(stringArg()),
-// 				orderDirection: nullable(stringArg()),
-// 				size: nullable(intArg()),
-// 				buttonNum: nullable(intArg()),
-// 			},
-// 			resolve: async (
-// 				_parent,
-// 				{ studentId, size, buttonNum, myCursor, orderByKey, orderDirection },
-// 				{ prisma, user }
-// 			) => {
-// 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
-// 					return null;
-
-// 				return await prismaOffsetPagination({
-// 					cursor: cursor,
-// 					size: Number(size),
-// 					buttonNum: Number(buttonNum),
-// 					orderBy,
-// 					orderDirection,
-// 					model: Attendance,
-// 					prisma: prisma,
-// 					where: {
-// 						Profile: { id: studentId },
-// 					},
-// 				});
-// 			},
-// 		});
-// 	},
-// });
 
 export const AttendanceByUserIdQuery = extendType({
 	type: "Query",
@@ -211,8 +171,6 @@ export const AttendanceByUserIdQuery = extendType({
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
 				const { data, studentId } = args;
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
-					return null;
 
 				let where = {};
 				if (studentId) {
@@ -267,8 +225,6 @@ export const UserAttendancesCount = extendType({
 				studentId: nonNull(stringArg()),
 			},
 			resolve: async (_parent, { studentId }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
-					return null;
 				return await prisma.attendance.aggregate({
 					where: {
 						Profile: { id: studentId },
@@ -292,12 +248,6 @@ export const AttendanceByUserQuery = extendType({
 			},
 			resolve: async (_parent, { studentId, take, skip = 1 }, { prisma, user }) => {
 				try {
-					if (
-						!user ||
-						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId)
-					)
-						return null;
-
 					return await prisma.attendance.findMany({
 						skip,
 						take,
@@ -327,8 +277,6 @@ export const createAttendanceMutation = extendType({
 			},
 			resolve: async (_parent, { startAt, endAt, note, profileId }, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-
 					const newAttendance = {
 						startAt,
 						endAt,
@@ -361,7 +309,6 @@ export const createMultipleAttendanceMutation = extendType({
 			},
 			resolve: async (_parent, { startAt, endAt, note, profileIds }, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 					const newAttendances: Omit<attendance, "id">[] = [];
 					profileIds.forEach((id: string) =>
 						newAttendances.push({
@@ -400,8 +347,6 @@ export const UpdateAttendanceMutation = extendType({
 			},
 			resolve: async (_parent, { id, startAt, endAt, note, profileId }, { prisma, user }) => {
 				try {
-					if (!user || user.role !== Role.ADMIN) return null;
-
 					const updateAttendance = {
 						startAt,
 						endAt,
@@ -442,8 +387,6 @@ export const UpdateMultipleAttendanceMutation = extendType({
 				{ prisma, user }
 			) => {
 				try {
-					if (!user || user.role !== Role.ADMIN) return null;
-
 					const ANDConditions = [];
 					if (startAtCondition) {
 						ANDConditions.push({ startAt: startAtCondition });
@@ -490,8 +433,6 @@ export const DeleteAttendanceMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, user }) {
 				try {
-					if (!user || user.role !== Role.ADMIN) return null;
-
 					return await prisma.attendance.delete({
 						where: { id },
 					});

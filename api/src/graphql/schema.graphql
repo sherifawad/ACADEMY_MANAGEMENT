@@ -2,6 +2,15 @@
 ### Do not make changes to this file directly
 
 
+type AppDomain {
+  createdAt: DateTime
+  description: String
+  id: Int
+  name: String
+  roles: [UserRole]
+  updatedAt: DateTime
+}
+
 type Attendance {
   createdBy: String
   endAt: DateTime
@@ -121,31 +130,40 @@ scalar JSONObject @specifiedBy(url: "http://www.ecma-international.org/publicati
 type Mutation {
   createAttendance(endAt: DateTime, note: String, profileId: String!, startAt: DateTime!): Attendance!
   createContact(address: String!, email: String, note: String, parentsPhones: String, phone: String!): Contact!
+  createDomain(description: String, name: String!): AppDomain!
   createExam(date: DateTime!, note: String, profileId: String!, score: Float!): Exam!
   createFamily(familyName: String!): Family!
   createGrade(isActive: Boolean!, name: String!): Grade!
   createGroup(endAt: DateTime, gradeId: String, isActive: Boolean, name: String!, startAt: DateTime): Group!
   createMultipleAttendance(endAt: DateTime, note: String, profileIds: [String!]!, startAt: DateTime!): AttendancesCUResponse
   createMultipleExam(date: DateTime!, note: String, profileIds: [String!], score: Float, studentsAndScores: JSONObject): ExamCUResponse
+  createPermission(description: String, name: String!): UserPermission!
   createProfile(bio: String, id: String!): Profile!
+  createRole(description: String, name: String!): UserRole!
   deleteAttendance(id: String!): Attendance!
   deleteContact(id: String!): Contact!
+  deleteDomain(domainId: Int!): AppDomain!
   deleteExam(id: String!): Exam!
   deleteFamily(id: String!): Family!
   deleteGrade(id: String!): Grade!
   deleteGroup(id: String!): Group!
+  deletePermission(permissionId: Int!): UserPermission!
   deleteProfile(id: String!): Profile!
+  deleteRole(roleId: Int!): UserRole!
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateContact(address: String, contactId: String!, email: String, emailConfirmed: Boolean, note: String, parentsPhones: String, phone: String): Contact!
+  updateDomain(description: String, domainId: Int!, name: String, rolesIdsList: [Int]): AppDomain!
   updateExam(date: DateTime, id: String!, note: String, score: Float): Exam!
   updateFamily(familyName: String!, id: String!): Family!
   updateGrade(id: String!, isActive: Boolean!, name: String!): Grade!
   updateGroup(endAt: DateTime, gradeId: String, id: String!, isActive: Boolean, name: String, startAt: DateTime): Group!
   updateMultipleAttendance(endAt: DateTime, endAtCondition: DateTime, note: String, noteCondition: String, profileIds: [String!]!, startAt: DateTime, startAtCondition: DateTime!): AttendancesCUResponse!
   updateMultipleExam(date: DateTime, dateCondition: DateTime!, note: String, noteCondition: DateTime, profileIds: [String!]!, score: Float, scoreCondition: Float): ExamCUResponse!
+  updatePermission(description: String, name: String, permissionId: Int!, rolesIdsList: [Int]): UserPermission!
   updateProfile(bio: String, id: String!): Profile!
-  userRegister(address: String, avatar: String, email: String!, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, role: Role!): User!
-  userUpdate(address: String, avatar: String, email: String, familyName: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, role: Role): User!
+  updateRole(description: String, domainsIdsList: [Int], name: String, permissionsIdsList: [Int], roleId: Int!): UserRole!
+  userRegister(address: String, avatar: String, email: String!, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, rolesIdsList: [Int]!): User!
+  userUpdate(address: String, avatar: String, email: String, familyName: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, rolesIdsList: [Int]!): User!
 }
 
 type PageCursor {
@@ -191,7 +209,7 @@ type Query {
   Contact(contactId: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
-  FilteredUsers(data: PaginationInputType, family_Id: String, isActive: Boolean, user_role: [Role]): UsersResponse
+  FilteredUsers(data: PaginationInputType, family_Id: String, isActive: Boolean): UsersResponse
   Grade(id: String!): Grade!
   Grades: [Grade]!
   Group(id: String!): Group!
@@ -201,16 +219,15 @@ type Query {
   SExams(data: PaginationInputType, studentId: String!): ExamsResponse
   User(id: String!, take: Int): User!
   Users: [User]
+  domain(domainId: Int!): [AppDomain]
+  domains: [AppDomain]
   family(id: String!): Family!
+  permission(permissionId: Int!): [UserPermission]
+  permissions: [UserPermission]
+  role(roleId: Int!): [UserRole]
+  roles: [UserRole]
   studentAttendances(data: PaginationInputType, studentId: String!): AttendanceResponse
-  studentsGroup(data: PaginationInputType, groupId: String!, isActive: Boolean, role: Role): StudentsResponse
-}
-
-"""User Role"""
-enum Role {
-  ADMIN
-  Student
-  USER
+  studentsGroup(data: PaginationInputType, groupId: String!, isActive: Boolean): StudentsResponse
 }
 
 type StudentsResponse {
@@ -232,8 +249,28 @@ type User {
   isActive: Boolean
   name: String
   profile: Profile
-  role: Role
+  roles: [UserRole]
   updatedAt: DateTime
+}
+
+type UserPermission {
+  createdAt: DateTime
+  description: String
+  id: Int
+  name: String
+  roles: [UserRole]
+  updatedAt: DateTime
+}
+
+type UserRole {
+  createdAt: DateTime
+  description: String
+  domains: [AppDomain]
+  id: Int
+  name: String
+  permissions: [UserPermission]
+  updatedAt: DateTime
+  users: [User]
 }
 
 type UsersCount {
@@ -244,7 +281,7 @@ input UsersFilterInputType {
   StudentId: String
   familyId: String
   isActive: Boolean
-  role: Role
+  rolesIdsList: [Int]
 }
 
 type UsersResponse {

@@ -1,8 +1,22 @@
-import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, list } from "nexus";
+import {
+	nonNull,
+	objectType,
+	stringArg,
+	extendType,
+	intArg,
+	nullable,
+	arg,
+	list,
+	extendInputType,
+	inputObjectType,
+} from "nexus";
+import { AppDomain } from "./AppDomain";
+import { User } from "./User";
+import { UserPermission } from "./UserPermission";
 import { Domain, Permission } from "@internal/prisma/client";
 
-export const Role = objectType({
-	name: "Role",
+export const UserRole = objectType({
+	name: "UserRole",
 	definition(t) {
 		t.int("id");
 		t.string("name");
@@ -10,7 +24,7 @@ export const Role = objectType({
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("users", {
-			type: "User",
+			type: User,
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.role
 					.findUniqueOrThrow({
@@ -20,7 +34,7 @@ export const Role = objectType({
 			},
 		});
 		t.list.field("domains", {
-			type: "Domain",
+			type: AppDomain,
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.role
 					.findUniqueOrThrow({
@@ -30,7 +44,7 @@ export const Role = objectType({
 			},
 		});
 		t.list.field("permissions", {
-			type: "Permission",
+			type: UserPermission,
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.role
 					.findUniqueOrThrow({
@@ -46,7 +60,7 @@ export const RolesQuery = extendType({
 	type: "Query",
 	definition(t) {
 		t.list.field("roles", {
-			type: "Role",
+			type: UserRole,
 
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
@@ -62,7 +76,7 @@ export const RoleIdQuery = extendType({
 	type: "Query",
 	definition(t) {
 		t.list.field("role", {
-			type: "Role",
+			type: UserRole,
 			args: {
 				roleId: nonNull(intArg()),
 			},
@@ -83,7 +97,7 @@ export const createRoleMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("createRole", {
-			type: "Role",
+			type: UserRole,
 			args: {
 				name: nonNull(stringArg()),
 				description: nullable(stringArg()),
@@ -109,33 +123,33 @@ export const UpdateRoleMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("updateRole", {
-			type: "Role",
+			type: UserRole,
 			args: {
 				roleId: nonNull(intArg()),
 				name: stringArg(),
 				description: stringArg(),
-				domainsList: list(arg({ type: "Domain" })),
-				permissionsList: list(arg({ type: "Permission" })),
+				domainsIdsList: list(intArg()),
+				permissionsIdsList: list(intArg()),
 			},
 			resolve: async (
 				_parent,
-				{ roleId, name, description, domainsList, permissionsList },
+				{ roleId, name, description, domainsIdsList, permissionsIdsList },
 				{ prisma, user }
 			) => {
 				try {
 					const domains =
-						domainsList?.length > 0
+						domainsIdsList && domainsIdsList?.length > 0
 							? {
-									connect: domainsList.map((domain: Domain) => ({
-										id: domain.id,
+									connect: domainsIdsList.map((id: any) => ({
+										id,
 									})),
 							  }
 							: undefined;
 					const permissions =
-						permissionsList?.length > 0
+						permissionsIdsList && permissionsIdsList?.length > 0
 							? {
-									connect: permissionsList.map((permission: Permission) => ({
-										id: permission.id,
+									connect: permissionsIdsList.map((id: any) => ({
+										id,
 									})),
 							  }
 							: undefined;
@@ -143,11 +157,13 @@ export const UpdateRoleMutation = extendType({
 					const updateRole = {
 						name,
 						description,
+						domains,
+						permissions,
 					};
 
 					const include = {
-						domains: domainsList?.length > 0 ? true : false,
-						permissions: permissionsList?.length > 0 ? false : true,
+						domains: domainsIdsList && domainsIdsList?.length > 0 ? true : false,
+						permissions: permissionsIdsList && permissionsIdsList?.length > 0 ? false : true,
 					};
 					return await prisma.role.update({
 						where: { id: roleId },
@@ -166,7 +182,7 @@ export const DeleteRoleMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("deleteRole", {
-			type: "Role",
+			type: UserRole,
 			args: {
 				roleId: nonNull(intArg()),
 			},

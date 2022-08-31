@@ -12,12 +12,9 @@ export * from "./Profile";
 export * from "./Attendance";
 export * from "./Contact";
 export * from "./Family";
-
-export const Role = enumType({
-	name: "Role",
-	members: ["ADMIN", "USER", "Student"],
-	description: "User Role",
-});
+export * from "./AppDomain";
+export * from "./UserPermission";
+export * from "./UserRole";
 
 export interface AccessTokenState {
 	valid: boolean;

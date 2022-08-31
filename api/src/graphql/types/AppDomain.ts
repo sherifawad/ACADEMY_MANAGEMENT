@@ -1,8 +1,9 @@
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core, list } from "nexus";
 import { Role } from "@internal/prisma/client";
+import { UserRole } from "./UserRole";
 
-export const Domain = objectType({
-	name: "Domain",
+export const AppDomain = objectType({
+	name: "AppDomain",
 	definition(t) {
 		t.int("id");
 		t.string("name");
@@ -10,7 +11,7 @@ export const Domain = objectType({
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("roles", {
-			type: "Role",
+			type: UserRole,
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.domain
 					.findUniqueOrThrow({
@@ -26,7 +27,7 @@ export const DomainsQuery = extendType({
 	type: "Query",
 	definition(t) {
 		t.list.field("domains", {
-			type: "Domain",
+			type: AppDomain,
 
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
@@ -43,7 +44,7 @@ export const DomainIdQuery = extendType({
 	type: "Query",
 	definition(t) {
 		t.list.field("domain", {
-			type: "Domain",
+			type: AppDomain,
 			args: {
 				domainId: nonNull(intArg()),
 			},
@@ -64,14 +65,14 @@ export const createDomainMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("createDomain", {
-			type: "Domain",
+			type: AppDomain,
 			args: {
 				name: nonNull(stringArg()),
 				description: nullable(stringArg()),
 			},
 			resolve: async (_parent, { name, description }, { prisma, user }) => {
 				try {
-					const newDomain = {
+					const newDomain: any = {
 						name,
 						description,
 					};
@@ -90,20 +91,20 @@ export const UpdateDomainMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("updateDomain", {
-			type: "Domain",
+			type: AppDomain,
 			args: {
 				domainId: nonNull(intArg()),
 				name: stringArg(),
 				description: stringArg(),
-				rolesList: list(arg({ type: "Role" })),
+				rolesIdsList: list(intArg()),
 			},
-			resolve: async (_parent, { domainId, name, description, rolesList }, { prisma, user }) => {
+			resolve: async (_parent, { domainId, name, description, rolesIdsList }, { prisma, user }) => {
 				try {
 					const roles =
-						rolesList?.length > 0
+						rolesIdsList && rolesIdsList?.length > 0
 							? {
-									connect: rolesList.map((role: Role) => ({
-										id: role.id,
+									connect: rolesIdsList.map((id: any) => ({
+										id,
 									})),
 							  }
 							: undefined;
@@ -111,10 +112,11 @@ export const UpdateDomainMutation = extendType({
 					const updateDomain = {
 						name,
 						description,
+						roles,
 					};
 
 					const include = {
-						roles: rolesList?.length > 0 ? true : false,
+						roles: rolesIdsList && rolesIdsList?.length > 0 ? true : false,
 					};
 					return await prisma.domain.update({
 						where: { id: domainId },
@@ -133,7 +135,7 @@ export const DeleteDomainMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("deleteDomain", {
-			type: "Domain",
+			type: AppDomain,
 			args: {
 				domainId: nonNull(intArg()),
 			},

@@ -1,4 +1,3 @@
-import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, booleanArg } from "nexus";
 import { Attendance } from "./Attendance";
 import { Profile, ProfilesResponse } from "./Profile";
@@ -39,8 +38,6 @@ export const Group = objectType({
 			args: { data: PaginationInputType },
 			async resolve(_parent, args, { user, prisma }) {
 				try {
-					const { role } = user || {};
-					if (!user || (role !== Role.ADMIN && role !== Role.USER)) throw new Error("Not Allowed");
 					const { data } = args;
 
 					if (data) {
@@ -122,7 +119,6 @@ export const GroupsQuery = extendType({
 			type: "Group",
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 					return await prisma.Group.findMany();
 				} catch (error) {
@@ -142,7 +138,6 @@ export const GroupByIdQuery = extendType({
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
 
 					return await prisma.Group.findUniqueOrThrow({
 						where: { id },
@@ -174,7 +169,6 @@ export const createGroupMutation = extendType({
 				{ prisma, user }
 			) => {
 				try {
-					if (!user || user.role !== Role.ADMIN) return null;
 
 					const newGroup = {
 						name,
@@ -216,7 +210,6 @@ export const UpdateGroupMutation = extendType({
 			},
 			resolve: async (_parent, { id, name, startAt, endAt, gradeId, isActive }, { prisma, user }) => {
 				try {
-					if (!user || user.role !== Role.ADMIN) return null;
 
 					let updateGroup: any = {
 						name,
@@ -260,7 +253,6 @@ export const DeleteGroupMutation = extendType({
 			},
 			resolve(_parent, { id }, { prisma, user }) {
 				try {
-					if (!user || user.role !== Role.ADMIN) return null;
 
 					return prisma.Group.delete({
 						where: { id },

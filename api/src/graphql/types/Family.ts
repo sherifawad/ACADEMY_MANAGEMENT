@@ -1,4 +1,3 @@
-import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, booleanArg } from "nexus";
 import { User } from "./User";
 
@@ -16,9 +15,6 @@ export const Family = objectType({
 			type: User,
 			async resolve(_parent, _args, { user, prisma }) {
 				try {
-					const { role, id } = user || {};
-					if (!user || (role !== Role.ADMIN && role !== Role.USER && _parent.id !== id))
-						throw new Error("Not Allowed");
 					return await prisma.family
 						.findUniqueOrThrow({
 							where: {
@@ -44,8 +40,6 @@ export const FamilyByIdQuery = extendType({
 			resolve: async (_parent, { id }, { prisma, user }) => {
 				try {
 					const { familyId } = user || {};
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && familyId !== id))
-						return null;
 
 					return await prisma.family.findUniqueOrThrow({
 						where: { id },
@@ -69,9 +63,6 @@ export const createFamilyMutation = extendType({
 			},
 			resolve: async (_parent, { familyName }, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER))
-						throw new Error("Not Allowed");
-
 					const newFamily = {
 						familyName,
 						createdBy: user.id,
@@ -99,9 +90,6 @@ export const UpdateFamilyMutation = extendType({
 			},
 			resolve: async (_parent, { id, familyName }, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER))
-						throw new Error("Not Allowed");
-
 					const updateFamily = {
 						familyName,
 						updatedBy: user.id,
@@ -129,8 +117,6 @@ export const DeleteFamilyMutation = extendType({
 			},
 			resolve(_parent, { id }, { prisma, user }) {
 				try {
-					if (!user || user.role !== Role.ADMIN) throw new Error("Not Allowed");
-
 					return prisma.family.delete({
 						where: { id },
 					});

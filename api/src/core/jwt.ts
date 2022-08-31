@@ -37,7 +37,6 @@ export const signUser = (user: User | JWType) => {
 export const encodeUser = (user: User, secret: string | Buffer = JWT_SECRET, exp: string = "5m") => {
 	const payload = {
 		id: user.id,
-		role: user.role,
 	};
 	const encodedToken = Jwt.sign(payload, secret, {
 		expiresIn: exp,

@@ -1,17 +1,19 @@
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core, list } from "nexus";
+// import { UserRole } from "./UserRole";
 import { Role } from "@internal/prisma/client";
+import { UserRole } from "./UserRole";
 
 //generates Exam type at schema.graphql
-export const Permission = objectType({
-	name: "Permission",
+export const UserPermission = objectType({
+	name: "UserPermission",
 	definition(t) {
 		t.int("id");
 		t.string("name");
 		t.string("description");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
-		t.field("roles", {
-			type: "Role",
+		t.list.field("roles", {
+			type: UserRole,
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.permission
 					.findUniqueOrThrow({
@@ -26,8 +28,7 @@ export const PermissionsQuery = extendType({
 	type: "Query",
 	definition(t) {
 		t.list.field("permissions", {
-			type: "Permission",
-
+			type: UserPermission,
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
 					return await prisma.permission.findMany();
@@ -43,7 +44,7 @@ export const PermissionIdQuery = extendType({
 	type: "Query",
 	definition(t) {
 		t.list.field("permission", {
-			type: "Permission",
+			type: UserPermission,
 			args: {
 				permissionId: nonNull(intArg()),
 			},
@@ -64,7 +65,7 @@ export const createPermissionMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("createPermission", {
-			type: "Permission",
+			type: UserPermission,
 			args: {
 				name: nonNull(stringArg()),
 				description: nullable(stringArg()),
@@ -90,20 +91,20 @@ export const UpdatePermissionMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("updatePermission", {
-			type: "Permission",
+			type: UserPermission,
 			args: {
 				permissionId: nonNull(intArg()),
 				name: stringArg(),
 				description: stringArg(),
-				rolesList: list(arg({ type: "Role" })),
+				rolesIdsList: list(intArg()),
 			},
-			resolve: async (_parent, { permissionId, name, description, rolesList }, { prisma, user }) => {
+			resolve: async (_parent, { permissionId, name, description, rolesIdsList }, { prisma, user }) => {
 				try {
 					const roles =
-						rolesList?.length > 0
+						rolesIdsList && rolesIdsList?.length > 0
 							? {
-									connect: rolesList.map((role: Role) => ({
-										id: role.id,
+									connect: rolesIdsList.map((id: any) => ({
+										id,
 									})),
 							  }
 							: undefined;
@@ -111,10 +112,11 @@ export const UpdatePermissionMutation = extendType({
 					const updatePermission = {
 						name,
 						description,
+						roles,
 					};
 
 					const include = {
-						roles: rolesList?.length > 0 ? true : false,
+						roles: rolesIdsList && rolesIdsList?.length > 0 ? true : false,
 					};
 					return await prisma.permission.update({
 						where: { id: permissionId },
@@ -133,7 +135,7 @@ export const DeletePermissionMutation = extendType({
 	type: "Mutation",
 	definition(t) {
 		t.nonNull.field("deletePermission", {
-			type: "Permission",
+			type: UserPermission,
 			args: {
 				permissionId: nonNull(intArg()),
 			},

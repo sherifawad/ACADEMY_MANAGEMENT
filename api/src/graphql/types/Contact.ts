@@ -1,4 +1,3 @@
-import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, booleanArg } from "nexus";
 
 //generates Contact type at schema.graphql
@@ -30,30 +29,7 @@ export const ContactByIdQuery = extendType({
 						where: { id: contactId },
 						include: { contact: true },
 					});
-					const sameUser = user.id === id || user.familyId === userQuery.familyId;
-					switch (role) {
-						case Role.ADMIN:
-							if (userQuery.role === Role.ADMIN && !sameUser) {
-								throw new Error("Not Allowed");
-							}
-							return userQuery.contact;
-						case Role.USER:
-							if (userQuery.role === Role.ADMIN) {
-								throw new Error("Not Allowed");
-							}
-							if (userQuery.role === Role.USER && !sameUser) {
-								throw new Error("Not Allowed");
-							}
-							return userQuery.contact;
-						case Role.Student:
-							if (sameUser) {
-								return userQuery.contact;
-							}
-							throw new Error("Not Allowed");
-
-						default:
-							throw new Error("Not Allowed");
-					}
+					return userQuery.contact;
 				} catch (error) {
 					return Promise.reject("error");
 				}
@@ -77,9 +53,7 @@ export const createContactMutation = extendType({
 			},
 			resolve: async (_parent, { phone, address, note, parentsPhones, email }, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER))
-						throw new Error("Not Allowed");
-					const newContact = {
+					const newContact: any = {
 						phone,
 						address,
 						note,
@@ -118,33 +92,13 @@ export const UpdateContactMutation = extendType({
 				{ prisma, user }
 			) => {
 				try {
-					const { id, role } = user || {};
+					const { id } = user || {};
 					if (!user) throw new Error("Not Allowed");
 
 					const userQuery = await prisma.user.findUniqueOrThrow({
 						where: { id: contactId },
 					});
-					const sameUser = user.id === id || user.familyId === userQuery.familyId;
-					switch (role) {
-						case Role.ADMIN:
-							if (userQuery.role === Role.ADMIN && !sameUser) {
-								throw new Error("Not Allowed");
-							}
-							break;
-						case Role.USER:
-							if (userQuery.role === Role.ADMIN) {
-								throw new Error("Not Allowed");
-							}
-							if (userQuery.role === Role.USER && !sameUser) {
-								throw new Error("Not Allowed");
-							}
-							break;
-						case Role.Student:
-							throw new Error("Not Allowed");
 
-						default:
-							throw new Error("Not Allowed");
-					}
 					const updateContact = {
 						phone,
 						address,
@@ -176,8 +130,6 @@ export const DeleteContactMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, user }) {
 				try {
-					if (!user || user.role !== Role.ADMIN) throw new Error("Not Allowed");
-
 					return await prisma.contact.delete({
 						where: { id },
 					});

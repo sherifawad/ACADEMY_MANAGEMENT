@@ -1,4 +1,4 @@
-import { Contact, Group, PrismaClient, Profile, Role, User as prismaUser } from "@internal/prisma/client";
+import { Contact, Group, PrismaClient, User as prismaUser } from "@internal/prisma/client";
 import { hashPassword, verifyPassword } from "../../core/crypto";
 import {
 	nonNull,
@@ -13,7 +13,7 @@ import {
 	list,
 } from "nexus";
 import { Context } from ".";
-import { Role as userRole } from "@internal/prisma/client";
+import { UserRole } from "./UserRole";
 import { assert } from "../utils/assert";
 import { encodeUser } from "../../core/jwt";
 import LoginInvalidError from "../utils/errors/loginInvalid";
@@ -22,15 +22,6 @@ import { createTokens } from "../../utils/auth";
 import { isNullish, removeNullObjects } from "../../utils/utils";
 import constants from "../../core/constants";
 
-// export interface User {
-// 	id: string;
-// 	name?: string | null;
-// 	avatar?: string | null;
-// 	isActive?: boolean | null;
-// 	role?: Role | null;
-// 	profile?: Profile | null;
-// 	contact?: Contact | null;
-// }
 export interface CursorPaginationInput {
 	take?: number | null;
 	skip?: number | null; // Skip the cursor
@@ -49,7 +40,7 @@ export interface CursorPagination {
 }
 
 export interface UserFilter {
-	role?: Role | null;
+	role?: any | null;
 	isActive?: boolean | null;
 	groupId?: string | null;
 	familyId?: string | null;
@@ -71,8 +62,8 @@ export const User = objectType({
 		t.string("avatar");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
-		t.nullable.field("roles", {
-			type: "Role",
+		t.list.field("roles", {
+			type: UserRole,
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.user
 					.findUniqueOrThrow({
@@ -133,7 +124,7 @@ export const UserFilterInputType = inputObjectType({
 		// t.nullable.field("PaginationInputType", {
 		// 	type: "PaginationInputType",
 		// });
-		t.nullable.field("role", { type: "Role" });
+		t.nullable.list.int("rolesIdsList");
 		t.nullable.boolean("isActive");
 		t.nullable.string("StudentId");
 		t.nullable.string("familyId");
@@ -276,35 +267,35 @@ export const FilteredUsersQuery = extendType({
 			args: {
 				data: PaginationInputType,
 				isActive: nullable(booleanArg()),
-				user_role: nullable(list(arg({ type: "Role" }))),
+				// user_role: nullable(list(UserRole)),
 				family_Id: nullable(stringArg()),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
 				try {
-					const { data, isActive, user_role, family_Id } = args;
+					const { data, isActive, family_Id } = args;
 					const { familyId, role } = user || {};
 
 					let where = {};
-					if (user_role) {
-						const ORConditions: { role: string }[] = [];
-						user_role.forEach((x: any) => {
-							if (x) {
-								switch (user.role) {
-									case "ADMIN":
-										ORConditions.push({ role: x });
-										break;
-									case "USER":
-										if (x === "ADMIN") return;
-										ORConditions.push({ role: x });
-										break;
+					// if (user_role) {
+					// 	const ORConditions: { role: string }[] = [];
+					// 	user_role.forEach((x: any) => {
+					// 		if (x) {
+					// 			switch (user.role) {
+					// 				case "ADMIN":
+					// 					ORConditions.push({ role: x });
+					// 					break;
+					// 				case "USER":
+					// 					if (x === "ADMIN") return;
+					// 					ORConditions.push({ role: x });
+					// 					break;
 
-									default:
-										break;
-								}
-							}
-						});
-						if (ORConditions && ORConditions.length > 0) where = { ...where, OR: ORConditions };
-					}
+					// 				default:
+					// 					break;
+					// 			}
+					// 		}
+					// 	});
+					// 	if (ORConditions && ORConditions.length > 0) where = { ...where, OR: ORConditions };
+					// }
 					if (family_Id) {
 						where = { ...where, familyId: family_Id };
 					}
@@ -359,14 +350,14 @@ export const GroupStudentsQuery = extendType({
 				data: PaginationInputType,
 				isActive: nullable(booleanArg()),
 				groupId: nonNull(stringArg()),
-				role: nullable(arg({ type: "Role" })),
+				// role: nullable(UserRole),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
-				const { data, isActive, groupId, role } = args;
+				const { data, isActive, groupId } = args;
 				let where = {};
-				if (role) {
-					where = { ...where, role };
-				}
+				// if (role) {
+				// 	where = { ...where, role };
+				// }
 				if (isActive) {
 					where = { ...where, isActive };
 				}
@@ -484,7 +475,7 @@ export async function GetUserByEmail(prisma: PrismaClient, email: string): Promi
 export async function UpdateUser(ctx: Context, studentParam: any, userPassword?: string | null | undefined) {
 	try {
 		const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
-		const { name, id, groupId, rolesList, avatar, familyName, familyId, ...rest } = studentParam;
+		const { name, id, groupId, rolesIdsList, avatar, familyName, familyId, ...rest } = studentParam;
 		const password = hashedPassword
 			? {
 					update: {
@@ -495,10 +486,10 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 			: undefined;
 
 		const roles =
-			rolesList?.length > 0
+			rolesIdsList && rolesIdsList?.length > 0
 				? {
-						connect: rolesList.map((role: Role) => ({
-							id: role.id,
+						connect: rolesIdsList.map((id: any) => ({
+							id,
 						})),
 				  }
 				: undefined;
@@ -550,7 +541,7 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 			contact: allIsNull ? false : true,
 			profile: groupId ? true : false,
 			family: family ? true : false,
-			roles: rolesList?.length > 0 ? true : false,
+			roles: rolesIdsList && rolesIdsList?.length > 0 ? true : false,
 		};
 		return await ctx.prisma.user.update({
 			where: { id },
@@ -565,13 +556,13 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 export async function CreateUser(ctx: Context, userParam: any, userPassword: string) {
 	try {
 		const hashedPassword = await hashPassword(userPassword);
-		const { name, avatar, groupId, rolesList, familyId, familyName, ...rest } = userParam;
+		const { name, avatar, groupId, rolesIdsList, familyId, familyName, ...rest } = userParam;
 
 		const roles =
-			rolesList?.length > 0
+			rolesIdsList && rolesIdsList?.length > 0
 				? {
-						connect: rolesList.map((role: Role) => ({
-							id: role.id,
+						connect: rolesIdsList.map((id: any) => ({
+							id,
 						})),
 				  }
 				: undefined;
@@ -617,7 +608,7 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 				contact: true,
 				profile: groupId ? true : false,
 				family: familyName ? true : false,
-				roles: rolesList?.length > 0 ? true : false,
+				roles: rolesIdsList && rolesIdsList?.length > 0 ? true : false,
 			},
 		});
 	} catch (error) {
@@ -664,7 +655,7 @@ export const userUpdate = extendType({
 			args: {
 				id: nonNull(stringArg()),
 				avatar: stringArg(),
-				roles: list(arg({ type: "Role" })),
+				rolesIdsList: nonNull(list(intArg())),
 				name: stringArg(),
 				email: stringArg(),
 				password: stringArg(),
@@ -686,8 +677,8 @@ export const userUpdate = extendType({
 					phone,
 					groupId,
 					avatar,
-					roles,
 					familyName,
+					rolesIdsList,
 				},
 				ctx
 			) => {
@@ -707,8 +698,8 @@ export const userUpdate = extendType({
 						name: name ?? email,
 						groupId: groupId,
 						avatar,
-						rolesList: roles,
 						familyName,
+						rolesIdsList,
 					};
 
 					return await UpdateUser(ctx, studentParam, password);
@@ -728,7 +719,7 @@ export const userRegister = extendType({
 			type: "User",
 			args: {
 				name: nonNull(stringArg()),
-				roles: nonNull(list(arg({ type: "Role" }))),
+				rolesIdsList: nonNull(list(intArg())),
 				email: nonNull(stringArg()),
 				password: nonNull(stringArg()),
 				address: nullable(stringArg()),
@@ -750,9 +741,9 @@ export const userRegister = extendType({
 					parentsPhones,
 					phone,
 					groupId,
-					roles,
 					familyName,
 					familyId,
+					rolesIdsList,
 				},
 				ctx
 			) => {
@@ -768,9 +759,9 @@ export const userRegister = extendType({
 						parentsPhones,
 						name: name ?? email,
 						groupId,
-						rolesList: roles,
 						familyName,
 						familyId,
+						rolesIdsList,
 					} as any;
 
 					return await CreateUser(ctx, userParam, password);

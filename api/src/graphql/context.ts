@@ -12,27 +12,25 @@ export async function createContext(request: ExpressContext): Promise<Partial<Co
 		user: null,
 	};
 
-	const userId = getUserId(context);
+	// const userId = getUserId(context);
 
-	if (userId) {
-		const user = await prisma.user.findUniqueOrThrow({
-			where: {
-				id: userId,
-			},
-		});
+	// if (userId) {
+	// 	const user = await prisma.user.findUniqueOrThrow({
+	// 		where: {
+	// 			id: userId,
+	// 		},
+	// 	});
+	// 	context.user = user;
+	// }
+
+	const user = await prisma.user.findUniqueOrThrow({
+		where: {
+			id: "cl7au537v001443vyn6n56fbm",
+		},
+	});
+	if (user) {
 		context.user = user;
 	}
-
-	// const user = await prisma.contact.findUniqueOrThrow({
-	// 	where: {
-	// 		email: "seededadmin@admin.com",
-	// 	},
-
-	// 	include: { user: true },
-	// });
-	// if (user) {
-	// 	context.user = user.user;
-	// }
 
 	return context;
 }

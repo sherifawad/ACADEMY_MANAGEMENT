@@ -1,4 +1,3 @@
-import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg } from "nexus";
 import { Attendance } from "./Attendance";
 import { Exam } from "./Exam";
@@ -19,12 +18,6 @@ export const Profile = objectType({
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
 			async resolve(_parent, { take, orderByList }, { user, prisma }) {
 				try {
-					if (
-						!user ||
-						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
-					) {
-						throw new Error("Not Allowed");
-					}
 					const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 					let orderList: { [x: string]: string }[];
 					if (isEmpty) {
@@ -59,12 +52,6 @@ export const Profile = objectType({
 			type: User,
 			async resolve(_parent, _args, { user, prisma }) {
 				try {
-					if (
-						!user ||
-						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
-					) {
-						throw new Error("Not Allowed");
-					}
 					return await prisma.profile
 						.findUniqueOrThrow({
 							where: {
@@ -82,12 +69,6 @@ export const Profile = objectType({
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
 			async resolve(_parent, { take, orderByList }, { user, prisma }) {
 				try {
-					if (
-						!user ||
-						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== _parent.id)
-					) {
-						throw new Error("Not Allowed");
-					}
 					const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 					let orderList: { [x: string]: string }[];
 					if (isEmpty) {
@@ -122,9 +103,6 @@ export const Profile = objectType({
 			type: "Group",
 			resolve: async ({ id }, _, { user, prisma }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== id)) {
-						return null;
-					}
 					return await prisma.profile
 						.findUniqueOrThrow({
 							where: { id },
@@ -165,7 +143,6 @@ export const ProfilesQuery = extendType({
 			type: "Profile",
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
-					if (!user || user.role !== Role.ADMIN) return null;
 					return await prisma.profile.findMany();
 				} catch (error) {
 					return Promise.reject("error");
@@ -184,8 +161,6 @@ export const ProfileByIdQuery = extendType({
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
 				try {
-					if (!user || (user.id !== id && user.role !== Role.ADMIN && user.role !== Role.USER))
-						return null;
 					return await prisma.profile.findUniqueOrThrow({
 						where: { id },
 					});
@@ -207,12 +182,6 @@ export const ProfileAttendancesQuery = extendType({
 
 			resolve: async (_parent, { studentId }, { prisma, user }) => {
 				try {
-					if (
-						!user ||
-						(user.id !== studentId && user.role !== Role.ADMIN && user.role !== Role.USER)
-					)
-						return null;
-
 					return await prisma.attendance
 						.findMany({
 							where: { profileId: studentId },
@@ -238,8 +207,6 @@ export const createProfileMutation = extendType({
 			},
 			resolve: async (_parent, { id, bio }, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-
 					const newProfile = {
 						id,
 						bio,
@@ -269,7 +236,6 @@ export const UpdateProfileMutation = extendType({
 			resolve: async (_parent, { id, bio }, { prisma, user }) => {
 				try {
 					//TODO: role recheck
-					if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
 
 					const updateProfile = {
 						bio,
@@ -299,7 +265,6 @@ export const DeleteProfileMutation = extendType({
 			async resolve(_parent, { id }, { prisma, user }) {
 				try {
 					//TODO: role recheck
-					if (!user || user.id !== id || user.role !== Role.ADMIN) return null;
 
 					return await prisma.profile.delete({
 						where: { id },
