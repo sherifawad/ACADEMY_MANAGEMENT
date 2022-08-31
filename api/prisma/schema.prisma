@@ -16,12 +16,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-enum Role {
-    ADMIN
-    USER
-    Student
-}
-
 model Contact {
     id             String  @id
     email          String? @unique
@@ -42,7 +36,7 @@ model User {
     avatar    String?
     contact   Contact?
     isActive  Boolean  @default(true)
-    role      Role     @default(Student)
+    roles     Role[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     profile   Profile?
@@ -50,6 +44,35 @@ model User {
     familyId  String?
 
     @@map("users")
+}
+
+model Role {
+    id          Int          @id @default(autoincrement())
+    name        String       @unique
+    description String?
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    users       User[]
+    domains     Domain[]
+    permissions Permission[]
+}
+
+model Domain {
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    roles       Role[]
+}
+
+model Permission {
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    roles       Role[]
 }
 
 model Profile {
