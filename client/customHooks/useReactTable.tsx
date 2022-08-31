@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Hooks, usePagination, useSortBy, useTable } from "react-table";
 import { useEditHooks } from "./reactTableHooks";
 
@@ -16,7 +16,7 @@ export interface tableInputs {
 }
 
 function useReactTable({
-	tableData,
+	tableData = [],
 	hasPagination = false,
 	hasEditColumn = false,
 	editRow,
@@ -35,16 +35,19 @@ function useReactTable({
 		};
 	}, [tableInitialStates, hiddenColumns]);
 
-	const editRowHandler = (values: any) => {
-		if (values) {
-			if (setItemData) {
-				setItemData(values);
+	const editRowHandler = useCallback(
+		() => (values: any) => {
+			if (values) {
+				if (setItemData) {
+					setItemData(values);
+				}
+				if (editRow) {
+					editRow(values);
+				}
 			}
-			if (editRow) {
-				editRow(values);
-			}
-		}
-	};
+		},
+		[setItemData, editRow]
+	);
 
 	const tableHooks = useMemo(() => {
 		let hooksArray = [];
