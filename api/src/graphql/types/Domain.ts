@@ -92,12 +92,12 @@ export const UpdateDomainMutation = extendType({
 		t.nonNull.field("updateDomain", {
 			type: "Domain",
 			args: {
-				id: nonNull(intArg()),
+				domainId: nonNull(intArg()),
 				name: stringArg(),
 				description: stringArg(),
 				rolesList: list(arg({ type: "Role" })),
 			},
-			resolve: async (_parent, { id, name, description, rolesList }, { prisma, user }) => {
+			resolve: async (_parent, { domainId, name, description, rolesList }, { prisma, user }) => {
 				try {
 					const roles =
 						rolesList?.length > 0
@@ -117,7 +117,7 @@ export const UpdateDomainMutation = extendType({
 						roles: rolesList?.length > 0 ? true : false,
 					};
 					return await prisma.domain.update({
-						where: { id },
+						where: { id: domainId },
 						data: { ...updateDomain },
 						include,
 					});
