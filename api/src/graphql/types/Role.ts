@@ -149,7 +149,7 @@ export const UpdateRoleMutation = extendType({
 						domains: domainsList?.length > 0 ? true : false,
 						permissions: permissionsList?.length > 0 ? false : true,
 					};
-					return await prisma.attendance.update({
+					return await prisma.role.update({
 						where: { id },
 						data: { ...updateRole },
 						include,
@@ -168,12 +168,12 @@ export const DeleteRoleMutation = extendType({
 		t.nonNull.field("deleteRole", {
 			type: "Role",
 			args: {
-				id: nonNull(intArg()),
+				roleId: nonNull(intArg()),
 			},
-			async resolve(_parent, { id }, { prisma, user }) {
+			async resolve(_parent, { roleId }, { prisma, user }) {
 				try {
 					return await prisma.role.delete({
-						where: { id },
+						where: { id: roleId },
 					});
 				} catch (error) {
 					return Promise.reject("error");

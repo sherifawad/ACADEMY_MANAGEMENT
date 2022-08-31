@@ -1,8 +1,6 @@
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core, list } from "nexus";
-// @ts-ignore
-import { PaginationInputType, queryArgs } from "./User";
+import { Role } from "@internal/prisma/client";
 
-//generates Exam type at schema.graphql
 export const Domain = objectType({
 	name: "Domain",
 	definition(t) {
@@ -24,248 +22,35 @@ export const Domain = objectType({
 	},
 });
 
-export const pageEdges = objectType({
-	name: "pageEdges",
-	definition(t) {
-		t.string("cursor");
-		t.field("node", {
-			type: Attendance,
-		});
-	},
-});
-
-export const PageCursor = objectType({
-	name: "PageCursor",
-	definition(t) {
-		t.string("cursor");
-		t.int("page");
-		t.boolean("isCurrent");
-	},
-});
-
-export const pageCursors = objectType({
-	name: "pageCursors",
-	definition(t) {
-		t.field("first", {
-			type: PageCursor,
-		});
-		t.field("previous", {
-			type: PageCursor,
-		});
-		t.list.field("around", {
-			type: PageCursor,
-		});
-		t.field("next", {
-			type: PageCursor,
-		});
-		t.field("last", {
-			type: PageCursor,
-		});
-	},
-});
-
-// export const AttendanceResponse = objectType({
-// 	name: "AttendanceResponse",
-// 	definition(t) {
-// 		t.list.field("pageEdges", {
-// 			type: pageEdges,
-// 		});
-// 		t.field("pageCursors", { type: pageCursors });
-// 		t.int("totalCount");
-// 	},
-// });
-
-export const AttendancesCount = objectType({
-	name: "AttendancesCount",
-	definition(t) {
-		t.int("_count");
-	},
-});
-
-export const AttendancesCUResponse = objectType({
-	name: "AttendancesCUResponse",
-	definition(t) {
-		t.int("count");
-	},
-});
-
-export const AttendanceResponse = objectType({
-	name: "AttendanceResponse",
-	definition(t) {
-		t.list.field("list", {
-			type: Attendance,
-		});
-		t.string("prevCursor");
-		t.string("nextCursor");
-		t.field("totalCount", { type: AttendancesCount });
-	},
-});
-
-// const dateTimeArg = (opts: core.NexusArgConfig<"DateTime">) => arg({ ...opts, type: "DateTime" });
-
-//get unique Attendance by date
-export const AttendanceByUserDateQuery = extendType({
+export const DomainsQuery = extendType({
 	type: "Query",
 	definition(t) {
-		t.nonNull.field("AttendanceInDate", {
-			type: "Attendance",
-			args: {
-				id: nonNull(stringArg()),
-				date: nonNull(arg({ type: "DateTime" })),
-			},
-			resolve: async (_parent, { id, date }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
+		t.list.field("domains", {
+			type: "Domain",
 
-				return await prisma.attendance.findMany({
-					where: { profileId: id, startAt: { gte: date } },
-				});
-			},
-		});
-	},
-});
-
-// export const AttendanceByUserIdQuery = extendType({
-// 	type: "Query",
-// 	definition(t) {
-// 		t.field("PaginatedAttendances", {
-// 			type: "AttendanceResponse",
-// 			args: {
-// 				studentId: nonNull(stringArg()),
-// 				myCursor: nullable(stringArg()),
-// 				orderByKey: nullable(stringArg()),
-// 				orderDirection: nullable(stringArg()),
-// 				size: nullable(intArg()),
-// 				buttonNum: nullable(intArg()),
-// 			},
-// 			resolve: async (
-// 				_parent,
-// 				{ studentId, size, buttonNum, myCursor, orderByKey, orderDirection },
-// 				{ prisma, user }
-// 			) => {
-// 				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
-// 					return null;
-
-// 				return await prismaOffsetPagination({
-// 					cursor: cursor,
-// 					size: Number(size),
-// 					buttonNum: Number(buttonNum),
-// 					orderBy,
-// 					orderDirection,
-// 					model: Attendance,
-// 					prisma: prisma,
-// 					where: {
-// 						Profile: { id: studentId },
-// 					},
-// 				});
-// 			},
-// 		});
-// 	},
-// });
-
-export const AttendanceByUserIdQuery = extendType({
-	type: "Query",
-	definition(t) {
-		t.field("studentAttendances", {
-			type: "AttendanceResponse",
-			args: {
-				data: PaginationInputType,
-				studentId: nonNull(stringArg()),
-			},
-			resolve: async (_parent, args, { prisma, user }) => {
-				const { data, studentId } = args;
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
-					return null;
-
-				let where = {};
-				if (studentId) {
-					where = {
-						...where,
-						Profile: { id: studentId },
-					};
-				}
-				let result: attendance[];
-				let totalCount: { _count: number } | undefined | null;
-				let nextCursor: string | undefined | null;
-				let prevCursor: string | undefined | null;
-				if (data) {
-					result = await prisma.attendance.findMany(queryArgs(data, where));
-
-					nextCursor = result[result?.length - 1]?.id;
-					prevCursor = result[0]?.id;
-
-					if (!data?.myCursor) {
-						totalCount = await prisma.attendance.aggregate({
-							where: {
-								Profile: { id: studentId },
-							},
-							_count: true,
-						});
-					}
-				} else {
-					result = await prisma.user.findMany({
-						where: {
-							Profile: { id: studentId },
-						},
-					});
-				}
-
-				return {
-					list: result,
-					prevCursor,
-					nextCursor,
-					totalCount,
-				};
-			},
-		});
-	},
-});
-
-export const UserAttendancesCount = extendType({
-	type: "Query",
-	definition(t) {
-		t.field("AttendancesCount", {
-			type: "AttendancesCount",
-			args: {
-				studentId: nonNull(stringArg()),
-			},
-			resolve: async (_parent, { studentId }, { prisma, user }) => {
-				if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId))
-					return null;
-				return await prisma.attendance.aggregate({
-					where: {
-						Profile: { id: studentId },
-					},
-					_count: true,
-				});
-			},
-		});
-	},
-});
-
-export const AttendanceByUserQuery = extendType({
-	type: "Query",
-	definition(t) {
-		t.list.field("Attendances", {
-			type: "Attendance",
-			args: {
-				studentId: nonNull(stringArg()),
-				skip: nullable(intArg()),
-				take: nullable(intArg()),
-			},
-			resolve: async (_parent, { studentId, take, skip = 1 }, { prisma, user }) => {
+			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
-					if (
-						!user ||
-						(user.role !== Role.ADMIN && user.role !== Role.USER && user.id !== studentId)
-					)
-						return null;
+					return await prisma.domain.findMany();
+				} catch (error) {
+					return Promise.reject("error");
+				}
+			},
+		});
+	},
+});
 
-					return await prisma.attendance.findMany({
-						skip,
-						take,
-						where: {
-							Profile: { id: studentId },
-						},
+export const DomainIdQuery = extendType({
+	type: "Query",
+	definition(t) {
+		t.list.field("domain", {
+			type: "Domain",
+			args: {
+				domainId: nonNull(intArg()),
+			},
+			resolve: async (_parent, { domainId }, { prisma, user }) => {
+				try {
+					return await prisma.domain.findUniqueOrThrow({
+						where: { id: domainId },
 					});
 				} catch (error) {
 					return Promise.reject("error");
@@ -275,31 +60,23 @@ export const AttendanceByUserQuery = extendType({
 	},
 });
 
-//create Attendance
-export const createAttendanceMutation = extendType({
+export const createDomainMutation = extendType({
 	type: "Mutation",
 	definition(t) {
-		t.nonNull.field("createAttendance", {
-			type: "Attendance",
+		t.nonNull.field("createDomain", {
+			type: "Domain",
 			args: {
-				startAt: nonNull(arg({ type: "DateTime" })),
-				endAt: nullable(arg({ type: "DateTime" })),
-				note: nullable(stringArg()),
-				profileId: nonNull(stringArg()),
+				name: nonNull(stringArg()),
+				description: nullable(stringArg()),
 			},
-			resolve: async (_parent, { startAt, endAt, note, profileId }, { prisma, user }) => {
+			resolve: async (_parent, { name, description }, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-
-					const newAttendance = {
-						startAt,
-						endAt,
-						note,
-						profileId,
-						createdBy: user.id,
+					const newDomain = {
+						name,
+						description,
 					};
-					return await prisma.attendance.create({
-						data: newAttendance,
+					return await prisma.domain.create({
+						data: newDomain,
 					});
 				} catch (error) {
 					return Promise.reject("error");
@@ -309,71 +86,40 @@ export const createAttendanceMutation = extendType({
 	},
 });
 
-//create Multiple Attendance
-export const createMultipleAttendanceMutation = extendType({
+export const UpdateDomainMutation = extendType({
 	type: "Mutation",
 	definition(t) {
-		t.field("createMultipleAttendance", {
-			type: "AttendancesCUResponse",
+		t.nonNull.field("updateDomain", {
+			type: "Domain",
 			args: {
-				startAt: nonNull(arg({ type: "DateTime" })),
-				endAt: nullable(arg({ type: "DateTime" })),
-				note: nullable(stringArg()),
-				profileIds: nonNull(list(nonNull(stringArg()))),
+				id: nonNull(intArg()),
+				name: stringArg(),
+				description: stringArg(),
+				rolesList: list(arg({ type: "Role" })),
 			},
-			resolve: async (_parent, { startAt, endAt, note, profileIds }, { prisma, user }) => {
+			resolve: async (_parent, { id, name, description, rolesList }, { prisma, user }) => {
 				try {
-					if (!user || (user.role !== Role.ADMIN && user.role !== Role.USER)) return null;
-					const newAttendances: Omit<attendance, "id">[] = [];
-					profileIds.forEach((id: string) =>
-						newAttendances.push({
-							startAt,
-							endAt,
-							note,
-							profileId: id,
-							createdBy: user.id,
-						})
-					);
+					const roles =
+						rolesList?.length > 0
+							? {
+									connect: rolesList.map((role: Role) => ({
+										id: role.id,
+									})),
+							  }
+							: undefined;
 
-					return await prisma.attendance.createMany({
-						data: newAttendances,
-						skipDuplicates: true,
-					});
-				} catch (error) {
-					return Promise.reject("error");
-				}
-			},
-		});
-	},
-});
-
-// update Attendance
-export const UpdateAttendanceMutation = extendType({
-	type: "Mutation",
-	definition(t) {
-		t.nonNull.field("updateAttendance", {
-			type: "Attendance",
-			args: {
-				id: nonNull(stringArg()),
-				startAt: arg({ type: "DateTime" }),
-				endAt: arg({ type: "DateTime" }),
-				note: stringArg(),
-				profileId: stringArg(),
-			},
-			resolve: async (_parent, { id, startAt, endAt, note, profileId }, { prisma, user }) => {
-				try {
-					if (!user || user.role !== Role.ADMIN) return null;
-
-					const updateAttendance = {
-						startAt,
-						endAt,
-						note,
-						profileId,
-						updatedBy: user.id,
+					const updateDomain = {
+						name,
+						description,
 					};
-					return await prisma.attendance.update({
+
+					const include = {
+						roles: rolesList?.length > 0 ? true : false,
+					};
+					return await prisma.domain.update({
 						where: { id },
-						data: { ...updateAttendance },
+						data: { ...updateDomain },
+						include,
 					});
 				} catch (error) {
 					return Promise.reject("error");
@@ -383,79 +129,18 @@ export const UpdateAttendanceMutation = extendType({
 	},
 });
 
-// update Multiple Attendance
-export const UpdateMultipleAttendanceMutation = extendType({
+export const DeleteDomainMutation = extendType({
 	type: "Mutation",
 	definition(t) {
-		t.nonNull.field("updateMultipleAttendance", {
-			type: "AttendancesCUResponse",
+		t.nonNull.field("deleteDomain", {
+			type: "Domain",
 			args: {
-				startAtCondition: nonNull(arg({ type: "DateTime" })),
-				endAtCondition: arg({ type: "DateTime" }),
-				noteCondition: stringArg(),
-				startAt: arg({ type: "DateTime" }),
-				endAt: arg({ type: "DateTime" }),
-				note: stringArg(),
-				profileIds: nonNull(list(nonNull(stringArg()))),
+				domainId: nonNull(intArg()),
 			},
-			resolve: async (
-				_parent,
-				{ startAtCondition, endAtCondition, noteCondition, startAt, endAt, note, profileIds },
-				{ prisma, user }
-			) => {
+			async resolve(_parent, { domainId }, { prisma, user }) {
 				try {
-					if (!user || user.role !== Role.ADMIN) return null;
-
-					const ANDConditions = [];
-					if (startAtCondition) {
-						ANDConditions.push({ startAt: startAtCondition });
-					}
-					if (endAtCondition) {
-						ANDConditions.push({ endAt: endAtCondition });
-					}
-					if (noteCondition) {
-						ANDConditions.push({ note: { contains: noteCondition } });
-					}
-					const ORConditions: { profileId: string }[] = [];
-					profileIds.forEach((id: string) => ORConditions.push({ profileId: id }));
-
-					const updateAttendance = {
-						startAt,
-						endAt,
-						note,
-						updatedBy: user.id,
-					};
-					const where = {
-						AND: ANDConditions,
-						OR: ORConditions,
-					};
-					return await prisma.attendance.updateMany({
-						where,
-						data: updateAttendance,
-					});
-				} catch (error) {
-					return Promise.reject("error");
-				}
-			},
-		});
-	},
-});
-
-// delete Attendance
-export const DeleteAttendanceMutation = extendType({
-	type: "Mutation",
-	definition(t) {
-		t.nonNull.field("deleteAttendance", {
-			type: "Attendance",
-			args: {
-				id: nonNull(stringArg()),
-			},
-			async resolve(_parent, { id }, { prisma, user }) {
-				try {
-					if (!user || user.role !== Role.ADMIN) return null;
-
-					return await prisma.attendance.delete({
-						where: { id },
+					return await prisma.domain.delete({
+						where: { id: domainId },
 					});
 				} catch (error) {
 					return Promise.reject("error");
