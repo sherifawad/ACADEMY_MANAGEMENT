@@ -36,43 +36,55 @@ model User {
     avatar    String?
     contact   Contact?
     isActive  Boolean  @default(true)
-    roles     Role[]
+    roles     Role     @relation(fields: [roleId], references: [id])
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     profile   Profile?
     family    family?  @relation(fields: [familyId], references: [id])
     familyId  String?
+    roleId    Int
 
     @@map("users")
 }
 
 model Role {
-    id          Int          @id @default(autoincrement())
-    name        String       @unique
+    id          Int                      @id @default(autoincrement())
+    name        String                   @unique
     description String?
-    createdAt   DateTime     @default(now())
-    updatedAt   DateTime     @updatedAt
-    users       User[]
-    domains     Domain[]
-    permissions Permission[]
+    createdAt   DateTime                 @default(now())
+    updatedAt   DateTime                 @updatedAt
+    User        User[]
+    rdps        Role_Domain_Permission[]
 }
 
 model Domain {
-    id          Int      @id @default(autoincrement())
-    name        String   @unique
+    id          Int                      @id @default(autoincrement())
+    name        String                   @unique
     description String?
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    roles       Role[]
+    createdAt   DateTime                 @default(now())
+    updatedAt   DateTime                 @updatedAt
+    rdps        Role_Domain_Permission[]
 }
 
 model Permission {
-    id          Int      @id @default(autoincrement())
-    name        String   @unique
+    id          Int                      @id @default(autoincrement())
+    name        String                   @unique
     description String?
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    roles       Role[]
+    createdAt   DateTime                 @default(now())
+    updatedAt   DateTime                 @updatedAt
+    rdps        Role_Domain_Permission[]
+}
+
+model Role_Domain_Permission {
+    id           Int         @id @default(autoincrement())
+    Permission   Permission? @relation(fields: [permissionId], references: [id])
+    permissionId Int?
+    Domain       Domain?     @relation(fields: [domainId], references: [id])
+    domainId     Int?
+    Role         Role?       @relation(fields: [roleId], references: [id])
+    roleId       Int?
+
+    @@unique([permissionId, domainId, roleId])
 }
 
 model Profile {

@@ -14,31 +14,11 @@ async function seed() {
 	await client.permission.deleteMany();
 	await client.role.deleteMany();
 
-	const Roles = await client.role.createMany({
-		data: [
-			{
-				name: "systemAdmin",
-			},
-			{
-				name: "admin",
-			},
-			{
-				name: "teacher",
-			},
-			{
-				name: "parent",
-			},
-			{
-				name: "student",
-			},
-			{
-				name: "guest",
-			},
-		],
-	});
-
 	const domains = await client.domain.createMany({
 		data: [
+			{
+				name: "all",
+			},
 			{
 				name: "user",
 			},
@@ -81,6 +61,49 @@ async function seed() {
 				name: "read",
 			},
 		],
+	});
+
+	const Roles = await client.role.createMany({
+		data: [
+			{
+				name: "systemAdmin",
+			},
+			{
+				name: "admin",
+			},
+			{
+				name: "teacher",
+			},
+			{
+				name: "parent",
+			},
+			{
+				name: "student",
+			},
+			{
+				name: "guest",
+			},
+		],
+	});
+
+	const rdp = await client.role_Domain_Permission.create({
+		data: {
+			Domain: {
+				connect: {
+					name: "all",
+				},
+			},
+			Permission: {
+				connect: {
+					name: "full",
+				},
+			},
+			Role: {
+				connect: {
+					name: "systemAdmin",
+				},
+			},
+		},
 	});
 
 	const admin = await client.user.create({

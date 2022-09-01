@@ -5,6 +5,7 @@ import { JwtPayload, sign, verify } from "jsonwebtoken";
 import ms from "ms";
 import constants from "../core/constants";
 import { Context } from "../graphql/types";
+import prisma from "../lib/prisma";
 
 export type JwtRefreshPayload = {
 	userId: string;
@@ -116,3 +117,5 @@ export function getRefreshCookie({ request }: Pick<GetUserIdContext, "request">)
 		return jwtContent;
 	}
 }
+
+
