@@ -36,7 +36,7 @@ model User {
     avatar    String?
     contact   Contact?
     isActive  Boolean  @default(true)
-    roles     Role     @relation(fields: [roleId], references: [id])
+    role      Role     @relation(fields: [roleId], references: [id])
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     profile   Profile?
@@ -53,7 +53,7 @@ model Role {
     description String?
     createdAt   DateTime                 @default(now())
     updatedAt   DateTime                 @updatedAt
-    User        User[]
+    users       User[]
     rdps        Role_Domain_Permission[]
 }
 
@@ -77,11 +77,11 @@ model Permission {
 
 model Role_Domain_Permission {
     id           Int         @id @default(autoincrement())
-    Permission   Permission? @relation(fields: [permissionId], references: [id])
+    permission   Permission? @relation(fields: [permissionId], references: [id])
     permissionId Int?
-    Domain       Domain?     @relation(fields: [domainId], references: [id])
+    domain       Domain?     @relation(fields: [domainId], references: [id])
     domainId     Int?
-    Role         Role?       @relation(fields: [roleId], references: [id])
+    role         Role?       @relation(fields: [roleId], references: [id])
     roleId       Int?
 
     @@unique([permissionId, domainId, roleId])

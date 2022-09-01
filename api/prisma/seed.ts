@@ -13,31 +13,44 @@ async function seed() {
 	await client.domain.deleteMany();
 	await client.permission.deleteMany();
 	await client.role.deleteMany();
+	await client.role_Domain_Permission.deleteMany();
 
 	const domains = await client.domain.createMany({
 		data: [
 			{
+				id: 1,
 				name: "all",
 			},
 			{
+				id: 2,
 				name: "user",
 			},
 			{
+				id: 3,
+				name: "gardian",
+			},
+			{
+				id: 4,
 				name: "student",
 			},
 			{
+				id: 5,
 				name: "grade",
 			},
 			{
+				id: 6,
 				name: "group",
 			},
 			{
+				id: 7,
 				name: "attendance",
 			},
 			{
+				id: 8,
 				name: "exam",
 			},
 			{
+				id: 9,
 				name: "assignment",
 			},
 		],
@@ -46,18 +59,35 @@ async function seed() {
 	const permissions = await client.permission.createMany({
 		data: [
 			{
+				id: 1,
 				name: "full",
 			},
 			{
+				id: 2,
 				name: "delete",
 			},
 			{
+				id: 3,
+				name: "deleteSelf",
+			},
+			{
+				id: 4,
 				name: "edit",
 			},
 			{
+				id: 5,
+				name: "editSelf",
+			},
+			{
+				id: 6,
+				name: "deActivateSelf",
+			},
+			{
+				id: 7,
 				name: "deActivate",
 			},
 			{
+				id: 8,
 				name: "read",
 			},
 		],
@@ -66,21 +96,24 @@ async function seed() {
 	const Roles = await client.role.createMany({
 		data: [
 			{
+				id: 1,
 				name: "systemAdmin",
 			},
+			{ id: 2, name: "admin" },
 			{
-				name: "admin",
-			},
-			{
+				id: 3,
 				name: "teacher",
 			},
 			{
+				id: 4,
 				name: "parent",
 			},
 			{
+				id: 5,
 				name: "student",
 			},
 			{
+				id: 6,
 				name: "guest",
 			},
 		],
@@ -88,17 +121,17 @@ async function seed() {
 
 	const rdp = await client.role_Domain_Permission.create({
 		data: {
-			Domain: {
+			domain: {
 				connect: {
 					name: "all",
 				},
 			},
-			Permission: {
+			permission: {
 				connect: {
 					name: "full",
 				},
 			},
-			Role: {
+			role: {
 				connect: {
 					name: "systemAdmin",
 				},
@@ -106,11 +139,26 @@ async function seed() {
 		},
 	});
 
+	await client.role_Domain_Permission.createMany({
+		data: [
+			{
+				roleId: 4,
+				domainId: 3,
+				permissionId: 4,
+			},
+			{
+				roleId: 4,
+				domainId: 4,
+				permissionId: 8,
+			},
+		],
+	});
+
 	const admin = await client.user.create({
 		data: {
 			id: "cl7au537v001443vyn6n56fbm",
 			name: "Sherif Awad",
-			roles: {
+			role: {
 				connect: {
 					name: "systemAdmin",
 				},

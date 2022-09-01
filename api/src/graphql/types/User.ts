@@ -62,14 +62,14 @@ export const User = objectType({
 		t.string("avatar");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
-		t.list.field("roles", {
+		t.field("role", {
 			type: UserRole,
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.user
 					.findUniqueOrThrow({
 						where: { id },
 					})
-					.roles();
+					.role();
 			},
 		});
 		t.nullable.field("profile", {
@@ -475,7 +475,7 @@ export async function GetUserByEmail(prisma: PrismaClient, email: string): Promi
 export async function UpdateUser(ctx: Context, studentParam: any, userPassword?: string | null | undefined) {
 	try {
 		const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
-		const { name, id, groupId, rolesIdsList, avatar, familyName, familyId, ...rest } = studentParam;
+		const { name, id, groupId, roleId, avatar, familyName, familyId, ...rest } = studentParam;
 		const password = hashedPassword
 			? {
 					update: {
@@ -485,14 +485,13 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 			  }
 			: undefined;
 
-		const roles =
-			rolesIdsList && rolesIdsList?.length > 0
-				? {
-						connect: rolesIdsList.map((id: any) => ({
-							id,
-						})),
-				  }
-				: undefined;
+		const role = roleId
+			? {
+					connect: {
+						id: roleId,
+					},
+			  }
+			: undefined;
 		const family = familyName
 			? {
 					upsert: {
@@ -530,7 +529,7 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 		const data = {
 			name: name ? name : undefined,
 			avatar: avatar ? avatar : undefined,
-			roles,
+			role,
 			password,
 			contact,
 			profile,
@@ -541,7 +540,7 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 			contact: allIsNull ? false : true,
 			profile: groupId ? true : false,
 			family: family ? true : false,
-			roles: rolesIdsList && rolesIdsList?.length > 0 ? true : false,
+			role: roleId ? true : false,
 		};
 		return await ctx.prisma.user.update({
 			where: { id },
@@ -556,16 +555,8 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 export async function CreateUser(ctx: Context, userParam: any, userPassword: string) {
 	try {
 		const hashedPassword = await hashPassword(userPassword);
-		const { name, avatar, groupId, rolesIdsList, familyId, familyName, ...rest } = userParam;
+		const { name, avatar, groupId, roleId, familyId, familyName, ...rest } = userParam;
 
-		const roles =
-			rolesIdsList && rolesIdsList?.length > 0
-				? {
-						connect: rolesIdsList.map((id: any) => ({
-							id,
-						})),
-				  }
-				: undefined;
 		const profile = groupId
 			? {
 					create: {
@@ -596,6 +587,11 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 			data: {
 				name,
 				avatar,
+				role: {
+					connect: {
+						id: roleId,
+					},
+				},
 				contact: {
 					create: {
 						...rest,
@@ -608,7 +604,6 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 				contact: true,
 				profile: groupId ? true : false,
 				family: familyName ? true : false,
-				roles: rolesIdsList && rolesIdsList?.length > 0 ? true : false,
 			},
 		});
 	} catch (error) {
@@ -655,7 +650,7 @@ export const userUpdate = extendType({
 			args: {
 				id: nonNull(stringArg()),
 				avatar: stringArg(),
-				rolesIdsList: nonNull(list(intArg())),
+				roleId: intArg(),
 				name: stringArg(),
 				email: stringArg(),
 				password: stringArg(),
@@ -678,7 +673,7 @@ export const userUpdate = extendType({
 					groupId,
 					avatar,
 					familyName,
-					rolesIdsList,
+					roleId,
 				},
 				ctx
 			) => {
@@ -699,7 +694,7 @@ export const userUpdate = extendType({
 						groupId: groupId,
 						avatar,
 						familyName,
-						rolesIdsList,
+						roleId,
 					};
 
 					return await UpdateUser(ctx, studentParam, password);
@@ -719,7 +714,7 @@ export const userRegister = extendType({
 			type: "User",
 			args: {
 				name: nonNull(stringArg()),
-				rolesIdsList: nonNull(list(intArg())),
+				roleId: nonNull(intArg()),
 				email: nonNull(stringArg()),
 				password: nonNull(stringArg()),
 				address: nullable(stringArg()),
@@ -743,7 +738,7 @@ export const userRegister = extendType({
 					groupId,
 					familyName,
 					familyId,
-					rolesIdsList,
+					roleId,
 				},
 				ctx
 			) => {
@@ -761,7 +756,7 @@ export const userRegister = extendType({
 						groupId,
 						familyName,
 						familyId,
-						rolesIdsList,
+						roleId,
 					} as any;
 
 					return await CreateUser(ctx, userParam, password);

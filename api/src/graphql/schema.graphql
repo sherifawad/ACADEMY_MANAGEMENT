@@ -161,9 +161,9 @@ type Mutation {
   updateMultipleExam(date: DateTime, dateCondition: DateTime!, note: String, noteCondition: DateTime, profileIds: [String!]!, score: Float, scoreCondition: Float): ExamCUResponse!
   updatePermission(description: String, name: String, permissionId: Int!, rolesIdsList: [Int]): UserPermission!
   updateProfile(bio: String, id: String!): Profile!
-  updateRole(description: String, domainsIdsList: [Int], name: String, permissionsIdsList: [Int], roleId: Int!): UserRole!
-  userRegister(address: String, avatar: String, email: String!, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, rolesIdsList: [Int]!): User!
-  userUpdate(address: String, avatar: String, email: String, familyName: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, rolesIdsList: [Int]!): User!
+  updateRole(description: String, domainPermissions: [JSONObject], name: String, roleId: Int!): UserRole!
+  userRegister(address: String, avatar: String, email: String!, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, roleId: Int!): User!
+  userUpdate(address: String, avatar: String, email: String, familyName: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, roleId: Int): User!
 }
 
 type PageCursor {
@@ -224,10 +224,17 @@ type Query {
   family(id: String!): Family!
   permission(permissionId: Int!): [UserPermission]
   permissions: [UserPermission]
-  role(roleId: Int!): [UserRole]
+  role(roleId: Int!): UserRole
   roles: [UserRole]
   studentAttendances(data: PaginationInputType, studentId: String!): AttendanceResponse
   studentsGroup(data: PaginationInputType, groupId: String!, isActive: Boolean): StudentsResponse
+}
+
+type Role_Domain_Permission {
+  domain: AppDomain
+  id: Int
+  permission: UserPermission
+  role: UserRole
 }
 
 type StudentsResponse {
@@ -249,7 +256,7 @@ type User {
   isActive: Boolean
   name: String
   profile: Profile
-  roles: [UserRole]
+  role: UserRole
   updatedAt: DateTime
 }
 
@@ -263,12 +270,11 @@ type UserPermission {
 }
 
 type UserRole {
+  Role_Domain_Permission: [Role_Domain_Permission]
   createdAt: DateTime
   description: String
-  domains: [AppDomain]
   id: Int
   name: String
-  permissions: [UserPermission]
   updatedAt: DateTime
   users: [User]
 }

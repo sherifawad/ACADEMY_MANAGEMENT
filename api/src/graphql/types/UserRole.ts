@@ -14,6 +14,7 @@ import { AppDomain } from "./AppDomain";
 import { User } from "./User";
 import { UserPermission } from "./UserPermission";
 import { Domain, Permission } from "@internal/prisma/client";
+import { RDP } from "./Role_Domain_Permission";
 
 export const UserRole = objectType({
 	name: "UserRole",
@@ -33,24 +34,14 @@ export const UserRole = objectType({
 					.users();
 			},
 		});
-		t.list.field("domains", {
-			type: AppDomain,
+		t.list.field("Role_Domain_Permission", {
+			type: RDP,
 			resolve: async ({ id }, _, { prisma }) => {
 				return await prisma.role
 					.findUniqueOrThrow({
 						where: { id },
 					})
-					.domains();
-			},
-		});
-		t.list.field("permissions", {
-			type: UserPermission,
-			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.role
-					.findUniqueOrThrow({
-						where: { id },
-					})
-					.permissions();
+					.rdps();
 			},
 		});
 	},
@@ -75,7 +66,7 @@ export const RolesQuery = extendType({
 export const RoleIdQuery = extendType({
 	type: "Query",
 	definition(t) {
-		t.list.field("role", {
+		t.field("role", {
 			type: UserRole,
 			args: {
 				roleId: nonNull(intArg()),
@@ -104,7 +95,7 @@ export const createRoleMutation = extendType({
 			},
 			resolve: async (_parent, { name, description }, { prisma, user }) => {
 				try {
-					const newRole = {
+					const newRole: any = {
 						name,
 						description,
 					};
@@ -128,46 +119,67 @@ export const UpdateRoleMutation = extendType({
 				roleId: nonNull(intArg()),
 				name: stringArg(),
 				description: stringArg(),
-				domainsIdsList: list(intArg()),
-				permissionsIdsList: list(intArg()),
+				domainPermissions: list(arg({ type: "JSONObject" })),
 			},
-			resolve: async (
-				_parent,
-				{ roleId, name, description, domainsIdsList, permissionsIdsList },
-				{ prisma, user }
-			) => {
+			resolve: async (_parent, { roleId, name, description, domainPermissions }, { prisma, user }) => {
 				try {
-					const domains =
-						domainsIdsList && domainsIdsList?.length > 0
-							? {
-									connect: domainsIdsList.map((id: any) => ({
-										id,
-									})),
-							  }
-							: undefined;
-					const permissions =
-						permissionsIdsList && permissionsIdsList?.length > 0
-							? {
-									connect: permissionsIdsList.map((id: any) => ({
-										id,
-									})),
-							  }
-							: undefined;
+					const isEmpty =
+						!domainPermissions ||
+						domainPermissions.length <= 0 ||
+						Object.keys(domainPermissions[0]).length === 0;
+					let domainPermissionsList: { domainId: number; permissionId: number }[] = [];
+					if (isEmpty) {
+						domainPermissionsList = [];
+					} else {
+						domainPermissions.forEach((obj) => {
+							const objResult = (Object.entries(obj) as Array<[string, number[]]>).reduce<any>(
+								(acc, [key, value]) => {
+									if (!isNaN(Number(key)) && value instanceof Array<number>) {
+										if (value.length > 0) {
+											const newList = value.map((v) =>
+												!isNaN(Number(v))
+													? {
+															domainId: Number(key),
+															permissionId: Number(v),
+													  }
+													: []
+											);
+											return [...acc, ...newList];
+										}
+									}
+									return acc;
+								},
+								[]
+							);
+							domainPermissionsList = [...domainPermissionsList, ...objResult];
+						});
+					}
+
+					const rdps = isEmpty
+						? undefined
+						: {
+								createMany: {
+									skipDuplicates: true,
+									data: domainPermissionsList,
+								},
+						  };
 
 					const updateRole = {
 						name,
 						description,
-						domains,
-						permissions,
+						rdps,
 					};
 
 					const include = {
-						domains: domainsIdsList && domainsIdsList?.length > 0 ? true : false,
-						permissions: permissionsIdsList && permissionsIdsList?.length > 0 ? false : true,
+						rdps: isEmpty ? false : true,
 					};
+					if (domainPermissionsList && domainPermissionsList?.length >= 0) {
+						await prisma.role_Domain_Permission.deleteMany({ where: { roleId } });
+					}
+
 					return await prisma.role.update({
 						where: { id: roleId },
-						data: { ...updateRole },
+						data: updateRole,
 						include,
 					});
 				} catch (error) {
