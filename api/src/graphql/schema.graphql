@@ -152,14 +152,14 @@ type Mutation {
   deleteRole(roleId: Int!): UserRole!
   updateAttendance(endAt: DateTime, id: String!, note: String, profileId: String, startAt: DateTime): Attendance!
   updateContact(address: String, contactId: String!, email: String, emailConfirmed: Boolean, note: String, parentsPhones: String, phone: String): Contact!
-  updateDomain(description: String, domainId: Int!, name: String, rolesIdsList: [Int]): AppDomain!
+  updateDomain(description: String, domainId: Int!, name: String): AppDomain!
   updateExam(date: DateTime, id: String!, note: String, score: Float): Exam!
   updateFamily(familyName: String!, id: String!): Family!
   updateGrade(id: String!, isActive: Boolean!, name: String!): Grade!
   updateGroup(endAt: DateTime, gradeId: String, id: String!, isActive: Boolean, name: String, startAt: DateTime): Group!
   updateMultipleAttendance(endAt: DateTime, endAtCondition: DateTime, note: String, noteCondition: String, profileIds: [String!]!, startAt: DateTime, startAtCondition: DateTime!): AttendancesCUResponse!
   updateMultipleExam(date: DateTime, dateCondition: DateTime!, note: String, noteCondition: DateTime, profileIds: [String!]!, score: Float, scoreCondition: Float): ExamCUResponse!
-  updatePermission(description: String, name: String, permissionId: Int!, rolesIdsList: [Int]): UserPermission!
+  updatePermission(description: String, name: String, permissionId: Int!): UserPermission!
   updateProfile(bio: String, id: String!): Profile!
   updateRole(description: String, domainPermissions: [JSONObject], name: String, roleId: Int!): UserRole!
   userRegister(address: String, avatar: String, email: String!, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, roleId: Int!): User!

@@ -139,21 +139,6 @@ async function seed() {
 		},
 	});
 
-	await client.role_Domain_Permission.createMany({
-		data: [
-			{
-				roleId: 4,
-				domainId: 3,
-				permissionId: 4,
-			},
-			{
-				roleId: 4,
-				domainId: 4,
-				permissionId: 8,
-			},
-		],
-	});
-
 	const admin = await client.user.create({
 		data: {
 			id: "cl7au537v001443vyn6n56fbm",

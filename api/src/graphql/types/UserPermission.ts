@@ -96,32 +96,17 @@ export const UpdatePermissionMutation = extendType({
 				permissionId: nonNull(intArg()),
 				name: stringArg(),
 				description: stringArg(),
-				rolesIdsList: list(intArg()),
 			},
-			resolve: async (_parent, { permissionId, name, description, rolesIdsList }, { prisma, user }) => {
+			resolve: async (_parent, { permissionId, name, description }, { prisma, user }) => {
 				try {
-					const roles =
-						rolesIdsList && rolesIdsList?.length > 0
-							? {
-									connect: rolesIdsList.map((id: any) => ({
-										id,
-									})),
-							  }
-							: undefined;
-
 					const updatePermission = {
 						name,
 						description,
-						roles,
 					};
 
-					const include = {
-						roles: rolesIdsList && rolesIdsList?.length > 0 ? true : false,
-					};
 					return await prisma.permission.update({
 						where: { id: permissionId },
 						data: { ...updatePermission },
-						include,
 					});
 				} catch (error) {
 					return Promise.reject("error");

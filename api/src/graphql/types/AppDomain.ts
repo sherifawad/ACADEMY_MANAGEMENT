@@ -96,32 +96,18 @@ export const UpdateDomainMutation = extendType({
 				domainId: nonNull(intArg()),
 				name: stringArg(),
 				description: stringArg(),
-				rolesIdsList: list(intArg()),
 			},
-			resolve: async (_parent, { domainId, name, description, rolesIdsList }, { prisma, user }) => {
+			resolve: async (_parent, { domainId, name, description }, { prisma, user }) => {
 				try {
-					const roles =
-						rolesIdsList && rolesIdsList?.length > 0
-							? {
-									connect: rolesIdsList.map((id: any) => ({
-										id,
-									})),
-							  }
-							: undefined;
 
 					const updateDomain = {
 						name,
 						description,
-						roles,
 					};
 
-					const include = {
-						roles: rolesIdsList && rolesIdsList?.length > 0 ? true : false,
-					};
 					return await prisma.domain.update({
 						where: { id: domainId },
 						data: { ...updateDomain },
-						include,
 					});
 				} catch (error) {
 					return Promise.reject("error");
