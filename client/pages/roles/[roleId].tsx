@@ -1,16 +1,20 @@
 import Paths from "core/paths";
-import { roleByIdQuery } from "features/rolesFeature/rolesQueries";
+import useModel from "customHooks/useModel";
+import AddDomain from "features/rolesFeature/AddDomain";
+import { domainsListQuery, roleByIdQuery } from "features/rolesFeature/rolesQueries";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import React, { useCallback, useEffect, useState } from "react";
 
-function RoleItemData({ role }) {
+function RoleItemData({ role, domainsList }) {
 	if (!role) {
 		return <div />;
 	}
 
 	const [domains, setDomains] = useState([]);
+
+	const { Model, modelProps } = useModel();
 
 	const removePermission = useCallback(
 		(eventClick, domainIndex, permissionId) => {
@@ -40,6 +44,20 @@ function RoleItemData({ role }) {
 			eventClick.preventDefault();
 
 			setDomains((prev) => prev.filter((x) => x.id !== domainId));
+		},
+		[domains]
+	);
+
+	const onProceed = useCallback(
+		(checkedDomains) => {
+			const newDomains = [];
+			checkedDomains.forEach((domain) => {
+				const exist = domains.some((x) => x.id === domain.id);
+				if (!exist) {
+					newDomains.push(domain);
+				}
+			});
+			setDomains((prev) => [...newDomains, ...prev]);
 		},
 		[domains]
 	);
@@ -75,6 +93,9 @@ function RoleItemData({ role }) {
 
 	return (
 		<div className="container">
+			<Model title="Add Domain">
+				<AddDomain onProceed={onProceed} onClose={modelProps.onClose} domains={domainsList} />
+			</Model>
 			<div className="w-full flex flex-wrap justify-center space-x-16 items-start">
 				{domains?.length > 0 &&
 					domains.map((obj, index) => (
@@ -82,8 +103,8 @@ function RoleItemData({ role }) {
 							<table className="min-w-max w-full table-auto">
 								<thead>
 									<tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-										<th className="py-3 mx-6">
-											<div className="flex items-center justify-around">
+										<th className="py-3">
+											<div className="flex items-center justify-around px-6">
 												<div className="">
 													<svg
 														xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +121,7 @@ function RoleItemData({ role }) {
 														/>
 													</svg>
 												</div>
-												<span className="font-medium mi-2">{obj.name}</span>
+												<span className="font-medium mx-4">{obj.name}</span>
 
 												<div
 													className=""
@@ -179,6 +200,10 @@ function RoleItemData({ role }) {
 						</div>
 					))}
 			</div>
+			{/* <div>
+				<h1>State:</h1>
+				<pre>{JSON.stringify(checkedList, null, 2)}</pre>
+			</div> */}
 		</div>
 	);
 }
@@ -211,8 +236,15 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 			};
 		}
 
+		const domainsList = await domainsListQuery();
+		if (domainsList?.error) {
+			return {
+				props: {},
+			};
+		}
+
 		return {
-			props: { role },
+			props: { role, domainsList: domainsList.domains },
 		};
 	} catch (error) {
 		return {

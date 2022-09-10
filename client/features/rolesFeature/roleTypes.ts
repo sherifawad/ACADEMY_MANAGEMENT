@@ -3,6 +3,17 @@ export interface Role {
 	name: string;
 	description: string;
 }
+export interface Domain {
+	id: number;
+	name: string;
+	description: string;
+}
+
+export interface DomainInitials {
+	domains: Domain[];
+	onProceed: Function;
+	onClose: Function;
+}
 
 export interface RoleInitials extends Role {
 	onProceed: Function;
