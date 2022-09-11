@@ -2,21 +2,23 @@ import LabelInput from "components/inputs/LabelInput";
 import useAuth from "customHooks/useAuth";
 import { useEffect, useState } from "react";
 import { createRoleMutation, updateRoleMutation } from "./roleMutations";
-import { DomainInitials, Role, RoleInitials } from "./roleTypes";
+import { PermissionInitials } from "./roleTypes";
 
-function AddDomain({ onProceed = () => {}, onClose, domains }: DomainInitials) {
-	const [checkedState, setCheckedState] = useState(new Array(domains.length).fill(false));
+function AddPermissions({ onProceed = () => {}, onClose, Permissions }: PermissionInitials) {
+	const [checkedState, setCheckedState] = useState(new Array(Permissions.length).fill(false));
 
-	const [checkedDomains, setCheckedDomains] = useState([]);
-	const handleCheckboxChange = (domainIndex, domain) => {
-		const updatedCheckedState = checkedState.map((item, index) => (index === domainIndex ? !item : item));
+	const [checkedPermissions, setCheckedPermissions] = useState([]);
+	const handleCheckboxChange = (permissionIndex, permission) => {
+		const updatedCheckedState = checkedState.map((item, index) =>
+			index === permissionIndex ? !item : item
+		);
 
 		setCheckedState(updatedCheckedState);
 
-		if (updatedCheckedState[domainIndex]) {
-			setCheckedDomains((prev) => [...prev, domain]);
+		if (updatedCheckedState[permissionIndex]) {
+			setCheckedPermissions((prev) => [...prev, permission]);
 		} else {
-			setCheckedDomains((prev) => prev.filter((x) => x.id !== domain.id));
+			setCheckedPermissions((prev) => prev.filter((x) => x.id !== permission.id));
 		}
 		// const checked = e.target.checked;
 		// if (checked) {
@@ -39,13 +41,13 @@ function AddDomain({ onProceed = () => {}, onClose, domains }: DomainInitials) {
 
 	const proceedAndClose = async (e) => {
 		await submitContact(e);
-		onProceed(checkedDomains);
+		onProceed(checkedPermissions);
 		onClose();
 	};
 
 	return (
 		<form onSubmit={proceedAndClose} method="dialog" className="space-y-6" action="#">
-			{domains?.map((domain, index) => (
+			{Permissions?.map((permission, index) => (
 				<table key={index} className="min-w-max w-full table-auto">
 					<tbody className="text-white text-sm font-light">
 						<tr className="border-b border-gray-200 ">
@@ -54,9 +56,9 @@ function AddDomain({ onProceed = () => {}, onClose, domains }: DomainInitials) {
 									<input
 										checked={checkedState[index]}
 										type="checkbox"
-										onChange={(e) => handleCheckboxChange(index, domain)}
+										onChange={(e) => handleCheckboxChange(index, permission)}
 									/>
-									<span className="font-medium mie-2">{domain.name}</span>
+									<span className="font-medium mie-2">{permission.name}</span>
 								</div>
 							</td>
 						</tr>
@@ -73,4 +75,4 @@ function AddDomain({ onProceed = () => {}, onClose, domains }: DomainInitials) {
 	);
 }
 
-export default AddDomain;
+export default AddPermissions;

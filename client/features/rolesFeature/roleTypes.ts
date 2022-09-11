@@ -8,6 +8,17 @@ export interface Domain {
 	name: string;
 	description: string;
 }
+export interface Permission {
+	id: number;
+	name: string;
+	description: string;
+}
+
+export interface PermissionInitials {
+	Permissions: Permission[];
+	onProceed: Function;
+	onClose: Function;
+}
 
 export interface DomainInitials {
 	domains: Domain[];

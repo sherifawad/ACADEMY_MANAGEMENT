@@ -1,6 +1,16 @@
 import { createAxiosService } from "core/utils";
 import { roleVariables } from "./roleTypes";
 
+export const GET_PERMISSIONS_LIST = `
+    query Query {
+        permissions {
+            id
+            name
+            description
+        }
+    }
+`;
+
 export const GET_DOMAINS_LIST = `
     query Query {
         domains {
@@ -38,6 +48,22 @@ export const GET_ROLE_Details = `
     }
 `;
 
+export const permissionsListQuery = async (token = null) => {
+	try {
+		const {
+			data: {
+				data: { permissions },
+			},
+		} = await createAxiosService({ query: GET_PERMISSIONS_LIST, token });
+
+		return { permissions, error: null };
+	} catch (error) {
+		return {
+			error: error.message,
+		};
+	}
+};
+
 export const domainsListQuery = async (token = null) => {
 	try {
 		const {
@@ -53,6 +79,7 @@ export const domainsListQuery = async (token = null) => {
 		};
 	}
 };
+
 export const rolesListQuery = async (token = null) => {
 	try {
 		const {

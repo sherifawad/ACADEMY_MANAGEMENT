@@ -1,20 +1,29 @@
 import Paths from "core/paths";
 import useModel from "customHooks/useModel";
-import AddDomain from "features/rolesFeature/AddDomain";
-import { domainsListQuery, roleByIdQuery } from "features/rolesFeature/rolesQueries";
+import { domainsListQuery, permissionsListQuery, roleByIdQuery } from "features/rolesFeature/rolesQueries";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
+import dynamic from "next/dynamic";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import React, { useCallback, useEffect, useState } from "react";
 
-function RoleItemData({ role, domainsList }) {
+function RoleItemData({ role, domainsList, permissionsList }) {
+	const AddDomain = dynamic(() => import("features/rolesFeature/AddDomain"), {
+		ssr: false,
+	});
+	const AddPermissions = dynamic(() => import("features/rolesFeature/AddPermissions"), {
+		ssr: false,
+	});
 	if (!role) {
 		return <div />;
 	}
 
 	const [domains, setDomains] = useState([]);
+	const [canSave, setCanSave] = useState(false);
+	const [domainIndex, setDomainIndex] = useState(-1);
+	const [permissionModelVisibility, setPermissionModelVisibility] = useState(false);
 
-	const { Model, modelProps } = useModel();
+	const { Model, modelProps, isClosed } = useModel();
 
 	const removePermission = useCallback(
 		(eventClick, domainIndex, permissionId) => {
@@ -36,6 +45,7 @@ function RoleItemData({ role, domainsList }) {
 				});
 				setDomains(newDomains);
 			}
+			setCanSave(true);
 		},
 		[domains]
 	);
@@ -44,9 +54,17 @@ function RoleItemData({ role, domainsList }) {
 			eventClick.preventDefault();
 
 			setDomains((prev) => prev.filter((x) => x.id !== domainId));
+			setCanSave(true);
 		},
 		[domains]
 	);
+
+	const addPermission = useCallback((e, domainIndex) => {
+		e.preventDefault();
+		setDomainIndex(domainIndex);
+		setPermissionModelVisibility(true);
+		modelProps.onAdd();
+	}, []);
 
 	const onProceed = useCallback(
 		(checkedDomains) => {
@@ -58,8 +76,42 @@ function RoleItemData({ role, domainsList }) {
 				}
 			});
 			setDomains((prev) => [...newDomains, ...prev]);
+			setCanSave(true);
 		},
 		[domains]
+	);
+
+	const onPermissionsProceed = useCallback(
+		(checkedPermissions) => {
+			setPermissionModelVisibility(false);
+			if (domains.length <= 0 || domainIndex < 0) return;
+			let domainsCopy = [...domains];
+			const currentDomainPermissions = domainsCopy[domainIndex].permissions ?? [];
+			let newPermissions = [];
+			checkedPermissions.forEach((permission) => {
+				const exist = currentDomainPermissions.some((x) => x.id === permission.id);
+				if (!exist) {
+					newPermissions.push(permission);
+				}
+			});
+			domainsCopy[domainIndex] = {
+				id: domainsCopy[domainIndex].id,
+				name: domainsCopy[domainIndex].name,
+				description: domainsCopy[domainIndex].description,
+				permissions: [...newPermissions, ...currentDomainPermissions],
+			};
+
+			// currentDomain = {
+			// 	id: currentDomain.id,
+			// 	name: currentDomain.name,
+			// 	description: currentDomain.description,
+			// 	permissions: [...newPermissions, ...currentDomainPermissions],
+			// };
+			setDomainIndex(-1);
+			setDomains(domainsCopy);
+			setCanSave(true);
+		},
+		[domains, domainIndex]
 	);
 
 	useEffect(() => {
@@ -91,11 +143,27 @@ function RoleItemData({ role, domainsList }) {
 		setDomains(result);
 	}, [role]);
 
+	useEffect(() => {
+		if (isClosed) {
+			setPermissionModelVisibility(false);
+		}
+	}, [isClosed]);
+
 	return (
 		<div className="container">
-			<Model title="Add Domain">
-				<AddDomain onProceed={onProceed} onClose={modelProps.onClose} domains={domainsList} />
-			</Model>
+			{permissionModelVisibility ? (
+				<Model title="Add Permissions" hasAddButton={false}>
+					<AddPermissions
+						onProceed={onPermissionsProceed}
+						onClose={modelProps.onClose}
+						Permissions={permissionsList}
+					/>
+				</Model>
+			) : (
+				<Model title="Add Domain">
+					<AddDomain onProceed={onProceed} onClose={modelProps.onClose} domains={domainsList} />
+				</Model>
+			)}
 			<div className="w-full flex flex-wrap justify-center space-x-16 items-start">
 				{domains?.length > 0 &&
 					domains.map((obj, index) => (
@@ -105,7 +173,7 @@ function RoleItemData({ role, domainsList }) {
 									<tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
 										<th className="py-3">
 											<div className="flex items-center justify-around px-6">
-												<div className="">
+												<div className="" onClick={(e) => addPermission(e, index)}>
 													<svg
 														xmlns="http://www.w3.org/2000/svg"
 														x="0px"
@@ -200,6 +268,16 @@ function RoleItemData({ role, domainsList }) {
 						</div>
 					))}
 			</div>
+			{canSave && (
+				<div className="w-full flex justify-center">
+					<button
+						type="button"
+						className="bg-green-400 rounded-full text-white text-center px-8 py-2"
+					>
+						Save
+					</button>
+				</div>
+			)}
 			{/* <div>
 				<h1>State:</h1>
 				<pre>{JSON.stringify(checkedList, null, 2)}</pre>
@@ -243,8 +321,15 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 			};
 		}
 
+		const permissions = await permissionsListQuery();
+		if (permissions?.error) {
+			return {
+				props: {},
+			};
+		}
+
 		return {
-			props: { role, domainsList: domainsList.domains },
+			props: { role, domainsList: domainsList.domains, permissionsList: permissions.permissions },
 		};
 	} catch (error) {
 		return {
