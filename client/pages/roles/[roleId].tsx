@@ -1,5 +1,6 @@
 import Paths from "core/paths";
 import useModel from "customHooks/useModel";
+import { updateRoleDetailsMutation } from "features/rolesFeature/roleMutations";
 import { domainsListQuery, permissionsListQuery, roleByIdQuery } from "features/rolesFeature/rolesQueries";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
@@ -19,6 +20,7 @@ function RoleItemData({ role, domainsList, permissionsList }) {
 	}
 
 	const [domains, setDomains] = useState([]);
+	const [newDomains, setNewDomains] = useState([]);
 	const [canSave, setCanSave] = useState(false);
 	const [domainIndex, setDomainIndex] = useState(-1);
 	const [permissionModelVisibility, setPermissionModelVisibility] = useState(false);
@@ -114,6 +116,23 @@ function RoleItemData({ role, domainsList, permissionsList }) {
 		[domains, domainIndex]
 	);
 
+	const updateMutation = updateRoleDetailsMutation({
+		roleId: role.id,
+		domainPermissions: newDomains,
+	});
+
+	const onSave = async (e) => {
+		e.preventDefault();
+		console.log(
+			"🚀 ~ file: [roleId].tsx ~ line 24 ~ RoleItemData ~ newDomains",
+			JSON.stringify(newDomains)
+		);
+
+		if (updateMutation.isLoading) return;
+		await updateMutation.mutateAsync();
+		setCanSave(false);
+	};
+
 	useEffect(() => {
 		if (!role) {
 			return;
@@ -149,6 +168,18 @@ function RoleItemData({ role, domainsList, permissionsList }) {
 		}
 	}, [isClosed]);
 
+	useEffect(() => {
+		const domainPermissions = domains?.map((domain) => {
+			if (domain.permissions?.length > 0) {
+				const permissionsIds = domain?.permissions.map((permission) => {
+					return permission.id;
+				});
+				return { [domain.id]: permissionsIds };
+			}
+		});
+		setNewDomains(domainPermissions.filter((x) => x != null));
+	}, [domains]);
+
 	return (
 		<div className="container">
 			{permissionModelVisibility ? (
@@ -164,10 +195,10 @@ function RoleItemData({ role, domainsList, permissionsList }) {
 					<AddDomain onProceed={onProceed} onClose={modelProps.onClose} domains={domainsList} />
 				</Model>
 			)}
-			<div className="w-full flex flex-wrap justify-center space-x-16 items-start">
+			<div className="w-full flex flex-wrap justify-center items-start">
 				{domains?.length > 0 &&
 					domains.map((obj, index) => (
-						<div key={index} className="bg-white shadow-md rounded my-6">
+						<div key={index} className="bg-white shadow-md rounded m-6">
 							<table className="min-w-max w-full table-auto">
 								<thead>
 									<tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
@@ -272,6 +303,7 @@ function RoleItemData({ role, domainsList, permissionsList }) {
 				<div className="w-full flex justify-center">
 					<button
 						type="button"
+						onClick={onSave}
 						className="bg-green-400 rounded-full text-white text-center px-8 py-2"
 					>
 						Save

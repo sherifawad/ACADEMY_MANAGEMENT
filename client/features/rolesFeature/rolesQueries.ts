@@ -32,6 +32,7 @@ export const GET_ROLES_LIST = `
 export const GET_ROLE_Details = `
     query Query($roleId: Int!) {
         role(roleId: $roleId) {
+            id
             name
             description
             Role_Domain_Permission {

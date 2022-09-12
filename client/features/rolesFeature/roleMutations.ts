@@ -18,6 +18,14 @@ export const UPDATE_ROLE_MUTATION = `
     }
 `;
 
+export const UPDATE_ROLE_DETAILS_MUTATION = `
+    mutation Mutation($roleId: Int!, $domainPermissions: [JSONObject]) {
+        updateRole(roleId: $roleId, domainPermissions: $domainPermissions) {
+            id
+        }
+    }
+`;
+
 export const createRoleMutation = (variables: roleVariables, token = null) =>
 	useMutation(
 		"createRole",
@@ -36,6 +44,20 @@ export const updateRoleMutation = (variables: roleVariables, token = null) =>
 		"updateRole",
 		() =>
 			createAxiosService({ query: UPDATE_ROLE_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
+		{
+			onSuccess: () => {
+				console.log("role updated Successfully");
+			},
+		}
+	);
+
+export const updateRoleDetailsMutation = (variables: roleVariables, token = null) =>
+	useMutation(
+		"updateRoleDetails",
+		() =>
+			createAxiosService({ query: UPDATE_ROLE_DETAILS_MUTATION, variables, token }).then(
 				(response) => response.data.data
 			),
 		{
