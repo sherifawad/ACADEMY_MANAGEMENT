@@ -27,6 +27,7 @@ export async function createContext(request: ExpressContext): Promise<Partial<Co
 		where: {
 			id: "cl7au537v001443vyn6n56fbm",
 		},
+		include: { role: true },
 	});
 	if (user) {
 		context.user = user;

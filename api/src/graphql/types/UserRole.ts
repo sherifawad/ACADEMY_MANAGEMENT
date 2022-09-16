@@ -26,22 +26,34 @@ export const UserRole = objectType({
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("users", {
 			type: User,
-			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.role
-					.findUniqueOrThrow({
-						where: { id },
-					})
-					.users();
+			resolve: async ({ id }, _, { prisma, user }) => {
+				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
+					return await prisma.role
+						.findUniqueOrThrow({
+							where: { id },
+						})
+						.users();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 		t.list.field("Role_Domain_Permission", {
 			type: RDP,
-			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.role
-					.findUniqueOrThrow({
-						where: { id },
-					})
-					.rdps();
+			resolve: async ({ id }, _, { prisma, user }) => {
+				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
+					return await prisma.role
+						.findUniqueOrThrow({
+							where: { id },
+						})
+						.rdps();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -55,6 +67,8 @@ export const RolesQuery = extendType({
 
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.role.findMany();
 				} catch (error) {
 					return Promise.reject("error");
@@ -73,6 +87,8 @@ export const RoleIdQuery = extendType({
 			},
 			resolve: async (_parent, { roleId }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.role.findUniqueOrThrow({
 						where: { id: roleId },
 					});
@@ -95,6 +111,8 @@ export const createRoleMutation = extendType({
 			},
 			resolve: async (_parent, { name, description }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					const newRole: any = {
 						name,
 						description,
@@ -123,6 +141,8 @@ export const UpdateRoleMutation = extendType({
 			},
 			resolve: async (_parent, { roleId, name, description, domainPermissions }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					const isEmpty =
 						!domainPermissions ||
 						domainPermissions.length <= 0 ||
@@ -200,6 +220,8 @@ export const DeleteRoleMutation = extendType({
 			},
 			async resolve(_parent, { roleId }, { prisma, user }) {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.role.delete({
 						where: { id: roleId },
 					});
