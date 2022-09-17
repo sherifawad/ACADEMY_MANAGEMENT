@@ -1,7 +1,10 @@
 import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, booleanArg } from "nexus";
+import { getDomainPermissions } from "../../utils/utils";
 import { Group } from "./Group";
 import { Profile } from "./Profile";
+
+const DOMAIN_ID = 5;
 
 //generates Grade type at schema.graphql
 export const Grade = objectType({
@@ -18,6 +21,13 @@ export const Grade = objectType({
 			type: Group,
 			async resolve(_parent, _args, { user, prisma }) {
 				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
+						throw new Error("Not Allowed");
+					}
 					return await prisma.grade
 						.findUniqueOrThrow({
 							where: {
@@ -32,9 +42,16 @@ export const Grade = objectType({
 		});
 		t.list.field("profiles", {
 			type: Profile,
-			async resolve({ id }, _args, ctx) {
+			async resolve({ id }, _args, { prisma, user }) {
 				try {
-					return await ctx.prisma.grade
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
+						throw new Error("Not Allowed");
+					}
+					return await prisma.grade
 						.findUniqueOrThrow({
 							where: {
 								id,
@@ -57,6 +74,13 @@ export const GradesQuery = extendType({
 			type: "Grade",
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
+						throw new Error("Not Allowed");
+					}
 					return await prisma.Grade.findMany();
 				} catch (error) {
 					return Promise.reject("error");
@@ -74,6 +98,13 @@ export const ActiveGradesQuery = extendType({
 			type: "Grade",
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
+						throw new Error("Not Allowed");
+					}
 					return await prisma.Grade.findMany({
 						where: { isActive: true },
 					});
@@ -94,6 +125,13 @@ export const GradeByIdQuery = extendType({
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
+						throw new Error("Not Allowed");
+					}
 					return await prisma.Grade.findUniqueOrThrow({
 						where: { id },
 					});
@@ -117,6 +155,13 @@ export const createGradeMutation = extendType({
 			},
 			resolve: async (_parent, { name, isActive }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (!permissionsList.includes("full") && !permissionsList.includes("create")) {
+						throw new Error("Not Allowed");
+					}
 					const newGrade = {
 						name,
 						isActive,
@@ -146,6 +191,13 @@ export const UpdateGradeMutation = extendType({
 			},
 			resolve: async (_parent, { id, name, isActive }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (!permissionsList.includes("full") && !permissionsList.includes("edit")) {
+						throw new Error("Not Allowed");
+					}
 					const updateGrade = {
 						name,
 						isActive,
@@ -172,9 +224,16 @@ export const DeleteGradeMutation = extendType({
 			args: {
 				id: nonNull(stringArg()),
 			},
-			resolve(_parent, { id }, { prisma, user }) {
+			async resolve(_parent, { id }, { prisma, user }) {
 				try {
-					return prisma.Grade.delete({
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (!permissionsList.includes("full") && !permissionsList.includes("delete")) {
+						throw new Error("Not Allowed");
+					}
+					return await prisma.Grade.delete({
 						where: { id },
 					});
 				} catch (error) {
