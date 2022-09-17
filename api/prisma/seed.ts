@@ -53,6 +53,10 @@ async function seed() {
 				id: 9,
 				name: "assignment",
 			},
+			{
+				id: 10,
+				name: "family",
+			},
 		],
 	});
 
