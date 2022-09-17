@@ -594,14 +594,6 @@ export const DeleteAttendanceMutation = extendType({
 					const permissionsList = await getDomainPermissions(3, 7);
 					if (!permissionsList) throw new Error("Not Allowed");
 
-					if (permissionsList.includes("deleteSelf")) {
-						if (id !== user.id) {
-							throw new Error("Not Allowed");
-						}
-						return await prisma.attendance.delete({
-							where: { id },
-						});
-					}
 					if (permissionsList.includes("full") || permissionsList.includes("delete")) {
 						return await prisma.attendance.delete({
 							where: { id },
