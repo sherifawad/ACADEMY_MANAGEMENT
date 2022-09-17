@@ -69,6 +69,7 @@ export const RolesQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role || role.id !== 1) throw new Error("Not Allowed");
+
 					return await prisma.role.findMany();
 				} catch (error) {
 					return Promise.reject("error");

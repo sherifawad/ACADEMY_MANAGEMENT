@@ -12,12 +12,18 @@ export const AppDomain = objectType({
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("roles", {
 			type: UserRole,
-			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.domain
-					.findUniqueOrThrow({
-						where: { id },
-					})
-					.roles();
+			resolve: async ({ id }, _, { prisma, user }) => {
+				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
+					return await prisma.domain
+						.findUniqueOrThrow({
+							where: { id },
+						})
+						.roles();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -31,6 +37,8 @@ export const DomainsQuery = extendType({
 
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.domain.findMany();
 				} catch (error) {
 					return Promise.reject("error");
@@ -50,6 +58,8 @@ export const DomainIdQuery = extendType({
 			},
 			resolve: async (_parent, { domainId }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.domain.findUniqueOrThrow({
 						where: { id: domainId },
 					});
@@ -72,6 +82,8 @@ export const createDomainMutation = extendType({
 			},
 			resolve: async (_parent, { name, description }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					const newDomain: any = {
 						name,
 						description,
@@ -99,7 +111,8 @@ export const UpdateDomainMutation = extendType({
 			},
 			resolve: async (_parent, { domainId, name, description }, { prisma, user }) => {
 				try {
-
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					const updateDomain = {
 						name,
 						description,
@@ -127,6 +140,8 @@ export const DeleteDomainMutation = extendType({
 			},
 			async resolve(_parent, { domainId }, { prisma, user }) {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.domain.delete({
 						where: { id: domainId },
 					});

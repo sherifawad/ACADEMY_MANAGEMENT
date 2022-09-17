@@ -80,15 +80,27 @@ async function seed() {
 			},
 			{
 				id: 6,
-				name: "deActivateSelf",
+				name: "create",
 			},
 			{
 				id: 7,
-				name: "deActivate",
+				name: "deActivateSelf",
 			},
 			{
 				id: 8,
+				name: "deActivate",
+			},
+			{
+				id: 9,
 				name: "read",
+			},
+			{
+				id: 10,
+				name: "readSelf",
+			},
+			{
+				id: 11,
+				name: "readFamily",
 			},
 		],
 	});
