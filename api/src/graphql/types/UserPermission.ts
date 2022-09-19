@@ -2,6 +2,8 @@ import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core
 // import { UserRole } from "./UserRole";
 import { Role } from "@internal/prisma/client";
 import { UserRole } from "./UserRole";
+import { getDomainPermissions } from "../../utils/utils";
+import { DomainsIds } from ".";
 
 //generates Exam type at schema.graphql
 export const UserPermission = objectType({
@@ -14,12 +16,18 @@ export const UserPermission = objectType({
 		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("roles", {
 			type: UserRole,
-			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.permission
-					.findUniqueOrThrow({
-						where: { id },
-					})
-					.roles();
+			resolve: async ({ id }, _, { prisma, user }) => {
+				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
+					return await prisma.permission
+						.findUniqueOrThrow({
+							where: { id },
+						})
+						.roles();
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -31,6 +39,8 @@ export const PermissionsQuery = extendType({
 			type: UserPermission,
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.permission.findMany();
 				} catch (error) {
 					return Promise.reject("error");
@@ -50,6 +60,8 @@ export const PermissionIdQuery = extendType({
 			},
 			resolve: async (_parent, { permissionId }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.permission.findUniqueOrThrow({
 						where: { id: permissionId },
 					});
@@ -72,6 +84,8 @@ export const createPermissionMutation = extendType({
 			},
 			resolve: async (_parent, { name, description }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					const newPermission = {
 						name,
 						description,
@@ -99,6 +113,8 @@ export const UpdatePermissionMutation = extendType({
 			},
 			resolve: async (_parent, { permissionId, name, description }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					const updatePermission = {
 						name,
 						description,
@@ -126,6 +142,8 @@ export const DeletePermissionMutation = extendType({
 			},
 			async resolve(_parent, { permissionId }, { prisma, user }) {
 				try {
+					const { role = null } = user;
+					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.permission.delete({
 						where: { id: permissionId },
 					});

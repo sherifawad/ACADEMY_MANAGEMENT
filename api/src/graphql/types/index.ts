@@ -70,4 +70,7 @@ export enum DomainsIds {
 	EXAMS = 8,
 	ASSIGNMENT = 9,
 	FAMILY = 10,
+	PERMISSIONS = 11,
+	ROLES = 12,
+	DOMAINS = 13,
 }

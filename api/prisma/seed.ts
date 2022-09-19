@@ -57,6 +57,18 @@ async function seed() {
 				id: 10,
 				name: "family",
 			},
+			{
+				id: 11,
+				name: "permissions",
+			},
+			{
+				id: 12,
+				name: "roles",
+			},
+			{
+				id: 13,
+				name: "domains",
+			},
 		],
 	});
 
