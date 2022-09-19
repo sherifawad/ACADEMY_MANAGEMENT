@@ -58,3 +58,16 @@ export interface Token {
 export interface UserToken {
 	userId: string;
 }
+
+export enum DomainsIds {
+	ALL = 1,
+	USER = 2,
+	GUARDIAN = 3,
+	STUDENT = 4,
+	GRADE = 5,
+	GROUP = 6,
+	ATTENDANCES = 7,
+	EXAMS = 8,
+	ASSIGNMENT = 9,
+	FAMILY = 10,
+}
