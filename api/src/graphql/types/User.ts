@@ -12,14 +12,14 @@ import {
 	arg,
 	list,
 } from "nexus";
-import { Context } from ".";
+import { Context, DomainsIds } from ".";
 import { UserRole } from "./UserRole";
 import { assert } from "../utils/assert";
 import { encodeUser } from "../../core/jwt";
 import LoginInvalidError from "../utils/errors/loginInvalid";
 import { setTokenCookie } from "../../core/auth-cookies";
 import { createTokens } from "../../utils/auth";
-import { isNullish, removeNullObjects } from "../../utils/utils";
+import { getDomainPermissions, isNullish, removeNullObjects } from "../../utils/utils";
 import constants from "../../core/constants";
 
 export interface CursorPaginationInput {
@@ -60,46 +60,136 @@ export const User = objectType({
 		t.string("name");
 		t.boolean("isActive");
 		t.string("avatar");
+		t.string("familyId");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
 		t.field("role", {
 			type: UserRole,
-			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.user
-					.findUniqueOrThrow({
-						where: { id },
-					})
-					.role();
+			resolve: async (parent, _, { prisma, user }) => {
+				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.USER);
+					if (!permissionsList) throw new Error("Not Allowed");
+					const output = await prisma.user
+						.findUniqueOrThrow({
+							where: { id: parent.id },
+						})
+						.role();
+					if (permissionsList.includes("readSelf")) {
+						if (parent.id === user.id) {
+							return output;
+						}
+					}
+					if (permissionsList.includes("readFamily")) {
+						if (parent.familyId && parent.familyId === user.familyId) {
+							return output;
+						}
+					}
+
+					if (permissionsList.includes("full") || permissionsList.includes("read")) {
+						return output;
+					}
+					throw new Error("Not Allowed");
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 		t.nullable.field("profile", {
 			type: "Profile",
-			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.user
-					.findUniqueOrThrow({
-						where: { id },
-					})
-					.profile();
+			resolve: async (parent, _, { prisma, user }) => {
+				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
+					if (!permissionsList) throw new Error("Not Allowed");
+					const output = await prisma.user
+						.findUniqueOrThrow({
+							where: { id: parent.id },
+						})
+						.profile();
+
+					if (permissionsList.includes("readSelf")) {
+						if (parent.id === user.id) {
+							return output;
+						}
+					}
+					if (permissionsList.includes("readFamily")) {
+						if (parent.familyId && parent.familyId === user.familyId) {
+							return output;
+						}
+					}
+
+					if (permissionsList.includes("full") || permissionsList.includes("read")) {
+						return output;
+					}
+					throw new Error("Not Allowed");
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 		t.nullable.field("contact", {
 			type: "Contact",
-			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.user
-					.findUniqueOrThrow({
-						where: { id },
-					})
-					.contact();
+			resolve: async (parent, _, { prisma, user }) => {
+				try {
+					//TODO: contacts in student domain and user domain combine domains
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
+					if (!permissionsList) throw new Error("Not Allowed");
+					const output = await prisma.user
+						.findUniqueOrThrow({
+							where: { id: parent.id },
+						})
+						.contact();
+					if (permissionsList.includes("readSelf")) {
+						if (parent.id === user.id) {
+							return output;
+						}
+					}
+					if (permissionsList.includes("readFamily")) {
+						if (parent.familyId && parent.familyId === user.familyId) {
+							return output;
+						}
+					}
+
+					if (permissionsList.includes("full") || permissionsList.includes("read")) {
+						return output;
+					}
+					throw new Error("Not Allowed");
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 		t.nullable.field("family", {
 			type: "Family",
-			resolve: async ({ id }, _, { prisma }) => {
-				return await prisma.user
-					.findUniqueOrThrow({
-						where: { id },
-					})
-					.family();
+			resolve: async (parent, _, { prisma, user }) => {
+				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.FAMILY);
+					if (!permissionsList) throw new Error("Not Allowed");
+					const output = await prisma.user
+						.findUniqueOrThrow({
+							where: { id: parent.id },
+						})
+						.family();
+					if (permissionsList.includes("readFamily")) {
+						if (parent.familyId && parent.familyId === user.familyId) {
+							return output;
+						}
+					}
+
+					if (permissionsList.includes("full") || permissionsList.includes("read")) {
+						return output;
+					}
+					throw new Error("Not Allowed");
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -168,7 +258,14 @@ export const UsersQuery = extendType({
 			type: "User",
 			resolve: async (_parent, _args, { prisma, user }) => {
 				try {
-					return await prisma.user.findMany();
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.USER);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (permissionsList.includes("full") || permissionsList.includes("read")) {
+						return await prisma.user.findMany();
+					}
+					throw new Error("Not Allowed");
 				} catch (error) {
 					return Promise.reject("error");
 				}
@@ -272,8 +369,24 @@ export const FilteredUsersQuery = extendType({
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.USER);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (
+						!permissionsList.includes("full") &&
+						!permissionsList.includes("read") &&
+						!permissionsList.includes("readFamily")
+					) {
+						throw new Error("Not Allowed");
+					}
 					const { data, isActive, family_Id } = args;
-					const { familyId, role } = user || {};
+
+					if (permissionsList.includes("readFamily")) {
+						if (!family_Id || family_Id != user.familyId) {
+							throw new Error("Not Allowed");
+						}
+					}
 
 					let where = {};
 					// if (user_role) {
@@ -353,69 +466,80 @@ export const GroupStudentsQuery = extendType({
 				// role: nullable(UserRole),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
-				const { data, isActive, groupId } = args;
-				let where = {};
-				// if (role) {
-				// 	where = { ...where, role };
-				// }
-				if (isActive) {
-					where = { ...where, isActive };
-				}
-				if (groupId) {
-					where = {
-						...where,
-						profile: {
-							group: {
-								id: groupId,
-							},
-						},
-					};
-				}
-				let result: prismaUser[];
-				let totalCount: { _count: number } | undefined | null;
-				let prevCursor: string | undefined | null;
-				let nextCursor: string | undefined | null;
-				let groupName: { name: string } | undefined | null;
-
-				if (data) {
-					result = await prisma.user.findMany(queryArgs(data, where));
-
-					nextCursor = result[result?.length - 1]?.id;
-					prevCursor = result[0]?.id;
-
-					if (!data?.myCursor) {
-						totalCount = await prisma.user.aggregate({
-							where: {
-								profile: {
-									group: {
-										id: groupId,
-									},
+				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GROUP);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
+						throw new Error("Not Allowed");
+					}
+					const { data, isActive, groupId } = args;
+					let where = {};
+					// if (role) {
+					// 	where = { ...where, role };
+					// }
+					if (isActive) {
+						where = { ...where, isActive };
+					}
+					if (groupId) {
+						where = {
+							...where,
+							profile: {
+								group: {
+									id: groupId,
 								},
 							},
-							_count: true,
-						});
-						groupName = await prisma.Group.findUniqueOrThrow({
-							where: { id: groupId },
-							select: {
-								name: true,
-							},
+						};
+					}
+					let result: prismaUser[];
+					let totalCount: { _count: number } | undefined | null;
+					let prevCursor: string | undefined | null;
+					let nextCursor: string | undefined | null;
+					let groupName: { name: string } | undefined | null;
+
+					if (data) {
+						result = await prisma.user.findMany(queryArgs(data, where));
+
+						nextCursor = result[result?.length - 1]?.id;
+						prevCursor = result[0]?.id;
+
+						if (!data?.myCursor) {
+							totalCount = await prisma.user.aggregate({
+								where: {
+									profile: {
+										group: {
+											id: groupId,
+										},
+									},
+								},
+								_count: true,
+							});
+							groupName = await prisma.Group.findUniqueOrThrow({
+								where: { id: groupId },
+								select: {
+									name: true,
+								},
+							});
+						}
+					} else {
+						result = await prisma.user.findMany({
+							where,
 						});
 					}
-				} else {
-					result = await prisma.user.findMany({
-						where,
-					});
-				}
 
-				return {
-					students: {
-						list: result,
-						prevCursor,
-						nextCursor,
-						totalCount,
-					},
-					groupName: groupName?.name,
-				};
+					return {
+						students: {
+							list: result,
+							prevCursor,
+							nextCursor,
+							totalCount,
+						},
+						groupName: groupName?.name,
+					};
+				} catch (error) {
+					return Promise.reject("error");
+				}
 			},
 		});
 	},
@@ -628,11 +752,28 @@ export const UserByIdQuery = extendType({
 			args: { id: nonNull(stringArg()), take: nullable(intArg()) },
 			resolve: async (_parent, { id }, { user, prisma }) => {
 				try {
-					if (!user) throw new Error("Not Allowed");
-					const userQuery: any = await prisma.user.findUniqueOrThrow({
+					const { role = null } = user || {};
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
+					if (!permissionsList) throw new Error("Not Allowed");
+					const output: any = await prisma.user.findUniqueOrThrow({
 						where: { id },
 					});
-					return userQuery;
+					if (permissionsList.includes("readSelf")) {
+						if (id === user.id) {
+							return output;
+						}
+					}
+					if (permissionsList.includes("readFamily")) {
+						if (output.familyId && output.familyId === user.familyId) {
+							return output;
+						}
+					}
+
+					if (permissionsList.includes("full") || permissionsList.includes("read")) {
+						return output;
+					}
+					throw new Error("Not Allowed");
 				} catch (error) {
 					return Promise.reject("error");
 				}
@@ -679,10 +820,10 @@ export const userUpdate = extendType({
 			) => {
 				try {
 					const { user, prisma } = ctx || {};
-					if (!user) throw new Error("Not Allowed");
-					const userQuery = await prisma.user.findUniqueOrThrow({
-						where: { id },
-					});
+					const { role = null } = user || {};
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.USER);
+					if (!permissionsList) throw new Error("Not Allowed");
 
 					const studentParam = {
 						id,
@@ -697,7 +838,17 @@ export const userUpdate = extendType({
 						roleId,
 					};
 
-					return await UpdateUser(ctx, studentParam, password);
+					if (permissionsList.includes("editSelf")) {
+						if (id === user.id) {
+							return await UpdateUser(ctx, studentParam, password);
+						}
+					}
+
+					if (permissionsList.includes("full") || permissionsList.includes("edit")) {
+						return await UpdateUser(ctx, studentParam, password);
+					}
+
+					throw new Error("Not Allowed");
 				} catch (error) {
 					return Promise.reject("error");
 				}
@@ -743,9 +894,11 @@ export const userRegister = extendType({
 				ctx
 			) => {
 				try {
-					const { user } = ctx || {};
-					if (!user) throw new Error("Not Allowed");
-
+					const { prisma, user } = ctx || {};
+					const { role = null } = user || {};
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.USER);
+					if (!permissionsList) throw new Error("Not Allowed");
 					const userParam = {
 						avatar,
 						email,
@@ -759,7 +912,11 @@ export const userRegister = extendType({
 						roleId,
 					} as any;
 
-					return await CreateUser(ctx, userParam, password);
+					if (permissionsList.includes("full") || permissionsList.includes("create")) {
+						return await CreateUser(ctx, userParam, password);
+					}
+
+					throw new Error("Not Allowed");
 				} catch (error) {
 					return Promise.reject("error");
 				}

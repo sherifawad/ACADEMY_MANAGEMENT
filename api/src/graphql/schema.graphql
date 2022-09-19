@@ -252,6 +252,7 @@ type User {
   contact: Contact
   createdAt: DateTime
   family: Family
+  familyId: String
   id: String
   isActive: Boolean
   name: String
