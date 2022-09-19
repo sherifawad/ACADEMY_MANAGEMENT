@@ -1,8 +1,8 @@
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, booleanArg } from "nexus";
+import { DomainsIds } from ".";
 import { getDomainPermissions } from "../../utils/utils";
 import { User } from "./User";
 
-const DOMAIN_ID = 10;
 //generates Family type at schema.graphql
 export const Family = objectType({
 	name: "Family",
@@ -19,7 +19,7 @@ export const Family = objectType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const output = await prisma.family
 						.findUniqueOrThrow({
@@ -30,9 +30,7 @@ export const Family = objectType({
 						.users();
 
 					if (permissionsList.includes("readFamily")) {
-						if (id != user.familyId) {
-							throw new Error("Not Allowed");
-						} else {
+						if (id === user.familyId) {
 							return output;
 						}
 					}
@@ -59,7 +57,7 @@ export const FamilyByIdQuery = extendType({
 				try {
 					const { role = null, familyId = -1 } = user || {};
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
 					if (!permissionsList) throw new Error("Not Allowed");
 
 					const output = await prisma.family.findUniqueOrThrow({
@@ -67,9 +65,7 @@ export const FamilyByIdQuery = extendType({
 					});
 
 					if (permissionsList.includes("readFamily")) {
-						if (!familyId || familyId != user.familyId) {
-							throw new Error("Not Allowed");
-						} else {
+						if (familyId && familyId === user.familyId) {
 							return output;
 						}
 					}
@@ -98,7 +94,7 @@ export const createFamilyMutation = extendType({
 				try {
 					const { role = null } = user || {};
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const newFamily = {
 						familyName,
@@ -131,9 +127,9 @@ export const UpdateFamilyMutation = extendType({
 			},
 			resolve: async (_parent, { id, familyName }, { prisma, user }) => {
 				try {
-					const { role = null } = user;
+					const { role = null } = user || {};
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const updateFamily = {
 						familyName,
@@ -141,13 +137,12 @@ export const UpdateFamilyMutation = extendType({
 					};
 
 					if (permissionsList.includes("editSelf")) {
-						if (id !== user.family) {
-							throw new Error("Not Allowed");
+						if (id !== user.familyId) {
+							return await prisma.family.update({
+								where: { id },
+								data: { ...updateFamily },
+							});
 						}
-						return await prisma.family.update({
-							where: { id },
-							data: { ...updateFamily },
-						});
 					}
 					if (permissionsList.includes("full") || permissionsList.includes("edit")) {
 						return await prisma.family.update({
@@ -177,7 +172,7 @@ export const DeleteFamilyMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("delete")) {
 						throw new Error("Not Allowed");

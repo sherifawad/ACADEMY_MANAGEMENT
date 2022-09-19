@@ -1,6 +1,7 @@
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, core, list } from "nexus";
 // @ts-ignore
 import { prismaOffsetPagination } from "prisma-offset-pagination";
+import { DomainsIds } from ".";
 import { getDomainPermissions } from "../../utils/utils";
 import { PaginationInputType, queryArgs } from "./User";
 
@@ -41,31 +42,28 @@ export const Attendance = objectType({
 		t.field("endAt", { type: "DateTime" });
 		t.field("profile", {
 			type: "Profile",
-			resolve: async ({ id }, _, { prisma, user }) => {
+			resolve: async (parent, _, { prisma, user }) => {
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(3, 7);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const profileResult = await prisma.attendance
 						.findUniqueOrThrow({
-							where: { id },
+							where: { id: parent.id },
 						})
 						.profile();
 					if (permissionsList.includes("readSelf")) {
-						if (id !== user.id) {
-							throw new Error("Not Allowed");
+						if (parent.profileId !== user.id) {
+							return profileResult;
 						}
-						return profileResult;
 					}
 
 					if (permissionsList.includes("readFamily")) {
-						const familyId = await prisma.findUniqueOrThrow({
-							where: { id },
+						const familyId = await prisma.user.findUniqueOrThrow({
+							where: { id: parent.profileId },
 						})?.familyId;
-						if (!familyId || familyId != user.familyId) {
-							throw new Error("Not Allowed");
-						} else {
+						if (familyId && familyId === user.familyId) {
 							return profileResult;
 						}
 					}
@@ -82,11 +80,18 @@ export const Attendance = objectType({
 			type: "Group",
 			resolve: async ({ id }, _, { prisma, user }) => {
 				try {
-					return await prisma.attendance
-						.findUniqueOrThrow({
-							where: { id },
-						})
-						.group();
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GROUP);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (permissionsList.includes("full") || permissionsList.includes("read")) {
+						return await prisma.attendance
+							.findUniqueOrThrow({
+								where: { id },
+							})
+							.group();
+					}
+					throw new Error("Not Allowed");
 				} catch (error) {
 					return Promise.reject("error");
 				}
@@ -188,25 +193,22 @@ export const AttendanceByUserDateQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(3, 7);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.ATTENDANCES);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const Result = await prisma.attendance.findMany({
 						where: { profileId: id, startAt: { gte: date } },
 					});
 					if (permissionsList.includes("readSelf")) {
-						if (id !== user.id) {
-							throw new Error("Not Allowed");
+						if (id === user.id) {
+							return Result;
 						}
-						return Result;
 					}
 
 					if (permissionsList.includes("readFamily")) {
-						const familyId = await prisma.findUniqueOrThrow({
+						const familyId = await prisma.user.findUniqueOrThrow({
 							where: { id },
 						})?.familyId;
-						if (!familyId || familyId != user.familyId) {
-							throw new Error("Not Allowed");
-						} else {
+						if (familyId && familyId === user.familyId) {
 							return Result;
 						}
 					}
@@ -235,7 +237,7 @@ export const AttendanceByUserIdQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(3, 7);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.ATTENDANCES);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const { data, studentId } = args;
 
@@ -280,19 +282,16 @@ export const AttendanceByUserIdQuery = extendType({
 					};
 
 					if (permissionsList.includes("readSelf")) {
-						if (studentId !== user.id) {
-							throw new Error("Not Allowed");
+						if (studentId === user.id) {
+							return outPut;
 						}
-						return outPut;
 					}
 
 					if (permissionsList.includes("readFamily")) {
-						const familyId = await prisma.findUniqueOrThrow({
-							where: { studentId },
+						const familyId = await prisma.user.findUniqueOrThrow({
+							where: { id: studentId },
 						})?.familyId;
-						if (!familyId || familyId != user.familyId) {
-							throw new Error("Not Allowed");
-						} else {
+						if (familyId && familyId === user.familyId) {
 							return outPut;
 						}
 					}
@@ -342,7 +341,7 @@ export const AttendanceByUserQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(3, 7);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.ATTENDANCES);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const output = await prisma.attendance.findMany({
 						skip,
@@ -352,19 +351,16 @@ export const AttendanceByUserQuery = extendType({
 						},
 					});
 					if (permissionsList.includes("readSelf")) {
-						if (studentId !== user.id) {
-							throw new Error("Not Allowed");
+						if (studentId === user.id) {
+							return output;
 						}
-						return output;
 					}
 
 					if (permissionsList.includes("readFamily")) {
-						const familyId = await prisma.findUniqueOrThrow({
-							where: { studentId },
+						const familyId = await prisma.user.findUniqueOrThrow({
+							where: { id: studentId },
 						})?.familyId;
-						if (!familyId || familyId != user.familyId) {
-							throw new Error("Not Allowed");
-						} else {
+						if (familyId && familyId === user.familyId) {
 							return output;
 						}
 					}
@@ -396,7 +392,7 @@ export const createAttendanceMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(3, 7);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.ATTENDANCES);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const newAttendance = {
 						startAt,
@@ -436,7 +432,7 @@ export const createMultipleAttendanceMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(3, 7);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.ATTENDANCES);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const newAttendances: Omit<attendance, "id">[] = [];
 					profileIds.forEach((id: string) =>
@@ -481,7 +477,7 @@ export const UpdateAttendanceMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(3, 7);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.ATTENDANCES);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const updateAttendance = {
 						startAt,
@@ -491,13 +487,12 @@ export const UpdateAttendanceMutation = extendType({
 						updatedBy: user.id,
 					};
 					if (permissionsList.includes("editSelf")) {
-						if (id !== user.id) {
-							throw new Error("Not Allowed");
+						if (profileId === user.id) {
+							return await prisma.attendance.update({
+								where: { id },
+								data: { ...updateAttendance },
+							});
 						}
-						return await prisma.attendance.update({
-							where: { id },
-							data: { ...updateAttendance },
-						});
 					}
 					if (permissionsList.includes("full") || permissionsList.includes("edit")) {
 						return await prisma.attendance.update({
@@ -537,7 +532,7 @@ export const UpdateMultipleAttendanceMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(3, 7);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.ATTENDANCES);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const ANDConditions = [];
 					if (startAtCondition) {
@@ -591,7 +586,7 @@ export const DeleteAttendanceMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(3, 7);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.ATTENDANCES);
 					if (!permissionsList) throw new Error("Not Allowed");
 
 					if (permissionsList.includes("full") || permissionsList.includes("delete")) {

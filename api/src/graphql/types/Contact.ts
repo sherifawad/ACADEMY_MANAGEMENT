@@ -1,4 +1,6 @@
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, arg, booleanArg } from "nexus";
+import { DomainsIds } from ".";
+import { getDomainPermissions } from "../../utils/utils";
 
 //generates Contact type at schema.graphql
 export const Contact = objectType({
@@ -23,13 +25,32 @@ export const ContactByIdQuery = extendType({
 			args: { contactId: nonNull(stringArg()) },
 			resolve: async (_parent, { contactId }, { prisma, user }) => {
 				try {
-					const { id, role } = user || {};
-					if (!user) throw new Error("Not Allowed");
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
+					if (!permissionsList) throw new Error("Not Allowed");
 					const userQuery = await prisma.user.findUniqueOrThrow({
 						where: { id: contactId },
 						include: { contact: true },
 					});
-					return userQuery.contact;
+					if (permissionsList.includes("readSelf")) {
+						if (contactId !== user.id) {
+							return userQuery;
+						}
+					}
+
+					if (permissionsList.includes("readFamily")) {
+						const familyId = await prisma.user.findUniqueOrThrow({
+							where: { id: contactId },
+						})?.familyId;
+						if (familyId && familyId === user.familyId) {
+							return userQuery;
+						}
+					}
+					if (permissionsList.includes("full") || permissionsList.includes("read")) {
+						return userQuery;
+					}
+					throw new Error("Not Allowed");
 				} catch (error) {
 					return Promise.reject("error");
 				}
@@ -53,6 +74,10 @@ export const createContactMutation = extendType({
 			},
 			resolve: async (_parent, { phone, address, note, parentsPhones, email }, { prisma, user }) => {
 				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
+					if (!permissionsList) throw new Error("Not Allowed");
 					const newContact: any = {
 						phone,
 						address,
@@ -60,9 +85,12 @@ export const createContactMutation = extendType({
 						parentsPhones,
 						email,
 					};
-					return await prisma.contact.create({
-						data: newContact,
-					});
+					if (permissionsList.includes("full") || permissionsList.includes("create")) {
+						return await prisma.contact.create({
+							data: newContact,
+						});
+					}
+					throw new Error("Not Allowed");
 				} catch (error) {
 					return Promise.reject("error");
 				}
@@ -92,12 +120,10 @@ export const UpdateContactMutation = extendType({
 				{ prisma, user }
 			) => {
 				try {
-					const { id } = user || {};
-					if (!user) throw new Error("Not Allowed");
-
-					const userQuery = await prisma.user.findUniqueOrThrow({
-						where: { id: contactId },
-					});
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
+					if (!permissionsList) throw new Error("Not Allowed");
 
 					const updateContact = {
 						phone,
@@ -107,10 +133,22 @@ export const UpdateContactMutation = extendType({
 						email,
 						emailConfirmed,
 					};
-					return await prisma.contact.update({
-						where: { id },
-						data: { ...updateContact },
-					});
+
+					if (permissionsList.includes("editSelf")) {
+						if (contactId === user.id) {
+							return await prisma.contact.update({
+								where: { id: contactId },
+								data: { ...updateContact },
+							});
+						}
+					}
+					if (permissionsList.includes("full") || permissionsList.includes("edit")) {
+						return await prisma.contact.update({
+							where: { id: contactId },
+							data: { ...updateContact },
+						});
+					}
+					throw new Error("Not Allowed");
 				} catch (error) {
 					return Promise.reject("error");
 				}
@@ -130,9 +168,16 @@ export const DeleteContactMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, user }) {
 				try {
-					return await prisma.contact.delete({
-						where: { id },
-					});
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.ATTENDANCES);
+					if (!permissionsList) throw new Error("Not Allowed");
+
+					if (permissionsList.includes("full") || permissionsList.includes("delete")) {
+						return await prisma.contact.delete({
+							where: { id },
+						});
+					}
 				} catch (error) {
 					return Promise.reject("error");
 				}

@@ -1,10 +1,9 @@
 import { Role } from "@internal/prisma/client";
 import { nonNull, objectType, stringArg, extendType, intArg, nullable, booleanArg } from "nexus";
+import { DomainsIds } from ".";
 import { getDomainPermissions } from "../../utils/utils";
 import { Group } from "./Group";
 import { Profile } from "./Profile";
-
-const DOMAIN_ID = 5;
 
 //generates Grade type at schema.graphql
 export const Grade = objectType({
@@ -23,7 +22,7 @@ export const Grade = objectType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GROUP);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
 						throw new Error("Not Allowed");
@@ -46,7 +45,7 @@ export const Grade = objectType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
 						throw new Error("Not Allowed");
@@ -76,7 +75,7 @@ export const GradesQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GRADE);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
 						throw new Error("Not Allowed");
@@ -100,7 +99,7 @@ export const ActiveGradesQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GRADE);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
 						throw new Error("Not Allowed");
@@ -127,7 +126,7 @@ export const GradeByIdQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GRADE);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("read")) {
 						throw new Error("Not Allowed");
@@ -157,7 +156,7 @@ export const createGradeMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GRADE);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("create")) {
 						throw new Error("Not Allowed");
@@ -193,7 +192,7 @@ export const UpdateGradeMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GRADE);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("edit")) {
 						throw new Error("Not Allowed");
@@ -228,7 +227,7 @@ export const DeleteGradeMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GRADE);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("delete")) {
 						throw new Error("Not Allowed");

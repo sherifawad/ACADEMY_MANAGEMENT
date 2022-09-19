@@ -11,6 +11,7 @@ import {
 	list,
 	inputObjectType,
 } from "nexus";
+import { DomainsIds } from ".";
 import { getDomainPermissions } from "../../utils/utils";
 import { PaginationInputType, queryArgs } from "./User";
 
@@ -42,31 +43,28 @@ export const Exam = objectType({
 		t.field("date", { type: "DateTime" });
 		t.field("profile", {
 			type: "Profile",
-			resolve: async ({ id }, _, { user, prisma }) => {
+			resolve: async (parent, _, { user, prisma }) => {
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.STUDENT);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const output = await prisma.exam
 						.findUniqueOrThrow({
-							where: { id },
+							where: { id: parent.id },
 						})
 						.Profile();
 					if (permissionsList.includes("readSelf")) {
-						if (id !== user.id) {
-							throw new Error("Not Allowed");
+						if (parent.profileId === user.id) {
+							return output;
 						}
-						return output;
 					}
 
 					if (permissionsList.includes("readFamily")) {
-						const familyId = await prisma.findUniqueOrThrow({
-							where: { id },
+						const familyId = await prisma.user.findUniqueOrThrow({
+							where: { id: parent.profileId },
 						})?.familyId;
-						if (!familyId || familyId != user.familyId) {
-							throw new Error("Not Allowed");
-						} else {
+						if (familyId && familyId === user.familyId) {
 							return output;
 						}
 					}
@@ -118,7 +116,7 @@ export const ExamsQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.EXAMS);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const output = await prisma.exam.findMany();
 					if (permissionsList.includes("full") || permissionsList.includes("read")) {
@@ -147,7 +145,7 @@ export const ExamsByUserIdQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.EXAMS);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const { studentId, data } = args;
 
@@ -192,19 +190,16 @@ export const ExamsByUserIdQuery = extendType({
 						totalCount,
 					};
 					if (permissionsList.includes("readSelf")) {
-						if (studentId !== user.id) {
-							throw new Error("Not Allowed");
+						if (studentId === user.id) {
+							return output;
 						}
-						return output;
 					}
 
 					if (permissionsList.includes("readFamily")) {
 						const familyId = await prisma.findUniqueOrThrow({
 							where: { id: studentId },
 						})?.familyId;
-						if (!familyId || familyId != user.familyId) {
-							throw new Error("Not Allowed");
-						} else {
+						if (familyId && familyId === user.familyId) {
 							return output;
 						}
 					}
@@ -231,7 +226,7 @@ export const ExamByIdQuery = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.EXAMS);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const output = await prisma.exam.findUniqueOrThrow({
 						where: { id },
@@ -264,7 +259,7 @@ export const createExamMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.EXAMS);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const newExam = {
 						score,
@@ -312,7 +307,7 @@ export const createMultipleExamMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.EXAMS);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("create")) {
 						throw new Error("Not Allowed");
@@ -369,7 +364,7 @@ export const UpdateExamMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.EXAMS);
 					if (!permissionsList) throw new Error("Not Allowed");
 					const updateExam = {
 						score,
@@ -378,15 +373,6 @@ export const UpdateExamMutation = extendType({
 						updatedBy: user.id,
 					};
 
-					if (permissionsList.includes("editSelf")) {
-						if (id !== user.id) {
-							throw new Error("Not Allowed");
-						}
-						return await prisma.exam.update({
-							where: { id },
-							data: { ...updateExam },
-						});
-					}
 					if (permissionsList.includes("full") || permissionsList.includes("edit")) {
 						return await prisma.exam.update({
 							where: { id },
@@ -425,7 +411,7 @@ export const UpdateMultipleExamMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.EXAMS);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("edit")) {
 						throw new Error("Not Allowed");
@@ -478,7 +464,7 @@ export const DeleteExamMutation = extendType({
 				try {
 					const { role = null } = user;
 					if (!role) throw new Error("Not Allowed");
-					const permissionsList = await getDomainPermissions(role.id, DOMAIN_ID);
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.EXAMS);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("delete")) {
 						throw new Error("Not Allowed");
