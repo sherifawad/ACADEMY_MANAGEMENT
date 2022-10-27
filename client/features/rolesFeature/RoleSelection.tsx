@@ -5,13 +5,12 @@ import { rolesListQuery } from "./rolesQueries";
 import { Role } from "./roleTypes";
 
 type Props = {
-	roleId: number;
+	roleId?: number;
 	setRoleId: Dispatch<SetStateAction<number>>;
 };
 
 const RoleSelection = ({ roleId, setRoleId }: Props) => {
 	const { accessToken } = useAuth();
-	const [selectedRole, setSelectedRole] = useState<Role>();
 	const [rolesList, setRolesList] = useState<Role[]>([]);
 
 	const getRoles = useMemo(
@@ -32,24 +31,13 @@ const RoleSelection = ({ roleId, setRoleId }: Props) => {
 		[]
 	);
 
-	const getRoleItem = useMemo(() => (id: number) => rolesList.find((x) => x.id === id), [rolesList]);
-
 	useEffect(() => {
 		getRoles();
 	}, []);
 
-	useEffect(() => {
-		const role = getRoleItem(roleId);
-		if (!role) return;
-		setSelectedRole(role);
-	}, [roleId]);
-
 	const onChange = (e: ChangeEvent<HTMLSelectElement>) => {
 		const id = Number(e.target.value);
 		if (isNaN(id)) return;
-		const role = rolesList.find((x) => x.id === id);
-		if (!role) return;
-		setSelectedRole(role);
 		setRoleId(id);
 	};
 
@@ -61,7 +49,7 @@ const RoleSelection = ({ roleId, setRoleId }: Props) => {
 				</option>
 			))}
 			title="roles"
-			value={selectedRole?.id.toString()}
+			value={roleId}
 			onChange={onChange}
 		/>
 	);

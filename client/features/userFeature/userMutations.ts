@@ -1,5 +1,5 @@
 import { createAxiosService } from "core/utils";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { userVariables } from "./userTypes";
 
 export const CREATE_USER_MUTATION = `
@@ -19,12 +19,8 @@ export const UPDATE_USER_MUTATION = `
 `;
 
 export const createUserMutation = (variables: userVariables, token = null) => {
-	console.log(
-		"🚀 ~ file: userMutations.ts ~ line 23 ~ createUserMutation ~ variables",
-		JSON.stringify(variables, undefined, 2)
-	);
 	return useMutation(
-		"createUser",
+		["createUser"],
 		() =>
 			createAxiosService({ query: CREATE_USER_MUTATION, variables, token }).then(
 				(response) => response.data.data
@@ -38,7 +34,7 @@ export const createUserMutation = (variables: userVariables, token = null) => {
 };
 export const updateUserMutation = (variables: userVariables, token = null) =>
 	useMutation(
-		"updateUser",
+		["updateUser"],
 		() =>
 			createAxiosService({ query: UPDATE_USER_MUTATION, variables, token }).then(
 				(response) => response.data.data

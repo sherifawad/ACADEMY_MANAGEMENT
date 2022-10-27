@@ -1,5 +1,5 @@
 import { createAxiosService } from "core/utils";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { roleVariables } from "./roleTypes";
 
 export const CREATE_ROLE_MUTATION = `
@@ -28,7 +28,7 @@ export const UPDATE_ROLE_DETAILS_MUTATION = `
 
 export const createRoleMutation = (variables: roleVariables, token = null) =>
 	useMutation(
-		"createRole",
+		["createRole"],
 		() =>
 			createAxiosService({ query: CREATE_ROLE_MUTATION, variables, token }).then(
 				(response) => response.data.data
@@ -41,7 +41,7 @@ export const createRoleMutation = (variables: roleVariables, token = null) =>
 	);
 export const updateRoleMutation = (variables: roleVariables, token = null) =>
 	useMutation(
-		"updateRole",
+		["updateRole"],
 		() =>
 			createAxiosService({ query: UPDATE_ROLE_MUTATION, variables, token }).then(
 				(response) => response.data.data
@@ -55,7 +55,7 @@ export const updateRoleMutation = (variables: roleVariables, token = null) =>
 
 export const updateRoleDetailsMutation = (variables: roleVariables, token = null) =>
 	useMutation(
-		"updateRoleDetails",
+		["updateRoleDetails"],
 		() =>
 			createAxiosService({ query: UPDATE_ROLE_DETAILS_MUTATION, variables, token }).then(
 				(response) => response.data.data

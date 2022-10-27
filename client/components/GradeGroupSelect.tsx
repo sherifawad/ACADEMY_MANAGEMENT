@@ -7,7 +7,7 @@ import {
 	GRADE_GROUPS_QUERY,
 } from "features/gradeFeature/gradeQueries";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 function GradeGroupSelect({ setGroupId, setGradeId, gradeId, groupId }) {
 	const { accessToken } = useAuth();

@@ -1,5 +1,5 @@
 import { createAxiosService } from "core/utils";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { examMutationVariables } from "./examTypes";
 
 export const CREATE_EXAM_MUTATION = `
@@ -36,7 +36,7 @@ export const UPDATE_Multiple_EXAM_MUTATION = `
 
 export const createExamMutation = (variables: examMutationVariables, token = null) =>
 	useMutation(
-		"AddExam",
+		["AddExam"],
 		() =>
 			createAxiosService({ query: CREATE_EXAM_MUTATION, variables, token }).then(
 				(response) => response.data.data
@@ -50,7 +50,7 @@ export const createExamMutation = (variables: examMutationVariables, token = nul
 
 export const createMultipleExamMutation = (variables: examMutationVariables, token = null) =>
 	useMutation(
-		"AddMultipleExams",
+		["AddMultipleExams"],
 		() =>
 			createAxiosService({ query: CREATE_Multiple_EXAM_MUTATION, variables, token }).then(
 				(response) => response.data.data
@@ -64,7 +64,7 @@ export const createMultipleExamMutation = (variables: examMutationVariables, tok
 
 export const updateExamMutation = (variables: examMutationVariables, token = null) =>
 	useMutation(
-		"UpdateExam",
+		["UpdateExam"],
 		() =>
 			createAxiosService({ query: UPDATE_EXAM_MUTATION, variables, token }).then(
 				(response) => response.data.data
@@ -78,7 +78,7 @@ export const updateExamMutation = (variables: examMutationVariables, token = nul
 
 export const updateMultipleExamMutation = (variables: examMutationVariables, token = null) =>
 	useMutation(
-		"UpdateMultipleExams",
+		["UpdateMultipleExams"],
 		() =>
 			createAxiosService({ query: UPDATE_Multiple_EXAM_MUTATION, variables, token }).then(
 				(response) => response.data.data

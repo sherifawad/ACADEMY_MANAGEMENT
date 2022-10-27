@@ -1,5 +1,5 @@
 import { createAxiosService } from "core/utils";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { gradeVariables } from "./gradeTypes";
 
 export const ADD_GRADE_MUTATION = `
@@ -29,7 +29,7 @@ export const UPDATE_GRADE_MUTATION = `
 
 export const createGradeMutation = (variables: gradeVariables, token = null) =>
 	useMutation(
-		"AddGrade",
+		["AddGrade"],
 		() =>
 			createAxiosService({ query: ADD_GRADE_MUTATION, variables, token }).then(
 				(response) => response.data.data
@@ -43,7 +43,7 @@ export const createGradeMutation = (variables: gradeVariables, token = null) =>
 
 export const deleteGradeMutation = (variables: gradeVariables, token = null) =>
 	useMutation(
-		"AddGrade",
+		["AddGrade"],
 		() =>
 			createAxiosService({ query: Delete_GRADE_MUTATION, variables, token }).then(
 				(response) => response.data.data
@@ -57,7 +57,7 @@ export const deleteGradeMutation = (variables: gradeVariables, token = null) =>
 
 export const updateGradeMutation = (variables: gradeVariables, token = null) =>
 	useMutation(
-		"UpdateGrade",
+		["UpdateGrade"],
 		() =>
 			createAxiosService({ query: UPDATE_GRADE_MUTATION, variables, token }).then(
 				(response) => response.data.data

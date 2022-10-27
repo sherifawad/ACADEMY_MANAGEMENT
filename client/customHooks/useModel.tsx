@@ -40,7 +40,7 @@ function useModel(hasEditButton = false) {
 		return ({ children, title, onEditTitle = "", hasAddButton = true }) => {
 			return (
 				<>
-					<Suspense>
+					<Suspense fallback={null}>
 						<AddModel isOpened={isOpened} onClose={onClose} title={title}>
 							{children}
 						</AddModel>

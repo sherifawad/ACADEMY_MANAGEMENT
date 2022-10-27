@@ -11,7 +11,7 @@ import {
 } from "features/groupFeature/groupMutations";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TimePicker } from "react-next-dates";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Group } from "../../components/GroupsListItem";
 
 export interface GroupInitials extends Group {

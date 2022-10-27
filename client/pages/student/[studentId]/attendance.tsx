@@ -75,6 +75,8 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 				orderByKey: "id",
 				orderDirection: "asc",
 				take: 5,
+				skip: null,
+				sort: [{ id: "asc" }],
 			},
 		};
 		const { list, nextCursor, prevCursor, _count } = await studentAttendancesQuery(
@@ -84,7 +86,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 
 		return {
 			props: {
-				accessToken,
+				// accessToken: accessToken,
 				list: list ?? [],
 				prevCursor,
 				nextCursor,

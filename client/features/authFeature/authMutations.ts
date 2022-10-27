@@ -1,6 +1,5 @@
 import { createAxiosService } from "core/utils";
 import { Variables } from "features/core/types";
-import { useMutation } from "react-query";
 
 export const LOGIN_MUTATION = `
     mutation UserLogin($email: String!, $password: String!) {

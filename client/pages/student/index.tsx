@@ -15,13 +15,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { authOptions } from "pages/api/auth/[...nextauth]";
-import { useMemo } from "react";
+import { lazy, useEffect, useMemo, useState } from "react";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
+import AddUser from "features/userFeature/AddUser";
 
 function index({ flattenedList }) {
-	const AddStudent = dynamic(() => import("features/userFeature/AddUser"), {
-		ssr: false,
-	});
+	// const AddStudent = dynamic(() => import("features/userFeature/AddUser"), {
+	// 	ssr: false,
+	// });
+
+	const [show, setShow] = useState(false);
+	useEffect(() => {
+		setShow(true);
+	}, []);
 	const { Model, modelProps } = useModel();
 	const router = useRouter();
 
@@ -37,9 +43,11 @@ function index({ flattenedList }) {
 				<meta name="description" content="Students List Page" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
-			<Model title="Student">
-				<AddStudent onProceed={onProceed} onClose={modelProps.onClose} />
-			</Model>
+			{show ? (
+				<Model title="Student">
+					<AddUser onProceed={onProceed} onClose={modelProps.onClose} />
+				</Model>
+			) : null}
 			{flattenedList?.length > 0 ? <StudentsListPageContent flattenedList={flattenedList} /> : <div />}
 		</div>
 	);

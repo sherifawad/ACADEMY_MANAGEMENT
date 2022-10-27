@@ -10,9 +10,10 @@ import { Session, unstable_getServerSession } from "next-auth";
 import Head from "next/head";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import { useMemo } from "react";
+import { MdTextRotationAngledown } from "react-icons/md";
 
 function Student({ user }) {
-	const { id, profile, name } = user || {};
+	const { id, profile, name, role } = user || {};
 	const { attendances, exams, bio, group } = profile || {};
 
 	return (
@@ -23,7 +24,7 @@ function Student({ user }) {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 			<div className="w-full">
-				<UserCard {...user} bio={bio} group={group} />
+				<UserCard {...user} bio={bio} group={group} roleId={role.id} />
 				<div className="flex flex-wrap md:flex-nowrap w-full gap-4 items-start justify-between pt-8">
 					{attendances && <AttendancesCard attendances={attendances} id={id} />}
 					{exams && <ExamsCard exams={exams} id={id} />}

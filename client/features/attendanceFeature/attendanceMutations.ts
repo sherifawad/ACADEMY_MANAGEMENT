@@ -1,5 +1,5 @@
 import { createAxiosService } from "core/utils";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { attendanceMutationVariables } from "./attendancesTypes";
 
 export const CREATE_ATTENDANCE_MUTATION = `

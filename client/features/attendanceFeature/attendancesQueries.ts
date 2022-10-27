@@ -2,19 +2,19 @@ import { createAxiosService } from "core/utils";
 import { attendanceMutationVariables } from "./attendancesTypes";
 
 export const GET_PAGINATED_STUDENT_ATTENDANCES = `
-    query StudentAttendances($studentId: String!, $data: PaginationInputType) {
+    query Query($studentId: String!, $data: PaginationInputType) {
         studentAttendances(studentId: $studentId, data: $data) {
-            list {
-                id
-                note
-                startAt
-                endAt
-            }
-            prevCursor
-            nextCursor
-            totalCount {
-                _count
-            }
+        list {
+            id
+            note
+            startAt
+            endAt
+        }
+        prevCursor
+        nextCursor
+        totalCount {
+            _count
+        }
         }
     }
 `;

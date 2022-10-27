@@ -10,7 +10,7 @@ import { format, parse } from "date-fns";
 import { arEG } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { DatePicker } from "react-next-dates";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { examInitialProperties } from "./examTypes";
 import useToggle from "customHooks/useToggle";
 import LabelInput from "components/inputs/LabelInput";

@@ -1,12 +1,14 @@
+import { useMutation } from "@tanstack/react-query";
 import SingleSelection from "components/common/SingleSelection";
 import GradeGroupSelect from "components/GradeGroupSelect";
 import LabelInput from "components/inputs/LabelInput";
+import { createAxiosService } from "core/utils";
 import useAuth from "customHooks/useAuth";
 import RoleSelection from "features/rolesFeature/RoleSelection";
 import { rolesListQuery } from "features/rolesFeature/rolesQueries";
 import dynamic from "next/dynamic";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createUserMutation, updateUserMutation } from "./userMutations";
+import { FormEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createUserMutation, CREATE_USER_MUTATION, updateUserMutation } from "./userMutations";
 import { userInitialProperties } from "./userTypes";
 
 function AddUser({
@@ -17,6 +19,7 @@ function AddUser({
 	gradeId,
 	isStudent = true,
 }: userInitialProperties) {
+	console.log("🚀 ~ file: AddUser.tsx ~ line 15 ~ AddUser");
 	const { accessToken } = useAuth();
 
 	const { profile, isActive, contact, avatar, name, id, password, groupId, family } = initialUser || {};
@@ -60,26 +63,26 @@ function AddUser({
 		});
 	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar, family]);
 
-
-    //TODO: stop calling every render
+	//TODO: stop calling every render
 	const createMutation = createUserMutation(
 		{ ...formState, groupId: _groupId, roleId: _roleId, avatar: null },
 		accessToken
 	);
+
 	const updateMutation = updateUserMutation(
 		{ ...formState, userUpdateId: id, groupId: _groupId, roleId: _roleId },
 		accessToken
 	);
 
-	const submitContact = async (e) => {
-		e.preventDefault();
+	const submitContact = async () => {
 		if (createMutation.isLoading) return;
 		if (updateMutation.isLoading) return;
 		id ? await updateMutation.mutateAsync() : await createMutation.mutateAsync();
 	};
 
-	const proceedAndClose = async (e) => {
-		await submitContact(e);
+	const proceedAndClose = async (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		await submitContact();
 		onProceed();
 		onClose();
 	};
@@ -99,7 +102,7 @@ function AddUser({
 	const roleSelect = useMemo(() => <RoleSelection roleId={roleId} setRoleId={setRoleId} />, [roleId]);
 
 	return (
-		<form method="dialog" className="space-y-6" action="#" ref={mainRef}>
+		<form onSubmit={proceedAndClose} method="dialog" className="space-y-6" action="#" ref={mainRef}>
 			<LabelInput
 				name={"email"}
 				label={"Your email"}
@@ -194,7 +197,6 @@ function AddUser({
 			{_roleId === 5 ? groupSelect : null}
 			{/* {formState.error?.length > 0 && <p className="text-red-600">{formState.error}</p>} */}
 			<button
-				onClick={proceedAndClose}
 				type="submit"
 				className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
 			>

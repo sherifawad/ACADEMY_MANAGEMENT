@@ -4,7 +4,7 @@ import { AiFillGithub } from "react-icons/ai";
 import { BiLock } from "react-icons/bi";
 import { FaRegUser } from "react-icons/fa";
 import { GoMail } from "react-icons/go";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 
 function Register({ setLogin }) {
 	const [loading, setLoading] = useState(false);

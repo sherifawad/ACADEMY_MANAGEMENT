@@ -1,5 +1,5 @@
 import { createAxiosService } from "core/utils";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { groupVariables } from "./groupTypes";
 
 export const ADD_GROUP_MUTATION = `
@@ -28,7 +28,7 @@ export const UPDATE_GROUP_MUTATION = `
 export const createGroupMutation = (variables: groupVariables, token = null) => {
 	try {
 		return useMutation(
-			"AddGroup",
+			["AddGroup"],
 			() =>
 				createAxiosService({
 					query: ADD_GROUP_MUTATION,
@@ -47,7 +47,7 @@ export const createGroupMutation = (variables: groupVariables, token = null) => 
 export const deleteGroupMutation = (variables: groupVariables, token = null) => {
 	try {
 		return useMutation(
-			"DeleteGroup",
+			["DeleteGroup"],
 			() =>
 				createAxiosService({
 					query: DELETE_GROUP_MUTATION,
@@ -66,7 +66,7 @@ export const deleteGroupMutation = (variables: groupVariables, token = null) => 
 export const updateGroupMutation = (variables: groupVariables, token = null) => {
 	try {
 		return useMutation(
-			"UpdateGroup",
+			["UpdateGroup"],
 			() =>
 				createAxiosService({
 					query: UPDATE_GROUP_MUTATION,

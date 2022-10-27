@@ -1,3 +1,4 @@
+import { getDayNames } from "core/utils";
 import { format } from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Hooks, usePagination, useSortBy, useTable } from "react-table";
@@ -35,7 +36,7 @@ function useReactTable({
 		};
 	}, [tableInitialStates, hiddenColumns]);
 
-	const editRowHandler = useCallback(
+	const editRowHandler = useMemo(
 		() => (values: any) => {
 			if (values) {
 				if (setItemData) {
@@ -69,6 +70,16 @@ function useReactTable({
 				? tableColumns
 				: tableData[0]
 				? Object.keys(tableData[0]).map((key) => {
+						if (key === "date") {
+							return {
+								Header: key,
+								accessor: key,
+								Cell: ({ value }) =>
+									value === null
+										? "_"
+										: `${getDayNames(value)} ${format(new Date(value), "dd MMM yyyy")}`,
+							};
+						}
 						return { Header: key, accessor: key };
 				  })
 				: [],

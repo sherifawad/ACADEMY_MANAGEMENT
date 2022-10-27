@@ -17,12 +17,17 @@ function studentExams({ exams = [], profileId }) {
 
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 
+    const openModel = () => {
+        setIsOpened(true);
+    }
+
 	const { RenderedTable } = useReactTable({
 		tableData: exams,
 		canSort: true,
 		hasPagination: true,
 		hasEditColumn: true,
 		setItemData,
+        editRow: openModel,
 		hiddenColumns: ["note", "id"],
 	});
 

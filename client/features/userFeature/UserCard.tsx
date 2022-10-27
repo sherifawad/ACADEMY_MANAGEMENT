@@ -13,9 +13,10 @@ import {
 	AiOutlineFieldTime,
 } from "react-icons/ai";
 import { GiUpgrade, GiTeamDowngrade } from "react-icons/gi";
-import { Suspense, useMemo } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { Group } from "components/GroupsListItem";
+import AddUser from "./AddUser";
 
 function UserCard({
 	name = "",
@@ -26,13 +27,19 @@ function UserCard({
 	isActive,
 	avatar,
 	isStudent = true,
-	role,
-    family
+	roleId,
+	family,
 }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
-	const AddUser = dynamic(() => import("./AddUser"), {
-		ssr: false,
-	});
+	// const AddUser = dynamic(() => import("./AddUser"), {
+	// 	ssr: false,
+	// });
+
+	const [show, setShow] = useState(false);
+	useEffect(() => {
+		setShow(true);
+	}, []);
+
 	const router = useRouter();
 	const onProceed = () => {
 		router.replace(router.asPath);
@@ -51,24 +58,26 @@ function UserCard({
 					/>
 					<div className="pt-6 md:pis-8 text-center md:text-left space-y-4 w-full">
 						<div className="flex flex-col md:flex-row-reverse flex-nowrap md:justify-between justify-center items-center">
-							<Model title={`${isStudent ? "Student" : "User"}`}>
-								<AddUser
-									onProceed={onProceed}
-									onClose={modelProps.onClose}
-									isStudent={isStudent}
-									gradeId={group ? (group as Group)?.grade?.id : undefined}
-									initialUser={{
-										name,
-										contact,
-										groupId: group ? (group as Group)?.id : undefined,
-										id,
-										isActive,
-										avatar,
-										role,
-                                        family
-									}}
-								/>
-							</Model>
+							{show ? (
+								<Model title={`${isStudent ? "Student" : "User"}`}>
+									<AddUser
+										onProceed={onProceed}
+										onClose={modelProps.onClose}
+										isStudent={isStudent}
+										gradeId={group ? (group as Group)?.grade?.id : undefined}
+										roleId={roleId}
+										initialUser={{
+											name,
+											contact,
+											groupId: group ? (group as Group)?.id : undefined,
+											id,
+											isActive,
+											avatar,
+											family,
+										}}
+									/>
+								</Model>
+							) : null}
 							<div className="text-sky-500 dark:text-sky-400 font-bold">{name}</div>
 						</div>
 						{isStudent && (

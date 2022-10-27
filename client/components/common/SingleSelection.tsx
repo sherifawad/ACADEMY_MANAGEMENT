@@ -3,7 +3,7 @@ import { ChangeEvent, ReactNode } from "react";
 type props = {
 	id?: string;
 	optionsList: ReactNode[];
-	value: string;
+	value: any;
 	title: string;
 	onChange: (e: ChangeEvent<HTMLSelectElement>, index?: number) => void;
 };
