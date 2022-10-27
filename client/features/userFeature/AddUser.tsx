@@ -1,57 +1,75 @@
+import SingleSelection from "components/common/SingleSelection";
 import GradeGroupSelect from "components/GradeGroupSelect";
 import LabelInput from "components/inputs/LabelInput";
 import useAuth from "customHooks/useAuth";
+import RoleSelection from "features/rolesFeature/RoleSelection";
+import { rolesListQuery } from "features/rolesFeature/rolesQueries";
 import dynamic from "next/dynamic";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createUserMutation, updateUserMutation } from "./userMutations";
 import { userInitialProperties } from "./userTypes";
 
-function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }: userInitialProperties) {
+function AddUser({
+	onProceed,
+	onClose,
+	initialUser,
+	roleId,
+	gradeId,
+	isStudent = true,
+}: userInitialProperties) {
 	const { accessToken } = useAuth();
 
-	const { profile, isActive, contact, avatar, name, id, password, groupId, role, family } =
-		initialUser || {};
+	const { profile, isActive, contact, avatar, name, id, password, groupId, family } = initialUser || {};
 	const { email, phone, parentsPhones, address } = contact || {};
 
 	const mainRef = useRef();
 
-	const [_groupId, setGroupId] = useState();
-	const [_gradeId, setGradeId] = useState();
+	const [_roleId, setRoleId] = useState<number>(roleId);
+	const [_groupId, setGroupId] = useState(groupId);
+	const [_gradeId, setGradeId] = useState(gradeId);
 	const [formState, setFormState] = useState({
-		id,
-		isActive,
-		avatar,
-		email,
-		password,
-		name,
-		phone,
-		parentsPhones,
-		address,
-		role,
-		familyId: family?.id ?? null,
-		familyName: family?.familyName ?? null,
-		error: "",
+		id: undefined,
+		avatar: null,
+		email: null,
+		password: null,
+		name: null,
+		phone: null,
+		parentsPhones: null,
+		address: null,
+		familyId: null,
+		familyName: null,
 	});
+	useEffect(() => {
+		setRoleId(roleId);
+	}, [roleId]);
+	useEffect(() => {
+		setGradeId(groupId);
+	}, [groupId]);
 
 	useEffect(() => {
 		setFormState({
 			...formState,
-			name,
-			email,
-			phone,
-			parentsPhones,
-			address,
-			isActive,
-			avatar,
-			role,
+			name: name ?? null,
+			email: email ?? null,
+			phone: phone ?? null,
+			parentsPhones: parentsPhones ?? null,
+			address: address ?? null,
+			avatar: avatar ?? null,
 			familyId: family?.id ?? null,
 			familyName: family?.familyName ?? null,
 		});
-	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar, role, family]);
+	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar, family]);
 
-	const createMutation = createUserMutation({ ...formState, groupId, role }, accessToken);
-	const { error, ...rest } = formState;
-	const updateMutation = updateUserMutation({ ...formState, userUpdateId: id, groupId }, accessToken);
+
+    //TODO: stop calling every render
+	const createMutation = createUserMutation(
+		{ ...formState, groupId: _groupId, roleId: _roleId, avatar: null },
+		accessToken
+	);
+	const updateMutation = updateUserMutation(
+		{ ...formState, userUpdateId: id, groupId: _groupId, roleId: _roleId },
+		accessToken
+	);
 
 	const submitContact = async (e) => {
 		e.preventDefault();
@@ -75,8 +93,10 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 				gradeId={gradeId}
 			/>
 		),
-		[]
+		[groupId, gradeId]
 	);
+
+	const roleSelect = useMemo(() => <RoleSelection roleId={roleId} setRoleId={setRoleId} />, [roleId]);
 
 	return (
 		<form method="dialog" className="space-y-6" action="#" ref={mainRef}>
@@ -89,7 +109,6 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 				onChange={(e) =>
 					setFormState({
 						...formState,
-						error: "",
 						email: e.target.value,
 					})
 				}
@@ -102,7 +121,6 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 				onChange={(e) =>
 					setFormState({
 						...formState,
-						error: "",
 						name: e.target.value,
 					})
 				}
@@ -116,7 +134,6 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 					onChange={(e) =>
 						setFormState({
 							...formState,
-							error: "",
 							familyName: e.target.value,
 						})
 					}
@@ -130,12 +147,12 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 				onChange={(e) =>
 					setFormState({
 						...formState,
-						error: "",
 						phone: e.target.value,
 					})
 				}
 			/>
-			{isStudent && (
+			{roleSelect}
+			{_roleId === 5 ? (
 				<LabelInput
 					name={"parentPhone"}
 					label={"Your parentPhone"}
@@ -144,12 +161,12 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 					onChange={(e) =>
 						setFormState({
 							...formState,
-							error: "",
 							parentsPhones: e.target.value,
 						})
 					}
 				/>
-			)}
+			) : null}
+
 			<LabelInput
 				name={"address"}
 				label={"Your address"}
@@ -158,7 +175,6 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 				onChange={(e) =>
 					setFormState({
 						...formState,
-						error: "",
 						address: e.target.value,
 					})
 				}
@@ -171,42 +187,12 @@ function AddUser({ onProceed, onClose, initialUser, gradeId, isStudent = true }:
 				onChange={(e) =>
 					setFormState({
 						...formState,
-						error: "",
 						password: e.target.value,
 					})
 				}
 			/>
-
-			{isStudent ? (
-				groupSelect
-			) : (
-				<div>
-					<label htmlFor="role" className="sr-only">
-						Choose a Role
-					</label>
-
-					<select
-						id="role"
-						className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-						value={formState.role}
-						onChange={({ target: { value } }) => {
-							setFormState({
-								...formState,
-								error: "",
-								role: value,
-							});
-						}}
-					>
-						{["Student", "ADMIN", "USER"].map((role) => (
-							<option key={role} value={role}>
-								{role}
-							</option>
-						))}
-					</select>
-				</div>
-			)}
-			{formState.error?.length > 0 && <p className="text-red-600">{formState.error}</p>}
-
+			{_roleId === 5 ? groupSelect : null}
+			{/* {formState.error?.length > 0 && <p className="text-red-600">{formState.error}</p>} */}
 			<button
 				onClick={proceedAndClose}
 				type="submit"

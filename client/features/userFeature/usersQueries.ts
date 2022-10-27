@@ -20,26 +20,34 @@ export const GET_USERS_BY_ROLES = `
 `;
 
 export const GET_STUDENT_DETAILS = `
-    query User($userId: String!, $attendancesTake2: Int, $examsTake2: Int) {
+    query Query($userId: String!, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
         User(id: $userId) {
             id
             name
             isActive
             avatar
-            role
-            contact {
-                    note
-                    phone
-                    parentsPhones
-                    address
-                    email
+            familyId
+            role {
+                id
             }
             profile {
                 bio
+                exams(take: $take, orderByList: $orderByList) {
+                note
+                id
+                score
+                date
+                }
+                attendances(take: $attendancesTake2, orderByList: $attendancesOrderByList2) {
+                    id
+                    startAt
+                    endAt
+                    note
+                }
                 group {
                     id
-                    name
                     isActive
+                    name
                     startAt
                     endAt
                     grade {
@@ -47,20 +55,18 @@ export const GET_STUDENT_DETAILS = `
                         name
                     }
                 }
-                attendances(take: $attendancesTake2) {
-                    startAt
-                    endAt
-                    note
-                }
-                exams(take: $examsTake2) {
-                    note
-                    score
-                    date
-                }
             }
             family {
-                familyName
                 id
+                familyName
+            }
+            contact {
+                note
+                phone
+                parentsPhones
+                address
+                email
+                emailConfirmed
             }
         }
     }
@@ -124,23 +130,25 @@ export const GET_STUDENTS_paginated_LIST = `
 }
 `;
 export const GET_STUDENTS_LIST = `
-    query FilteredUsers($take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject, $familyId: String, $userRole: [Role]) {
-        FilteredUsers(family_Id: $familyId, user_role: $userRole) {
-            list {
-                id
-                name
-                isActive
-                avatar
-                profile {
-                    exams(take: $take, orderByList: $orderByList) {
-                        score
-                    }
-                    attendances(take: $attendancesTake2, orderByList: $attendancesOrderByList2) {
-                        startAt
-                        endAt
-                    }
-                }
+    query Query($data: PaginationInputType, $roleId: Int) {
+        FilteredUsers(data: $data, roleId: $roleId) {
+        list {
+            name
+            id
+            avatar
+            isActive
+            contact {
+                phone
+                parentsPhones
+                address
+                email
             }
+        }
+        prevCursor
+        nextCursor
+        totalCount {
+            _count
+        }
         }
     }
 `;

@@ -5,6 +5,7 @@ import { ACTIVE_GRADES_QUERY, getActiveGradesList } from "features/gradeFeature/
 import {
 	ADD_GROUP_MUTATION,
 	createGroupMutation,
+	deleteGroupMutation,
 	updateGroupMutation,
 	UPDATE_GROUP_MUTATION,
 } from "features/groupFeature/groupMutations";
@@ -17,7 +18,16 @@ export interface GroupInitials extends Group {
 	onProceed: Function;
 	onClose: Function;
 }
-function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grade }: GroupInitials) {
+function AddGroup({
+	onProceed = () => {},
+	onClose,
+	id,
+	startAt,
+	endAt,
+	name,
+	isActive,
+	grade,
+}: GroupInitials) {
 	const { accessToken } = useAuth();
 
 	const mainRef = useRef();
@@ -62,6 +72,14 @@ function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grad
 		},
 		accessToken
 	);
+
+	const deleteMutation = deleteGroupMutation(
+		{
+			deleteGroupId: formState.id,
+		},
+		accessToken
+	);
+
 	const updateMutation = updateGroupMutation(
 		{
 			updateGroupId: formState.id,
@@ -84,6 +102,13 @@ function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grad
 
 	const proceedAndClose = async (e) => {
 		await submitContact(e);
+		onProceed();
+		onClose();
+	};
+
+	const onDelete = async () => {
+		if (deleteMutation.isLoading) return;
+		await deleteMutation.mutateAsync();
 		onProceed();
 		onClose();
 	};
@@ -220,14 +245,24 @@ function AddGroup({ onProceed, onClose, id, startAt, endAt, name, isActive, grad
 				/>
 				<p className="block text-sm font-medium text-gray-900 dark:text-gray-300">Active</p>
 			</div>
-
-			<button
-				onClick={proceedAndClose}
-				type="submit"
-				className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-			>
-				{id ? "Edit" : "Add"}
-			</button>
+			<div className="flex gap-2">
+				<button
+					onClick={proceedAndClose}
+					type="submit"
+					className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+				>
+					{id ? "Edit" : "Add"}
+				</button>
+				{id ? (
+					<button
+						type="button"
+						onClick={onDelete}
+						className=" text-white bg-red-500 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+					>
+						Delete
+					</button>
+				) : null}
+			</div>
 		</form>
 	);
 }

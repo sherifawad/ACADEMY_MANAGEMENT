@@ -19,6 +19,17 @@ import { useMemo } from "react";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
 
 function index({ flattenedList }) {
+	const AddStudent = dynamic(() => import("features/userFeature/AddUser"), {
+		ssr: false,
+	});
+	const { Model, modelProps } = useModel();
+	const router = useRouter();
+
+	const onProceed = () => {
+		router.replace(router.asPath);
+		console.log("Proceed clicked");
+	};
+
 	return (
 		<div className="container">
 			<Head>
@@ -26,6 +37,9 @@ function index({ flattenedList }) {
 				<meta name="description" content="Students List Page" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
+			<Model title="Student">
+				<AddStudent onProceed={onProceed} onClose={modelProps.onClose} />
+			</Model>
 			{flattenedList?.length > 0 ? <StudentsListPageContent flattenedList={flattenedList} /> : <div />}
 		</div>
 	);
@@ -35,31 +49,27 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
 		const session = await unstable_getServerSession(req, res, authOptions);
 
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.Auth,
-					permanent: false,
-				},
-			};
-		}
-		const { user, accessToken } = session;
+		// if (!session) {
+		// 	return {
+		// 		redirect: {
+		// 			destination: Paths.Auth,
+		// 			permanent: false,
+		// 		},
+		// 	};
+		// }
+		const { user, accessToken } = session || {};
 		const { family } = (user as user) || {};
 
 		const variables = {
-			userRole: ["Student"],
-			familyId: family?.id ?? null,
-			attendancesTake2: 1,
-			take: 1,
-			orderByList: {
-				date: "desc",
-				createdAt: "desc",
-				updatedAt: "desc",
+			data: {
+				orderByKey: null,
+				orderDirection: "asc",
+				take: 20,
+				myCursor: null,
+				skip: null,
+				sort: [{ id: "asc" }],
 			},
-			attendancesOrderByList2: {
-				startAt: "desc",
-				endAt: "desc",
-			},
+			roleId: 5,
 		};
 
 		const { list, rest, error } = await studentsListQuery(variables, accessToken);

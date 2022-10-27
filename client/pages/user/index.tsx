@@ -36,15 +36,15 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 
 		const session = await unstable_getServerSession(req, res, authOptions);
 
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.Auth,
-					permanent: false,
-				},
-			};
-		}
-		const { user, accessToken } = session;
+		// if (!session) {
+		// 	return {
+		// 		redirect: {
+		// 			destination: Paths.Auth,
+		// 			permanent: false,
+		// 		},
+		// 	};
+		// }
+		const { user, accessToken } = session || {};
 
 		const { role } = (user as user) || {};
 		const variables = role === "ADMIN" ? { userRole: ["USER", "ADMIN"] } : { userRole: ["USER"] };

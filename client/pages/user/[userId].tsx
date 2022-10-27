@@ -25,15 +25,15 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 
 		const session = await unstable_getServerSession(req, res, authOptions);
 
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.Auth,
-					permanent: false,
-				},
-			};
-		}
-		const { user, accessToken } = session;
+		// if (!session) {
+		// 	return {
+		// 		redirect: {
+		// 			destination: Paths.Auth,
+		// 			permanent: false,
+		// 		},
+		// 	};
+		// }
+		const { user, accessToken } = session || {};
 
 		const { id } = (user as user) || {};
 		const { User } = await userDetailsQuery(

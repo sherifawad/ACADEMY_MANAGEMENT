@@ -10,16 +10,7 @@ import React, { useMemo } from "react";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
 
 function StudentsListPageContent({ flattenedList }) {
-	const AddStudent = dynamic(() => import("features/userFeature/AddUser"), {
-		ssr: false,
-	});
-	const { Model, modelProps } = useModel();
 	const formatDate = "dd MMM hh:mm a";
-	const router = useRouter();
-	const onProceed = () => {
-		router.replace(router.asPath);
-		console.log("Proceed clicked");
-	};
 
 	const tableColumns = useMemo(
 		() => [
@@ -83,24 +74,20 @@ function StudentsListPageContent({ flattenedList }) {
 				),
 			},
 			{
-				Header: "score",
-				accessor: "score",
+				Header: "phone",
+				accessor: "phone",
 			},
 			{
-				Header: "startAt",
-				accessor: "startAt",
-				Cell: ({ value }) =>
-					value == null || value?.length <= 0
-						? "_"
-						: `${getDayNames(value)} ${format(new Date(value), formatDate)}`,
+				Header: "parentsPhones:",
+				accessor: "parentsPhones:",
 			},
 			{
-				Header: "endAt",
-				accessor: "endAt",
-				Cell: ({ value }) =>
-					value == null || value?.length <= 0
-						? "_"
-						: `${getDayNames(value)} ${format(new Date(value), formatDate)}`,
+				Header: "address",
+				accessor: "address",
+			},
+			{
+				Header: "email",
+				accessor: "email",
 			},
 		],
 		[]
@@ -112,14 +99,7 @@ function StudentsListPageContent({ flattenedList }) {
 		tableColumns,
 		tableInitialStates: { pageIndex: 0 },
 	});
-	return (
-		<div>
-			<Model title="Student">
-				<AddStudent onProceed={onProceed} onClose={modelProps.onClose} />
-			</Model>
-			<RenderedTable />
-		</div>
-	);
+	return <RenderedTable />;
 }
 
 export default StudentsListPageContent;

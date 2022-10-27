@@ -11,6 +11,14 @@ export const ADD_GRADE_MUTATION = `
         }
     }
 `;
+
+export const Delete_GRADE_MUTATION = `
+    mutation DeleteGrade($deleteGradeId: String!) {
+        deleteGrade(id: $deleteGradeId) {
+            id
+        }
+    }
+`;
 export const UPDATE_GRADE_MUTATION = `
     mutation UpdateGrade($updateGradeId: String!, $isActive: Boolean!, $name: String!) {
         updateGrade(id: $updateGradeId, isActive: $isActive, name: $name) {
@@ -32,10 +40,28 @@ export const createGradeMutation = (variables: gradeVariables, token = null) =>
 			},
 		}
 	);
+
+export const deleteGradeMutation = (variables: gradeVariables, token = null) =>
+	useMutation(
+		"AddGrade",
+		() =>
+			createAxiosService({ query: Delete_GRADE_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
+		{
+			onSuccess: () => {
+				console.log("Grade Created Successfully");
+			},
+		}
+	);
+
 export const updateGradeMutation = (variables: gradeVariables, token = null) =>
 	useMutation(
 		"UpdateGrade",
-		() => createAxiosService({ query:ADD_GRADE_MUTATION, variables, token }).then((response) => response.data.data),
+		() =>
+			createAxiosService({ query: UPDATE_GRADE_MUTATION, variables, token }).then(
+				(response) => response.data.data
+			),
 		{
 			onSuccess: () => {
 				console.log("Grade Updated Successfully");

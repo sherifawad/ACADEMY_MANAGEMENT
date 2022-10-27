@@ -37,15 +37,15 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 	try {
 		const session = await unstable_getServerSession(req, res, authOptions);
 
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.Auth,
-					permanent: false,
-				},
-			};
-		}
-		const { accessToken } = session;
+		// if (!session) {
+		// 	return {
+		// 		redirect: {
+		// 			destination: Paths.Auth,
+		// 			permanent: false,
+		// 		},
+		// 	};
+		// }
+		const { accessToken } = session || {};
 		const { studentId } = params;
 
 		const { User } = await studentDetailsQuery(
@@ -58,7 +58,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, params 
 		);
 		return {
 			props: {
-				user: User,
+				user: User ?? {},
 			},
 		};
 	} catch (error) {

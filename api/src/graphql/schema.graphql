@@ -162,7 +162,7 @@ type Mutation {
   updatePermission(description: String, name: String, permissionId: Int!): UserPermission!
   updateProfile(bio: String, id: String!): Profile!
   updateRole(description: String, domainPermissions: [JSONObject], name: String, roleId: Int!): UserRole!
-  userRegister(address: String, avatar: String, email: String!, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, roleId: Int!): User!
+  userRegister(address: String, avatar: String, email: String, familyId: String, familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, roleId: Int!): User!
   userUpdate(address: String, avatar: String, email: String, familyName: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, roleId: Int): User!
 }
 
@@ -209,7 +209,7 @@ type Query {
   Contact(contactId: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
-  FilteredUsers(data: PaginationInputType, family_Id: String, isActive: Boolean): UsersResponse
+  FilteredUsers(data: PaginationInputType, family_Id: String, isActive: Boolean, roleId: Int): UsersResponse
   Grade(id: String!): Grade!
   Grades: [Grade]!
   Group(id: String!): Group!

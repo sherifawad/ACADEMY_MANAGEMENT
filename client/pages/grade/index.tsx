@@ -72,15 +72,15 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 	try {
 		const session = await unstable_getServerSession(req, res, authOptions);
 
-		if (!session) {
-			return {
-				redirect: {
-					destination: Paths.Auth,
-					permanent: false,
-				},
-			};
-		}
-		const { accessToken } = session;
+		// if (!session) {
+		// 	return {
+		// 		redirect: {
+		// 			destination: Paths.Auth,
+		// 			permanent: false,
+		// 		},
+		// 	};
+		// }
+		const { accessToken } = session || {};
 		const { Grades } = await getGradeList(accessToken);
 		return {
 			props: {

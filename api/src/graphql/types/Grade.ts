@@ -159,7 +159,7 @@ export const createGradeMutation = extendType({
 					const permissionsList = await getDomainPermissions(role.id, DomainsIds.GRADE);
 					if (!permissionsList) throw new Error("Not Allowed");
 					if (!permissionsList.includes("full") && !permissionsList.includes("create")) {
-						throw new Error("Not Allowed");
+                        throw new Error("Not Allowed");
 					}
 					const newGrade = {
 						name,
@@ -198,10 +198,11 @@ export const UpdateGradeMutation = extendType({
 						throw new Error("Not Allowed");
 					}
 					const updateGrade = {
-						name,
+                        name,
 						isActive,
 						updatedBy: user.id,
 					};
+                    console.log("🚀 ~ file: Grade.ts ~ line 201 ~ resolve: ~ updateGrade", updateGrade)
 					return await prisma.Grade.update({
 						where: { id },
 						data: { ...updateGrade },

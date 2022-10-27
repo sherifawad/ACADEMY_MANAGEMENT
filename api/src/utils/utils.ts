@@ -18,6 +18,9 @@ export const removeNullObjects = (obj: any) =>
 
 export const getDomainPermissions = async (roleId: number, domainId: number) => {
 	try {
+		if (roleId === 1) {
+			return ["full"];
+		}
 		const roleAttendancePermissions = await prisma.role_Domain_Permission.findMany({
 			where: {
 				AND: [{ domainId: domainId }, { roleId: roleId }],

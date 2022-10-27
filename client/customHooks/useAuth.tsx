@@ -25,6 +25,7 @@ function useAuth(shouldRedirect: boolean = false) {
 			localStorage.setItem("providerRegisterData", json);
 		}
 		if (session?.error === "RefreshAccessTokenError") {
+			console.log("🚀 ~ file: useAuth.tsx ~ line 28 ~ useEffect ~ RefreshAccessTokenError")
 			setIsAuthenticated(false);
 			signOutHandler();
 			return;

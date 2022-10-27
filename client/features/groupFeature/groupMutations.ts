@@ -9,6 +9,14 @@ export const ADD_GROUP_MUTATION = `
         }
     }
 `;
+
+export const DELETE_GROUP_MUTATION = `
+    mutation DeleteGroup($deleteGroupId: String!) {
+        deleteGroup(id: $deleteGroupId) {
+            id
+        }
+    }
+`;
 export const UPDATE_GROUP_MUTATION = `
     mutation UpdateGroup($updateGroupId: String!, $name: String, $startAt: DateTime, $endAt: DateTime, $isActive: Boolean, $gradeId: String) {
         updateGroup(id: $updateGroupId, name: $name, startAt: $startAt, endAt: $endAt, isActive: $isActive, gradeId: $gradeId) {
@@ -30,6 +38,25 @@ export const createGroupMutation = (variables: groupVariables, token = null) => 
 			{
 				onSuccess: () => {
 					console.log("Creation is a Success");
+				},
+			}
+		);
+	} catch (error) {}
+};
+
+export const deleteGroupMutation = (variables: groupVariables, token = null) => {
+	try {
+		return useMutation(
+			"DeleteGroup",
+			() =>
+				createAxiosService({
+					query: DELETE_GROUP_MUTATION,
+					variables,
+					token,
+				}).then((response) => response.data.data),
+			{
+				onSuccess: () => {
+					console.log("Deletion is a Success");
 				},
 			}
 		);

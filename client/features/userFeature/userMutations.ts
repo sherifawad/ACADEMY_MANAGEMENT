@@ -3,12 +3,11 @@ import { useMutation } from "react-query";
 import { userVariables } from "./userTypes";
 
 export const CREATE_USER_MUTATION = `
-    mutation UserRegister($name: String!, $role: Role!, $email: String!, $password: String!, $address: String, $parentsPhones: String, $phone: String, $avatar: String, $groupId: String, $familyName: String, $familyId: String) {
-        userRegister(name: $name, role: $role, email: $email, password: $password, address: $address, parentsPhones: $parentsPhones, phone: $phone, avatar: $avatar, groupId: $groupId, familyName: $familyName, familyId: $familyId) {
+    mutation UserRegister($name: String!, $roleId: Int!, $password: String!, $email: String, $address: String, $parentsPhones: String, $phone: String, $avatar: String, $groupId: String, $familyName: String, $familyId: String) {
+        userRegister(name: $name, roleId: $roleId, password: $password, email: $email, address: $address, parentsPhones: $parentsPhones, phone: $phone, avatar: $avatar, groupId: $groupId, familyName: $familyName, familyId: $familyId) {
             id
         }
     }
-}
 `;
 
 export const UPDATE_USER_MUTATION = `
@@ -19,8 +18,12 @@ export const UPDATE_USER_MUTATION = `
     }
 `;
 
-export const createUserMutation = (variables: userVariables, token = null) =>
-	useMutation(
+export const createUserMutation = (variables: userVariables, token = null) => {
+	console.log(
+		"🚀 ~ file: userMutations.ts ~ line 23 ~ createUserMutation ~ variables",
+		JSON.stringify(variables, undefined, 2)
+	);
+	return useMutation(
 		"createUser",
 		() =>
 			createAxiosService({ query: CREATE_USER_MUTATION, variables, token }).then(
@@ -32,6 +35,7 @@ export const createUserMutation = (variables: userVariables, token = null) =>
 			},
 		}
 	);
+};
 export const updateUserMutation = (variables: userVariables, token = null) =>
 	useMutation(
 		"updateUser",

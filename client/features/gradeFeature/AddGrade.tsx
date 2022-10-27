@@ -1,7 +1,7 @@
 import useAuth from "customHooks/useAuth";
 import { useEffect, useState } from "react";
 import { Grade } from "../../components/GradesListItem";
-import { createGradeMutation, updateGradeMutation } from "./gradeMutations";
+import { createGradeMutation, deleteGradeMutation, updateGradeMutation } from "./gradeMutations";
 
 export interface GradeInitials extends Grade {
 	onProceed: Function;
@@ -29,6 +29,13 @@ function AddGrade({ onProceed, onClose, id, name, isActive }) {
 		accessToken
 	);
 
+	const deleteMutation = deleteGradeMutation(
+		{
+			deleteGradeId: formState.id,
+		},
+		accessToken
+	);
+
 	const updateMutation = updateGradeMutation(
 		{
 			updateGradeId: formState.id,
@@ -47,6 +54,13 @@ function AddGrade({ onProceed, onClose, id, name, isActive }) {
 
 	const proceedAndClose = async (e) => {
 		await submitContact(e);
+		onProceed();
+		onClose();
+	};
+
+	const onDelete = async () => {
+		if (deleteMutation.isLoading) return;
+		await deleteMutation.mutateAsync();
 		onProceed();
 		onClose();
 	};
@@ -93,13 +107,24 @@ function AddGrade({ onProceed, onClose, id, name, isActive }) {
 					</label>
 				</div>
 			</div>
-			<button
-				onClick={proceedAndClose}
-				type="submit"
-				className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-			>
-				{id ? "Edit" : "Add"}
-			</button>
+			<div className="flex gap-2">
+				<button
+					onClick={proceedAndClose}
+					type="submit"
+					className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+				>
+					{id ? "Edit" : "Add"}
+				</button>
+				{id ? (
+					<button
+						type="button"
+						onClick={onDelete}
+						className=" text-white bg-red-500 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+					>
+						Delete
+					</button>
+				) : null}
+			</div>
 		</form>
 	);
 }

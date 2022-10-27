@@ -1,6 +1,6 @@
 export interface user {
 	id?: string | null;
-	role?: string | null;
+	roleId?: number | null;
 	name?: string | null;
 	groupId?: string | null;
 	password?: string | null;
@@ -16,6 +16,7 @@ export interface userInitialProperties {
 	onClose: Function;
 	initialUser?: user;
 	gradeId?: string;
+	roleId?: number;
 	isStudent?: boolean;
 }
 

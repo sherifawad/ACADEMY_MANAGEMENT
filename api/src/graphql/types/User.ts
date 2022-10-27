@@ -364,7 +364,7 @@ export const FilteredUsersQuery = extendType({
 			args: {
 				data: PaginationInputType,
 				isActive: nullable(booleanArg()),
-				// user_role: nullable(list(UserRole)),
+				roleId: nullable(intArg()),
 				family_Id: nullable(stringArg()),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
@@ -380,7 +380,7 @@ export const FilteredUsersQuery = extendType({
 					) {
 						throw new Error("Not Allowed");
 					}
-					const { data, isActive, family_Id } = args;
+					const { data, isActive, family_Id, roleId } = args;
 
 					if (permissionsList.includes("readFamily")) {
 						if (!family_Id || family_Id != user.familyId) {
@@ -389,26 +389,9 @@ export const FilteredUsersQuery = extendType({
 					}
 
 					let where = {};
-					// if (user_role) {
-					// 	const ORConditions: { role: string }[] = [];
-					// 	user_role.forEach((x: any) => {
-					// 		if (x) {
-					// 			switch (user.role) {
-					// 				case "ADMIN":
-					// 					ORConditions.push({ role: x });
-					// 					break;
-					// 				case "USER":
-					// 					if (x === "ADMIN") return;
-					// 					ORConditions.push({ role: x });
-					// 					break;
-
-					// 				default:
-					// 					break;
-					// 			}
-					// 		}
-					// 	});
-					// 	if (ORConditions && ORConditions.length > 0) where = { ...where, OR: ORConditions };
-					// }
+					if (roleId) {
+						where = { ...where, roleId: roleId };
+					}
 					if (family_Id) {
 						where = { ...where, familyId: family_Id };
 					}
@@ -693,6 +676,12 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 					},
 			  }
 			: undefined;
+
+		const role = {
+			connect: {
+				id: roleId,
+			},
+		};
 		const family = familyId
 			? {
 					connect: {
@@ -711,11 +700,6 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 			data: {
 				name,
 				avatar,
-				role: {
-					connect: {
-						id: roleId,
-					},
-				},
 				contact: {
 					create: {
 						...rest,
@@ -723,9 +707,11 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 				},
 				profile,
 				family,
+				role,
 			},
 			include: {
 				contact: true,
+				role: true,
 				profile: groupId ? true : false,
 				family: familyName ? true : false,
 			},
@@ -866,8 +852,8 @@ export const userRegister = extendType({
 			args: {
 				name: nonNull(stringArg()),
 				roleId: nonNull(intArg()),
-				email: nonNull(stringArg()),
 				password: nonNull(stringArg()),
+				email: nullable(stringArg()),
 				address: nullable(stringArg()),
 				parentsPhones: nullable(stringArg()),
 				phone: nullable(stringArg()),
@@ -905,7 +891,7 @@ export const userRegister = extendType({
 						address,
 						phone,
 						parentsPhones,
-						name: name ?? email,
+						name: name,
 						groupId,
 						familyName,
 						familyId,

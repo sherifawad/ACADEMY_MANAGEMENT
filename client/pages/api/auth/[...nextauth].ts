@@ -108,105 +108,114 @@ export const authOptions: NextAuthOptions = {
 		// },
 
 		async jwt({ token, user, profile, account }) {
-			//TODO: pass account data to backend if no user connected add onetime hash then connect else get connected user accessToken
-			// console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ token", token);
-			// console.log("🚀 ~ file: [...nextauth].ts ~ line 64 ~ jwt ~ user", JSON.stringify(user, null, 2));
-			// Initial sign in
-			if (user) {
-				if (account?.provider === "githubLogin") {
-					const { data, error } = await getHubLogin({
-						provider: "github",
-						providerAccountId: account.providerAccountId,
-						type: account.type,
-						name: profile?.name,
-					});
-					// const result = ObjectFlatten(data);
-					if (!error) {
-						const { accessToken, refreshToken, provider, providerAccountId } =
-							(data as any) || {};
-
-						return {
-							...token,
-							user: { ...(data as any)?.user, avatar: (data as any)?.user?.image },
-							provider,
-							providerAccountId,
-							...accessToken,
-							...refreshToken,
-						};
-					}
-				} else if (account?.provider === "githubRegister") {
-					if (user && account && profile) {
-						const providerRegisterData = {
+			try {
+				//TODO: pass account data to backend if no user connected add onetime hash then connect else get connected user accessToken
+				// console.log("🚀 ~ file: [...nextauth].ts ~ line 75 ~ jwt ~ token", token);
+				// console.log("🚀 ~ file: [...nextauth].ts ~ line 64 ~ jwt ~ user", JSON.stringify(user, null, 2));
+				// Initial sign in
+				if (user) {
+					if (account?.provider === "githubLogin") {
+						const { data, error } = await getHubLogin({
 							provider: "github",
-							type: account.type,
 							providerAccountId: account.providerAccountId,
-							token_type: account.tokenType,
-							scope: account.scope,
-							name: profile.name,
-							email: profile.email,
-							image: profile.image,
-						};
-						return {
-							...token,
-							providerRegisterData,
-						};
+							type: account.type,
+							name: profile?.name,
+						});
+						// const result = ObjectFlatten(data);
+						if (!error) {
+							const { accessToken, refreshToken, provider, providerAccountId } =
+								(data as any) || {};
+
+							return {
+								...token,
+								user: { ...(data as any)?.user, avatar: (data as any)?.user?.image },
+								provider,
+								providerAccountId,
+								...accessToken,
+								...refreshToken,
+							};
+						}
+					} else if (account?.provider === "githubRegister") {
+						if (user && account && profile) {
+							const providerRegisterData = {
+								provider: "github",
+								type: account.type,
+								providerAccountId: account.providerAccountId,
+								token_type: account.tokenType,
+								scope: account.scope,
+								name: profile.name,
+								email: profile.email,
+								image: profile.image,
+							};
+							return {
+								...token,
+								providerRegisterData,
+							};
+						}
+					} else if (account?.provider === "credentialsId") {
+						const { accessToken, refreshToken, provider, providerAccountId } =
+							(user as any) || {};
+						if (user?.user) {
+							return {
+								...token,
+								user: { ...(user as any)?.user, avatar: (user as any)?.user?.image },
+								provider,
+								providerAccountId,
+								...accessToken,
+								...refreshToken,
+							};
+						}
 					}
-				} else if (account?.provider === "credentialsId") {
-					const { accessToken, refreshToken, provider, providerAccountId } = (user as any) || {};
-					if (user?.user) {
-						return {
-							...token,
-							user: { ...(user as any)?.user, avatar: (user as any)?.user?.image },
-							provider,
-							providerAccountId,
-							...accessToken,
-							...refreshToken,
-						};
-					}
+					return token;
 				}
+				// if (user?.user) {
+				// 	return {
+				// 		...token,
+				// 		user: { ...(user as any)?.user, avatar: (user as any)?.user?.image },
+				// 		provider,
+				// 		providerAccountId,
+				// 		...accessToken,
+				// 		...refreshToken,
+				// 	};
+				// }
+				// Return previous token if the access token has not expired yet
+
+				// add 10 seconds from currentTime
+				const afterNow = new Date().getTime() + 10 * 1000;
+				if (afterNow < Number(token.accessTokenExpiresIn) * 1000) {
+					// console.log("✅ValidToken", new Date().toLocaleTimeString());
+					return token;
+				}
+				// console.log("❌InValidToken", new Date().toLocaleTimeString());
+
+				// Access token has expired, try to update it
+				return await refreshAccessToken(token);
+			} catch (error) {
+				console.log("🚀 ~ file: [...nextauth].ts ~ line 194 ~ jwt ~ error", error);
 				return token;
 			}
-			// if (user?.user) {
-			// 	return {
-			// 		...token,
-			// 		user: { ...(user as any)?.user, avatar: (user as any)?.user?.image },
-			// 		provider,
-			// 		providerAccountId,
-			// 		...accessToken,
-			// 		...refreshToken,
-			// 	};
-			// }
-			// Return previous token if the access token has not expired yet
-
-			// add 10 seconds from currentTime
-			const afterNow = new Date().getTime() + 10 * 1000;
-			if (afterNow < Number(token.accessTokenExpiresIn) * 1000) {
-				// console.log("✅ValidToken", new Date().toLocaleTimeString());
-				return token;
-			}
-			// console.log("❌InValidToken", new Date().toLocaleTimeString());
-
-			// Access token has expired, try to update it
-			return await refreshAccessToken(token);
 		},
 		async session({ session, token, user }) {
-			// Send properties to the client, like an access_token from a provider.
-			session.user = token.user || null;
-			session.account = token.userAccount || null;
-			session.profile = token.userProfile || null;
-			session.accessToken = token.accessToken || null;
-			session.error = token.error || null;
-			session.providerRegisterData = token.providerRegisterData || null;
+			try {
+				// Send properties to the client, like an access_token from a provider.
+				session.user = token.user || null;
+				session.account = token.userAccount || null;
+				session.profile = token.userProfile || null;
+				session.accessToken = token.accessToken || null;
+				session.error = token.error || null;
+				session.providerRegisterData = token.providerRegisterData || null;
 
-
-			// const storageName = localStorage.getItem("name");
-			// console.log("🚀 ~ file: [...nextauth].ts ~ line 208 ~ session ~ storageName", storageName);
-			// console.log("🚀 ~ file: [...nextauth].ts ~ line 104 ~ session ~ session", session);
-			return session;
+				// const storageName = localStorage.getItem("name");
+				// console.log("🚀 ~ file: [...nextauth].ts ~ line 208 ~ session ~ storageName", storageName);
+				// console.log("🚀 ~ file: [...nextauth].ts ~ line 104 ~ session ~ session", session);
+				return session;
+			} catch (error) {
+				console.log("🚀 ~ file: [...nextauth].ts ~ line 215 ~ session ~ error", error);
+			}
 		},
 	},
 	events: {
-		async signIn({ account, profile }) {},
+		// async signIn({ account, profile }) {},
 		async signOut({ token }) {
 			try {
 				// console.log(
