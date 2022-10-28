@@ -24,7 +24,7 @@ function AddModel({ children, isOpened, onClose, title }) {
 			className="modal fade w-max h-max outline-none overflow-x-hidden overflow-y-auto bg-transparent"
 		>
 			<div
-				className="modal-dialog modal-dialog-centered relative w-auto pointer-events-none"
+				className="modal-dialog modal-dialog-centered relative w-auto pointer-events-none bg-white"
 				onClick={preventAutoClose}
 			>
 				<div className="relative rounded-lg shadow-md shadow-slate-500 dark:bg-gray-700 modal-content border-none flex flex-col w-full pointer-events-auto  bg-clip-padding outline-none text-current md:min-w-[400px]">

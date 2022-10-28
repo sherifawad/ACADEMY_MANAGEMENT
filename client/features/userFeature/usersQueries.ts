@@ -153,6 +153,35 @@ export const GET_STUDENTS_LIST = `
     }
 `;
 
+export const GET_USERS_BY_PARENT_PHONES_LIST = `
+    query FilteredUsersByPhoneQuery($parentPhones: String!) {
+        FilteredUsersByPhoneQuery(parentPhones: $parentPhones) {
+            id
+            name
+            family {
+                familyName
+                id
+            }
+        }
+    }
+`;
+
+export const usersByPhonesListQuery = async (variables: userVariables, token = null) => {
+	try {
+		const {
+			data: {
+				data: { FilteredUsersByPhoneQuery },
+			},
+		} = await createAxiosService({ query: GET_USERS_BY_PARENT_PHONES_LIST, variables, token });
+
+		return { FilteredUsersByPhoneQuery, error: null };
+	} catch (error) {
+		return {
+			error: error.message,
+		};
+	}
+};
+
 export const usersByRolesListQuery = async (variables: { userRole: string[] }, token = null) => {
 	try {
 		const {

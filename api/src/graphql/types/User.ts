@@ -437,6 +437,52 @@ export const FilteredUsersQuery = extendType({
 	},
 });
 
+export const FilteredUsersByPhoneQuery = extendType({
+	type: "Query",
+	definition(t) {
+		t.nullable.list.field("FilteredUsersByPhoneQuery", {
+			type: "User",
+			args: {
+				parentPhones: nonNull(stringArg()),
+			},
+			resolve: async (_parent, args, { prisma, user }) => {
+				try {
+					const { role = null } = user;
+					if (!role) throw new Error("Not Allowed");
+					const permissionsList = await getDomainPermissions(role.id, DomainsIds.USER);
+					if (!permissionsList) throw new Error("Not Allowed");
+					if (
+						!permissionsList.includes("full") &&
+						!permissionsList.includes("read") &&
+						!permissionsList.includes("readFamily")
+					) {
+						throw new Error("Not Allowed");
+					}
+					const { parentPhones } = args;
+
+					// if (permissionsList.includes("readFamily")) {
+					// 	if (!family_Id || family_Id != user.familyId) {
+					// 		throw new Error("Not Allowed");
+					// 	}
+					// }
+
+					return await prisma.user.findMany({
+						where: {
+							contact: {
+								parentsPhones: {
+									contains: parentPhones,
+								},
+							},
+						},
+					});
+				} catch (error) {
+					return Promise.reject("error");
+				}
+			},
+		});
+	},
+});
+
 export const GroupStudentsQuery = extendType({
 	type: "Query",
 	definition(t) {

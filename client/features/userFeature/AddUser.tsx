@@ -1,4 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import MultiSelect from "components/common/MultiSelection";
 import SingleSelection from "components/common/SingleSelection";
 import GradeGroupSelect from "components/GradeGroupSelect";
 import LabelInput from "components/inputs/LabelInput";
@@ -8,7 +9,9 @@ import RoleSelection from "features/rolesFeature/RoleSelection";
 import { rolesListQuery } from "features/rolesFeature/rolesQueries";
 import dynamic from "next/dynamic";
 import { FormEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import async from "react-select/dist/declarations/src/async";
 import { createUserMutation, CREATE_USER_MUTATION, updateUserMutation } from "./userMutations";
+import { usersByPhonesListQuery } from "./usersQueries";
 import { userInitialProperties } from "./userTypes";
 
 function AddUser({
@@ -27,6 +30,7 @@ function AddUser({
 
 	const mainRef = useRef();
 
+	const [_familyIds, setFamilyIds] = useState<{ name: string; id: string }[]>([]);
 	const [_roleId, setRoleId] = useState<number>(roleId);
 	const [_groupId, setGroupId] = useState(groupId);
 	const [_gradeId, setGradeId] = useState(gradeId);
@@ -74,6 +78,12 @@ function AddUser({
 		accessToken
 	);
 
+	const { isLoading, data: { FilteredUsersByPhoneQuery } = {} } = useQuery(
+		["phones", formState.phone],
+		async () => await usersByPhonesListQuery({ parentPhones: formState.phone }),
+		{ enabled: formState.phone?.length === 11 && _roleId === 4 }
+	);
+
 	const submitContact = async () => {
 		if (createMutation.isLoading) return;
 		if (updateMutation.isLoading) return;
@@ -100,6 +110,18 @@ function AddUser({
 	);
 
 	const roleSelect = useMemo(() => <RoleSelection roleId={roleId} setRoleId={setRoleId} />, [roleId]);
+
+	const familySelect = useMemo(
+		() => (
+			<MultiSelect
+				label="SelectFamily"
+				list={FilteredUsersByPhoneQuery}
+				setSelectedValues={setFamilyIds}
+				selectedValues={[]}
+			/>
+		),
+		[FilteredUsersByPhoneQuery]
+	);
 
 	return (
 		<form onSubmit={proceedAndClose} method="dialog" className="space-y-6" action="#" ref={mainRef}>
@@ -195,6 +217,7 @@ function AddUser({
 				}
 			/>
 			{_roleId === 5 ? groupSelect : null}
+			{formState.phone?.length === 11 && _roleId === 4 ? familySelect : null}
 			{/* {formState.error?.length > 0 && <p className="text-red-600">{formState.error}</p>} */}
 			<button
 				type="submit"

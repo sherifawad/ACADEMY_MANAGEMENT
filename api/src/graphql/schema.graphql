@@ -210,6 +210,7 @@ type Query {
   Exam(id: String!): Exam!
   Exams: [Exam]!
   FilteredUsers(data: PaginationInputType, family_Id: String, isActive: Boolean, roleId: Int): UsersResponse
+  FilteredUsersByPhoneQuery(parentPhones: String!): [User]
   Grade(id: String!): Grade!
   Grades: [Grade]!
   Group(id: String!): Group!
