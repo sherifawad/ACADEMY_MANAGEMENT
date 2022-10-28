@@ -466,13 +466,27 @@ export const FilteredUsersByPhoneQuery = extendType({
 					// 	}
 					// }
 
-					return await prisma.user.findMany({
-						where: {
-							contact: {
-								parentsPhones: {
-									contains: parentPhones,
+					const modifiedList = parentPhones
+						.replace(/\s+/g, "")
+						.replace(/\D/g, "")
+						.match(/.{1,11}/g) as string[];
+					const matchers = modifiedList?.reduce((acc: any[], current: string) => {
+						if (current.length !== 11) return acc;
+						return [
+							...acc,
+							{
+								contact: {
+									parentsPhones: {
+										contains: current,
+									},
 								},
 							},
+						];
+					}, []);
+
+					return await prisma.user.findMany({
+						where: {
+							OR: matchers,
 						},
 					});
 				} catch (error) {

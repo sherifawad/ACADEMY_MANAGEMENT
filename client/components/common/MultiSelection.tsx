@@ -7,18 +7,15 @@ import StateManagedSelect from "react-select/dist/declarations/src/stateManager"
 type props = {
 	label: string;
 	list: { id: string; name: string; family: { familyName: string; id: string } }[];
-	selectedValues: any[];
-	setSelectedValues: Dispatch<SetStateAction<any>>;
+	selectedValues: { label: string; value: string }[];
+	onChange: (newValue: MultiValue<any>, actionMeta: ActionMeta<any>) => void;
 };
 
-const MultiSelect = ({ selectedValues, setSelectedValues, list, label }: props) => {
-	console.log("🚀 ~ file: MultiSelection.tsx ~ line 18 ~ MultiSelect ~ list", list);
+const MultiSelect = ({ selectedValues, onChange, list, label }: props) => {
 	const [optionList, setOptionList] = useState([]);
-	const onChange = (newValue: MultiValue<any>, actionMeta: ActionMeta<any>) => {
-		setSelectedValues(newValue);
-	};
-
-	const selectRef = useRef();
+	// const onChange = (newValue: MultiValue<any>, actionMeta: ActionMeta<any>) => {
+	// 	setSelectedValues(newValue);
+	// };
 
 	useEffect(() => {
 		if (list?.length < 1) return;
@@ -35,10 +32,10 @@ const MultiSelect = ({ selectedValues, setSelectedValues, list, label }: props) 
 				{label}
 			</label>
 			<Select
-				ref={selectRef}
 				isMulti
-				// onChange={onChange}
-				// value={selectedValues}
+				closeMenuOnSelect={false}
+				onChange={onChange}
+				value={selectedValues}
 				options={optionList}
 			/>
 		</div>
