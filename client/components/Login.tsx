@@ -122,7 +122,7 @@ function Login({ setLogin }) {
 			</div>
 			<div className="flex">
 				<button
-					className="mr-5 bg-gray-200  hover:bg-slate-500 border border-gray-400  text-blue-600 font-bold py-2 px-6 rounded-lg children:hover:text-white"
+					className="mr-5 bg-gray-200  hover:bg-slate-500 border border-gray-400  text-blue-600 font-bold py-2 px-6 rounded-lg child:hover:text-white"
 					onClick={gitHubLogIn}
 				>
 					<AiFillGithub className="text-black" />

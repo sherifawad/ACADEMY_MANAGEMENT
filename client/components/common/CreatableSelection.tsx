@@ -46,6 +46,7 @@ const CreatableSelection = () => {
 			inputValue={inputValue}
 			isClearable
 			isMulti
+			classNamePrefix="react-select"
 			menuIsOpen={false}
 			onChange={(newValue) => setValue(newValue)}
 			onInputChange={inputChange}

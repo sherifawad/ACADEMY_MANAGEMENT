@@ -19,7 +19,8 @@ module.exports = {
 	plugins: [
 		require("tailwindcss-logical"),
 		function ({ addVariant }) {
-			addVariant("children", "& > *");
+			addVariant("child", "& > *");
+			addVariant("children", "& *");
 		},
 	],
 };
