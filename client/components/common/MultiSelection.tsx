@@ -22,7 +22,7 @@ const MultiSelect = ({ selectedValues, onChange, list, label }: props) => {
 		const result = list?.map((item) => {
 			return { label: item.name, value: item.id };
 		});
-		console.log("🚀 ~ file: MultiSelection.tsx ~ line 26 ~ result ~ result", result);
+		// console.log("🚀 ~ file: MultiSelection.tsx ~ line 26 ~ result ~ result", result);
 		setOptionList(result);
 	}, [list]);
 

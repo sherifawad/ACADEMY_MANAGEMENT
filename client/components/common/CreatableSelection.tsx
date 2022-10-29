@@ -1,11 +1,11 @@
-import { KeyboardEventHandler, useState } from "react";
+import { Dispatch, KeyboardEventHandler, SetStateAction, useEffect, useState } from "react";
 import CreatableSelect from "react-select/creatable";
 
 const components = {
 	DropdownIndicator: null,
 };
 
-interface Option {
+export interface CreatableSelectionOption {
 	readonly label: string;
 	readonly value: string;
 }
@@ -14,14 +14,26 @@ const createOption = (label: string) => ({
 	label,
 	value: label,
 });
-type Props = {};
+type Props = {
+	placeholder?: string;
+	value: CreatableSelectionOption[];
+	onChange: (newValue: CreatableSelectionOption[]) => void;
+	setValue: Dispatch<SetStateAction<CreatableSelectionOption[]>>;
+};
 
-const CreatableSelection = () => {
+// .react-select__control{
+// 	@apply children:bg-transparent !bg-gray-50 border !border-gray-300 text-gray-900 !rounded-lg focus:!ring-blue-500 focus:!border-blue-500 block w-full p-2.5 dark:!bg-gray-600 dark:!border-gray-500 dark:!placeholder-gray-400 dark:!text-white children:p-0;
+
+// }
+// .react-select__placeholder {
+// 	@apply  !text-gray-400 bg-transparent !text-sm dark:!text-gray-400;
+
+// }
+
+const CreatableSelection = ({ value, onChange, setValue, placeholder }: Props) => {
 	const [inputValue, setInputValue] = useState("");
-	const [value, setValue] = useState<readonly Option[]>([]);
 
 	const handleKeyDown: KeyboardEventHandler = (event) => {
-		console.log("🚀 ~ file: CreatableSelection.tsx ~ line 24 ~ CreatableSelection ~ event", event.key);
 		if (!inputValue) return;
 		if (inputValue.length !== 11) return;
 		switch (event.key) {
@@ -29,7 +41,9 @@ const CreatableSelection = () => {
 			case "Tab":
 			case ".":
 			case ",":
-				setValue((prev) => [...prev, createOption(inputValue)]);
+				setValue((prev) =>
+					prev.some((x) => x.value === inputValue) ? prev : [...prev, createOption(inputValue)]
+				);
 				setInputValue("");
 				event.preventDefault();
 		}
@@ -48,10 +62,10 @@ const CreatableSelection = () => {
 			isMulti
 			classNamePrefix="react-select"
 			menuIsOpen={false}
-			onChange={(newValue) => setValue(newValue)}
+			onChange={onChange}
 			onInputChange={inputChange}
 			onKeyDown={handleKeyDown}
-			placeholder="Add parentsPhone and press enter..."
+			placeholder={placeholder}
 			value={value}
 		/>
 	);

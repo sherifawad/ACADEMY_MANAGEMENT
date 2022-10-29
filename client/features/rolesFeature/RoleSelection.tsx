@@ -48,7 +48,6 @@ const RoleSelection = ({ roleId, setRoleId }: Props) => {
 					{item.name}
 				</option>
 			))}
-			title="roles"
 			value={roleId}
 			onChange={onChange}
 		/>

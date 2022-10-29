@@ -443,7 +443,8 @@ export const FilteredUsersByPhoneQuery = extendType({
 		t.nullable.list.field("FilteredUsersByPhoneQuery", {
 			type: "User",
 			args: {
-				parentPhones: nonNull(stringArg()),
+				phone: nonNull(stringArg()),
+				roleId: nonNull(intArg()),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
 				try {
@@ -458,7 +459,7 @@ export const FilteredUsersByPhoneQuery = extendType({
 					) {
 						throw new Error("Not Allowed");
 					}
-					const { parentPhones } = args;
+					const { phone, roleId } = args;
 
 					// if (permissionsList.includes("readFamily")) {
 					// 	if (!family_Id || family_Id != user.familyId) {
@@ -466,22 +467,39 @@ export const FilteredUsersByPhoneQuery = extendType({
 					// 	}
 					// }
 
-					const modifiedList = parentPhones
+					const modifiedList = phone
 						.replace(/\s+/g, "")
 						.replace(/\D/g, "")
 						.match(/.{1,11}/g) as string[];
 					const matchers = modifiedList?.reduce((acc: any[], current: string) => {
 						if (current.length !== 11) return acc;
-						return [
-							...acc,
-							{
-								contact: {
-									parentsPhones: {
-										contains: current,
+						switch (roleId) {
+							case 4:
+								return [
+									...acc,
+									{
+										contact: {
+											parentsPhones: {
+												contains: current,
+											},
+										},
 									},
-								},
-							},
-						];
+								];
+							case 5:
+								return [
+									...acc,
+									{
+										contact: {
+											phone: {
+												equals: current,
+											},
+										},
+									},
+								];
+
+							default:
+								return acc;
+						}
 					}, []);
 
 					return await prisma.user.findMany({

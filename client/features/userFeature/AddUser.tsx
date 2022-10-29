@@ -1,9 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import CreatableSelection from "components/common/CreatableSelection";
+import CreatableSelection, { CreatableSelectionOption } from "components/common/CreatableSelection";
 import MultiSelect from "components/common/MultiSelection";
 import SingleSelection from "components/common/SingleSelection";
 import GradeGroupSelect from "components/GradeGroupSelect";
 import LabelInput from "components/inputs/LabelInput";
+import LabelWithChildren from "components/inputs/LabelWithChildren";
 import { createAxiosService } from "core/utils";
 import useAuth from "customHooks/useAuth";
 import RoleSelection from "features/rolesFeature/RoleSelection";
@@ -33,6 +34,7 @@ function AddUser({
 	const mainRef = useRef();
 
 	const [_familyIds, setFamilyIds] = useState<{ label: string; value: string }[]>([]);
+	const [parentPhones, setParentPhones] = useState<CreatableSelectionOption[]>([]);
 	const [_roleId, setRoleId] = useState<number>(roleId);
 	const [_groupId, setGroupId] = useState(groupId);
 	const [_gradeId, setGradeId] = useState(gradeId);
@@ -82,8 +84,12 @@ function AddUser({
 
 	const { isLoading, data: { FilteredUsersByPhoneQuery } = {} } = useQuery(
 		["phones", formState.phone],
-		async () => await usersByPhonesListQuery({ parentPhones: formState.phone }),
-		{ enabled: formState.phone?.length === 11 && _roleId === 4 }
+		async () => await usersByPhonesListQuery({ phone: formState.phone, roleId: _roleId }),
+		{
+			enabled:
+				(formState.phone?.length === 11 && _roleId === 4) ||
+				(formState.parentsPhones?.length >= 11 && _roleId === 5),
+		}
 	);
 
 	const onMultiChange = useCallback((newValue: { label: string; value: string }[], _actionMeta) => {
@@ -116,7 +122,25 @@ function AddUser({
 		[groupId, gradeId]
 	);
 
-	const roleSelect = useMemo(() => <RoleSelection roleId={roleId} setRoleId={setRoleId} />, [roleId]);
+	const roleSelect = useMemo(
+		() => (
+			<LabelWithChildren label="role">
+				<RoleSelection roleId={roleId} setRoleId={setRoleId} />
+			</LabelWithChildren>
+		),
+		[roleId]
+	);
+
+	const parentPhonesComponent = useMemo(
+		() => (
+			<CreatableSelection
+				value={parentPhones}
+				onChange={(newValue) => setParentPhones(newValue)}
+				setValue={setParentPhones}
+			/>
+		),
+		[parentPhones]
+	);
 
 	const familySelect = useMemo(
 		() => (
@@ -183,7 +207,7 @@ function AddUser({
 					})
 				}
 			/>
-			<CreatableSelection />
+			<LabelWithChildren label="parentsPhones">{parentPhonesComponent}</LabelWithChildren>
 			{roleSelect}
 			{_roleId === 5 ? (
 				<LabelInput
