@@ -138,3 +138,25 @@ export const checkSession = async (req: any, res: any, authOptions: any) => {
 	}
 	return { session };
 };
+
+export const getDividesNumbersFromString = (stringValue: string | null): string[] | null => {
+	if (!stringValue) return null;
+	return (
+		stringValue
+			//remove white space
+			.replace(/\s+/g, "")
+			// get only numbers
+			.replace(/\D/g, "")
+			// split every 11 cahrcter
+			.match(/.{1,11}/g)
+	);
+};
+
+export const getOptionsListAsString = (list: { label: string; value: string }[]): string[] =>
+	list?.map((item) => item.value);
+
+export const convertFromListToString = (list: { label: string; value: string }[]): string => {
+	const data = list?.map((item) => item.value)?.toString();
+	const result = data.replace(",", " ");
+	return result;
+};

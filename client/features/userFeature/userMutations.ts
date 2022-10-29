@@ -3,8 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 import { userVariables } from "./userTypes";
 
 export const CREATE_USER_MUTATION = `
-    mutation UserRegister($name: String!, $roleId: Int!, $password: String!, $email: String, $address: String, $parentsPhones: String, $phone: String, $avatar: String, $groupId: String, $familyName: String, $familyId: String) {
-        userRegister(name: $name, roleId: $roleId, password: $password, email: $email, address: $address, parentsPhones: $parentsPhones, phone: $phone, avatar: $avatar, groupId: $groupId, familyName: $familyName, familyId: $familyId) {
+    mutation Mutation($name: String!, $roleId: Int!, $password: String!, $email: String, $address: String, $parentsPhones: String, $phone: String, $avatar: String, $groupId: String, $familyName: String, $familyId: String, $familyListIds: [String]) {
+        userRegister(name: $name, roleId: $roleId, password: $password, email: $email, address: $address, parentsPhones: $parentsPhones, phone: $phone, avatar: $avatar, groupId: $groupId, familyName: $familyName, familyId: $familyId, familyListIds: $familyListIds) {
             id
         }
     }

@@ -19,6 +19,19 @@ export const GET_USERS_BY_ROLES = `
     }
 `;
 
+export const GET_USERS_BY_FAMILY_NAME = `
+    query Query($familyName: String, $roleId: Int) {
+        FilteredUsers(familyName: $familyName, roleId: $roleId) {
+        list {
+            family {
+                familyName
+                id
+            }
+        }
+        }
+    }
+`;
+
 export const GET_STUDENT_DETAILS = `
     query Query($userId: String!, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject) {
         User(id: $userId) {
@@ -154,17 +167,33 @@ export const GET_STUDENTS_LIST = `
 `;
 
 export const GET_USERS_BY_PARENT_PHONES_LIST = `
-    query Query($phone: String!, $roleId: Int!) {
-        FilteredUsersByPhoneQuery(phone: $phone, roleId: $roleId) {
+    query FilteredUsersByPhoneQuery($phones: [String]!, $roleId: Int!) {
+        FilteredUsersByPhoneQuery(phones: $phones, roleId: $roleId) {
             id
             name
             family {
-                familyName
                 id
+                familyName
             }
         }
     }
 `;
+
+export const usersByFamilyNameListQuery = async (variables: userVariables, token = null) => {
+	try {
+		const {
+			data: {
+				data: { FilteredUsers: { list = {} } = {} },
+			},
+		} = await createAxiosService({ query: GET_USERS_BY_FAMILY_NAME, variables, token });
+
+		return { list, error: null };
+	} catch (error) {
+		return {
+			error: error.message,
+		};
+	}
+};
 
 export const usersByPhonesListQuery = async (variables: userVariables, token = null) => {
 	try {

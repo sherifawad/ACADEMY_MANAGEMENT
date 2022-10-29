@@ -10,7 +10,7 @@ export interface CreatableSelectionOption {
 	readonly value: string;
 }
 
-const createOption = (label: string) => ({
+export const createOption = (label: string) => ({
 	label,
 	value: label,
 });

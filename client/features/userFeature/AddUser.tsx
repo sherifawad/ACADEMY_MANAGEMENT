@@ -1,30 +1,33 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import CreatableSelection, { CreatableSelectionOption } from "components/common/CreatableSelection";
+import CreatableSelection, {
+	CreatableSelectionOption,
+	createOption,
+} from "components/common/CreatableSelection";
 import MultiSelect from "components/common/MultiSelection";
 import SingleSelection from "components/common/SingleSelection";
 import GradeGroupSelect from "components/GradeGroupSelect";
 import LabelInput from "components/inputs/LabelInput";
 import LabelWithChildren from "components/inputs/LabelWithChildren";
-import { createAxiosService } from "core/utils";
+import AsyncCreatableSelect from "react-select/async-creatable";
+import {
+	convertFromListToString,
+	createAxiosService,
+	getDividesNumbersFromString,
+	getOptionsListAsString,
+} from "core/utils";
 import useAuth from "customHooks/useAuth";
 import RoleSelection from "features/rolesFeature/RoleSelection";
 import { rolesListQuery } from "features/rolesFeature/rolesQueries";
 import dynamic from "next/dynamic";
+import { stringify } from "querystring";
 import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MultiValue } from "react-select";
 import async from "react-select/dist/declarations/src/async";
 import { createUserMutation, CREATE_USER_MUTATION, updateUserMutation } from "./userMutations";
-import { usersByPhonesListQuery } from "./usersQueries";
+import { usersByFamilyNameListQuery, usersByPhonesListQuery } from "./usersQueries";
 import { userInitialProperties } from "./userTypes";
 
-function AddUser({
-	onProceed,
-	onClose,
-	initialUser,
-	roleId,
-	gradeId,
-	isStudent = true,
-}: userInitialProperties) {
+function AddUser({ onProceed, onClose, initialUser, roleId, gradeId }: userInitialProperties) {
 	console.log("🚀 ~ file: AddUser.tsx ~ line 15 ~ AddUser");
 	const { accessToken } = useAuth();
 
@@ -33,8 +36,10 @@ function AddUser({
 
 	const mainRef = useRef();
 
+	const [_family, setFamily] = useState<{ label: string; value: string }>();
 	const [_familyIds, setFamilyIds] = useState<{ label: string; value: string }[]>([]);
-	const [parentPhones, setParentPhones] = useState<CreatableSelectionOption[]>([]);
+	const [_parentPhones, setParentPhones] = useState<CreatableSelectionOption[]>([]);
+	const [_phones, setPhones] = useState<CreatableSelectionOption[]>([]);
 	const [_roleId, setRoleId] = useState<number>(roleId);
 	const [_groupId, setGroupId] = useState(groupId);
 	const [_gradeId, setGradeId] = useState(gradeId);
@@ -44,8 +49,6 @@ function AddUser({
 		email: null,
 		password: null,
 		name: null,
-		phone: null,
-		parentsPhones: null,
 		address: null,
 		familyId: null,
 		familyName: null,
@@ -62,18 +65,48 @@ function AddUser({
 			...formState,
 			name: name ?? null,
 			email: email ?? null,
-			phone: phone ?? null,
-			parentsPhones: parentsPhones ?? null,
 			address: address ?? null,
 			avatar: avatar ?? null,
-			familyId: family?.id ?? null,
-			familyName: family?.familyName ?? null,
 		});
-	}, [email, phone, address, parentsPhones, name, groupId, isActive, avatar, family]);
+	}, [email, address, name, groupId, isActive, avatar]);
+
+	useEffect(() => {
+		if (typeof parentsPhones !== "string" || parentsPhones.length < 1) return;
+		const list = getDividesNumbersFromString(parentsPhones);
+		const result = list?.map((item) => {
+			return createOption(item);
+		});
+		if (result?.length < 1) return;
+		setParentPhones(result);
+	}, [parentsPhones]);
+
+	useEffect(() => {
+		if (typeof phone !== "string" || phone.length < 1) return;
+		const list = getDividesNumbersFromString(phone);
+		const result = list?.map((item) => {
+			return createOption(item);
+		});
+		if (result?.length < 1) return;
+		setPhones(result);
+	}, [phone]);
+
+	useEffect(() => {
+		if (!family) return;
+		setFamily({ label: family.familyName, value: family.id });
+	}, [family]);
 
 	//TODO: stop calling every render
 	const createMutation = createUserMutation(
-		{ ...formState, groupId: _groupId, roleId: _roleId, avatar: null },
+		{
+			...formState,
+			groupId: _groupId,
+			roleId: _roleId,
+			avatar: null,
+			phone: convertFromListToString(_phones),
+			parentsPhones: convertFromListToString(_parentPhones),
+			familyListIds: getOptionsListAsString(_familyIds),
+			familyId: _family?.value ?? null,
+		},
 		accessToken
 	);
 
@@ -83,17 +116,30 @@ function AddUser({
 	);
 
 	const { isLoading, data: { FilteredUsersByPhoneQuery } = {} } = useQuery(
-		["phones", formState.phone],
-		async () => await usersByPhonesListQuery({ phone: formState.phone, roleId: _roleId }),
+		["phones", _phones, _parentPhones],
+		async () => {
+			switch (_roleId) {
+				case 4:
+					return await usersByPhonesListQuery({
+						phones: getOptionsListAsString(_phones),
+						roleId: 4,
+					});
+				case 5:
+					return await usersByPhonesListQuery({
+						phones: getOptionsListAsString(_parentPhones),
+						roleId: 5,
+					});
+
+				default:
+					return { FilteredUsersByPhoneQuery: [] };
+			}
+		},
 		{
-			enabled:
-				(formState.phone?.length === 11 && _roleId === 4) ||
-				(formState.parentsPhones?.length >= 11 && _roleId === 5),
+			enabled: (_phones?.length > 0 && _roleId === 4) || (_parentPhones?.length > 0 && _roleId === 5),
 		}
 	);
 
 	const onMultiChange = useCallback((newValue: { label: string; value: string }[], _actionMeta) => {
-		console.log("🚀 ~ file: AddUser.tsx ~ line 89 ~ onMultiChange ~ newValue", newValue);
 		setFamilyIds(newValue);
 	}, []);
 
@@ -134,12 +180,23 @@ function AddUser({
 	const parentPhonesComponent = useMemo(
 		() => (
 			<CreatableSelection
-				value={parentPhones}
+				value={_parentPhones}
 				onChange={(newValue) => setParentPhones(newValue)}
 				setValue={setParentPhones}
 			/>
 		),
-		[parentPhones]
+		[_parentPhones]
+	);
+
+	const phonesComponent = useMemo(
+		() => (
+			<CreatableSelection
+				value={_phones}
+				onChange={(newValue) => setPhones(newValue)}
+				setValue={setPhones}
+			/>
+		),
+		[_phones]
 	);
 
 	const familySelect = useMemo(
@@ -153,6 +210,21 @@ function AddUser({
 		),
 		[FilteredUsersByPhoneQuery, _familyIds]
 	);
+
+	const loadOptions = async (inputValue: string) => {
+		if (inputValue.length < 3) return;
+		const { list } = await usersByFamilyNameListQuery({ roleId: 4, familyName: inputValue }, accessToken);
+
+		if (!list || list.length < 1) return;
+
+		return (list as { family: { familyName: string; id: string } }[]).map((item) => {
+			return { label: item.family.familyName, value: item.family.id };
+		});
+	};
+
+	const onFamilyChange = (newValue: CreatableSelectionOption) => {
+		setFamily(newValue);
+	};
 
 	return (
 		<form method="dialog" className="space-y-6" action="#" ref={mainRef}>
@@ -171,7 +243,7 @@ function AddUser({
 			/>
 			<LabelInput
 				name={"name"}
-				label={"Your name"}
+				label={"Full name"}
 				placeholder={"Ahmed Mohammed"}
 				value={formState?.name}
 				onChange={(e) =>
@@ -181,47 +253,24 @@ function AddUser({
 					})
 				}
 			/>
-			{isStudent && (
-				<LabelInput
-					name={"familyName"}
-					label={"Your Family Name"}
-					placeholder={"Ibn Nas"}
-					value={formState?.familyName}
-					onChange={(e) =>
-						setFormState({
-							...formState,
-							familyName: e.target.value,
-						})
-					}
-				/>
-			)}
-			<LabelInput
-				name={"phone"}
-				label={"Your phone"}
-				placeholder={"01xxxxxxxxxx"}
-				value={formState?.phone}
-				onChange={(e) =>
-					setFormState({
-						...formState,
-						phone: e.target.value,
-					})
-				}
-			/>
-			<LabelWithChildren label="parentsPhones">{parentPhonesComponent}</LabelWithChildren>
+
+			<LabelWithChildren label="Phones">{phonesComponent}</LabelWithChildren>
 			{roleSelect}
+
+			{_roleId === 4 ? (
+				<LabelWithChildren label="familyName">
+					<AsyncCreatableSelect
+						isClearable
+						cacheOptions
+						defaultOptions
+						loadOptions={loadOptions}
+						value={_family}
+						onChange={onFamilyChange}
+					/>
+				</LabelWithChildren>
+			) : null}
 			{_roleId === 5 ? (
-				<LabelInput
-					name={"parentPhone"}
-					label={"Your parentPhone"}
-					placeholder={"01xxxxxxxxxx"}
-					value={formState?.parentsPhones}
-					onChange={(e) =>
-						setFormState({
-							...formState,
-							parentsPhones: e.target.value,
-						})
-					}
-				/>
+				<LabelWithChildren label="parentsPhones">{parentPhonesComponent}</LabelWithChildren>
 			) : null}
 
 			<LabelInput
@@ -249,7 +298,9 @@ function AddUser({
 				}
 			/>
 			{_roleId === 5 ? groupSelect : null}
-			{formState.phone?.length === 11 && _roleId === 4 ? familySelect : null}
+			{(_phones?.length > 0 && _roleId === 4) || (_parentPhones?.length > 0 && _roleId === 5)
+				? familySelect
+				: null}
 			{/* {formState.error?.length > 0 && <p className="text-red-600">{formState.error}</p>} */}
 			<button
 				type="button"

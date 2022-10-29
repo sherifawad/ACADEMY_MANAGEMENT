@@ -366,6 +366,7 @@ export const FilteredUsersQuery = extendType({
 				isActive: nullable(booleanArg()),
 				roleId: nullable(intArg()),
 				family_Id: nullable(stringArg()),
+				familyName: nullable(stringArg()),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
 				try {
@@ -380,7 +381,7 @@ export const FilteredUsersQuery = extendType({
 					) {
 						throw new Error("Not Allowed");
 					}
-					const { data, isActive, family_Id, roleId } = args;
+					const { data, isActive, family_Id, roleId, familyName } = args;
 
 					if (permissionsList.includes("readFamily")) {
 						if (!family_Id || family_Id != user.familyId) {
@@ -394,6 +395,17 @@ export const FilteredUsersQuery = extendType({
 					}
 					if (family_Id) {
 						where = { ...where, familyId: family_Id };
+					}
+					if (familyName) {
+						where = {
+							...where,
+							family: {
+								familyName: {
+									contains: familyName,
+									mode: "insensitive",
+								},
+							},
+						};
 					}
 					if (isActive) {
 						where = { ...where, isActive };
@@ -443,7 +455,7 @@ export const FilteredUsersByPhoneQuery = extendType({
 		t.nullable.list.field("FilteredUsersByPhoneQuery", {
 			type: "User",
 			args: {
-				phone: nonNull(stringArg()),
+				phones: nonNull(list(stringArg())),
 				roleId: nonNull(intArg()),
 			},
 			resolve: async (_parent, args, { prisma, user }) => {
@@ -459,7 +471,7 @@ export const FilteredUsersByPhoneQuery = extendType({
 					) {
 						throw new Error("Not Allowed");
 					}
-					const { phone, roleId } = args;
+					const { phones, roleId } = args;
 
 					// if (permissionsList.includes("readFamily")) {
 					// 	if (!family_Id || family_Id != user.familyId) {
@@ -467,11 +479,11 @@ export const FilteredUsersByPhoneQuery = extendType({
 					// 	}
 					// }
 
-					const modifiedList = phone
-						.replace(/\s+/g, "")
-						.replace(/\D/g, "")
-						.match(/.{1,11}/g) as string[];
-					const matchers = modifiedList?.reduce((acc: any[], current: string) => {
+					// const modifiedList = phone
+					// 	.replace(/\s+/g, "")
+					// 	.replace(/\D/g, "")
+					// 	.match(/.{1,11}/g) as string[];
+					const matchers = (phones as string[])?.reduce((acc: any[], current: string) => {
 						if (current.length !== 11) return acc;
 						switch (roleId) {
 							case 4:
@@ -740,7 +752,7 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 export async function CreateUser(ctx: Context, userParam: any, userPassword: string) {
 	try {
 		const hashedPassword = await hashPassword(userPassword);
-		const { name, avatar, groupId, roleId, familyId, familyName, ...rest } = userParam;
+		const { name, avatar, groupId, roleId, familyId, familyName, familyListIds, ...rest } = userParam;
 
 		const profile = groupId
 			? {
@@ -760,21 +772,42 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 				id: roleId,
 			},
 		};
-		const family = familyId
-			? {
+		let family =
+			familyListIds?.length > 0
+				? undefined
+				: familyName
+				? {
+						create: {
+							createdBy: ctx.user?.id || "",
+							familyName,
+						},
+				  }
+				: undefined;
+
+		if (roleId === 5 && familyListIds?.length > 0) {
+			const getParentFamily = await ctx.prisma.user.findFirst({
+				where: {
+					id: familyListIds[0],
+				},
+			});
+
+			if (getParentFamily) {
+				family = {
 					connect: {
-						id: familyId,
+						id: getParentFamily.familyId,
 					},
-			  }
-			: familyName
-			? {
-					create: {
-						createdBy: ctx.user?.id || "",
-						familyName,
-					},
-			  }
-			: undefined;
-		return await ctx.prisma.user.create({
+				} as any;
+			}
+		}
+
+		if (roleId === 4 && familyId) {
+			family = {
+				connect: {
+					id: familyId,
+				},
+			} as any;
+		}
+		const newUser = await ctx.prisma.user.create({
 			data: {
 				name,
 				avatar,
@@ -794,6 +827,31 @@ export async function CreateUser(ctx: Context, userParam: any, userPassword: str
 				family: familyName ? true : false,
 			},
 		});
+
+		if (roleId === 4 && familyListIds?.length > 0) {
+			if (!familyListIds || familyListIds.length < 1 || roleId !== 4 || roleId !== 5) return newUser;
+
+			const orObjectList = (familyListIds as string[])?.map((item) => {
+				return {
+					id: {
+						equals: item,
+					},
+				};
+			});
+			await ctx.prisma.user.updateMany({
+				where: {
+					roleId: {
+						equals: 5,
+					},
+					OR: orObjectList,
+				},
+				data: {
+					familyId: newUser.familyId,
+				},
+			});
+		}
+
+		return newUser;
 	} catch (error) {
 		console.log("🚀 ~ file: User.ts ~ line 629 ~ CreateUser ~ error", error);
 		return Promise.reject("error");
@@ -939,6 +997,7 @@ export const userRegister = extendType({
 				groupId: nullable(stringArg()),
 				familyName: nullable(stringArg()),
 				familyId: nullable(stringArg()),
+				familyListIds: nullable(list(stringArg())),
 			},
 			resolve: async (
 				_parent,
@@ -954,6 +1013,7 @@ export const userRegister = extendType({
 					familyName,
 					familyId,
 					roleId,
+					familyListIds,
 				},
 				ctx
 			) => {
@@ -974,6 +1034,7 @@ export const userRegister = extendType({
 						familyName,
 						familyId,
 						roleId,
+						familyListIds,
 					} as any;
 
 					if (permissionsList.includes("full") || permissionsList.includes("create")) {
