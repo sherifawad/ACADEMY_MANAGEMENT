@@ -9,23 +9,14 @@ import GradeGroupSelect from "components/GradeGroupSelect";
 import LabelInput from "components/inputs/LabelInput";
 import LabelWithChildren from "components/inputs/LabelWithChildren";
 import AsyncCreatableSelect from "react-select/async-creatable";
-import {
-	convertFromListToString,
-	createAxiosService,
-	getDividesNumbersFromString,
-	getOptionsListAsString,
-} from "core/utils";
+import { convertFromListToString, getDividesNumbersFromString, getOptionsListAsString } from "core/utils";
 import useAuth from "customHooks/useAuth";
 import RoleSelection from "features/rolesFeature/RoleSelection";
-import { rolesListQuery } from "features/rolesFeature/rolesQueries";
-import dynamic from "next/dynamic";
-import { stringify } from "querystring";
 import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MultiValue } from "react-select";
-import async from "react-select/dist/declarations/src/async";
 import { createUserMutation, CREATE_USER_MUTATION, updateUserMutation } from "./userMutations";
 import { usersByFamilyNameListQuery, usersByPhonesListQuery } from "./usersQueries";
 import { userInitialProperties } from "./userTypes";
+import FamilyCustomInput from "components/common/FamilyCustomInput";
 
 function AddUser({ onProceed, onClose, initialUser, roleId, gradeId }: userInitialProperties) {
 	console.log("🚀 ~ file: AddUser.tsx ~ line 15 ~ AddUser");
@@ -35,7 +26,7 @@ function AddUser({ onProceed, onClose, initialUser, roleId, gradeId }: userIniti
 	const { email, phone, parentsPhones, address } = contact || {};
 
 	const mainRef = useRef();
-
+	const [hide, setHide] = useState<boolean>(false);
 	const [_family, setFamily] = useState<{ label: string; value: string }>();
 	const [_familyIds, setFamilyIds] = useState<{ label: string; value: string }[]>([]);
 	const [_parentPhones, setParentPhones] = useState<CreatableSelectionOption[]>([]);
@@ -177,6 +168,18 @@ function AddUser({ onProceed, onClose, initialUser, roleId, gradeId }: userIniti
 		[roleId]
 	);
 
+	const familyCustom = useMemo(
+		() => (
+			<FamilyCustomInput
+				onClick={() => {
+					setHide(true);
+				}}
+				defaultValue={_family?.label}
+			/>
+		),
+		[_family]
+	);
+
 	const parentPhonesComponent = useMemo(
 		() => (
 			<CreatableSelection
@@ -253,7 +256,6 @@ function AddUser({ onProceed, onClose, initialUser, roleId, gradeId }: userIniti
 					})
 				}
 			/>
-
 			<LabelWithChildren label="Phones">{phonesComponent}</LabelWithChildren>
 			{roleSelect}
 
@@ -298,7 +300,9 @@ function AddUser({ onProceed, onClose, initialUser, roleId, gradeId }: userIniti
 				}
 			/>
 			{_roleId === 5 ? groupSelect : null}
-			{(_phones?.length > 0 && _roleId === 4) || (_parentPhones?.length > 0 && _roleId === 5)
+			{id && !hide
+				? familyCustom
+				: (_phones?.length > 0 && _roleId === 4) || (_parentPhones?.length > 0 && _roleId === 5)
 				? familySelect
 				: null}
 			{/* {formState.error?.length > 0 && <p className="text-red-600">{formState.error}</p>} */}
