@@ -4,7 +4,6 @@ import CreatableSelection, {
 	createOption,
 } from "components/common/CreatableSelection";
 import MultiSelect from "components/common/MultiSelection";
-import SingleSelection from "components/common/SingleSelection";
 import GradeGroupSelect from "components/GradeGroupSelect";
 import LabelInput from "components/inputs/LabelInput";
 import LabelWithChildren from "components/inputs/LabelWithChildren";
@@ -13,7 +12,7 @@ import { convertFromListToString, getDividesNumbersFromString, getOptionsListAsS
 import useAuth from "customHooks/useAuth";
 import RoleSelection from "features/rolesFeature/RoleSelection";
 import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createUserMutation, CREATE_USER_MUTATION, updateUserMutation } from "./userMutations";
+import { createUserMutation, updateUserMutation } from "./userMutations";
 import { usersByFamilyNameListQuery, usersByPhonesListQuery } from "./usersQueries";
 import { userInitialProperties } from "./userTypes";
 import FamilyCustomInput from "components/common/FamilyCustomInput";
@@ -102,7 +101,17 @@ function AddUser({ onProceed, onClose, initialUser, roleId, gradeId }: userIniti
 	);
 
 	const updateMutation = updateUserMutation(
-		{ ...formState, userUpdateId: id, groupId: _groupId, roleId: _roleId },
+		{
+			...formState,
+			userUpdateId: id,
+			groupId: _groupId,
+			roleId: _roleId,
+			avatar: null,
+			phone: convertFromListToString(_phones),
+			parentsPhones: convertFromListToString(_parentPhones),
+			familyListIds: getOptionsListAsString(_familyIds),
+			familyId: _family?.value ?? null,
+		},
 		accessToken
 	);
 

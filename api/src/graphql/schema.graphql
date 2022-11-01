@@ -163,7 +163,7 @@ type Mutation {
   updateProfile(bio: String, id: String!): Profile!
   updateRole(description: String, domainPermissions: [JSONObject], name: String, roleId: Int!): UserRole!
   userRegister(address: String, avatar: String, email: String, familyId: String, familyListIds: [String], familyName: String, groupId: String, name: String!, parentsPhones: String, password: String!, phone: String, roleId: Int!): User!
-  userUpdate(address: String, avatar: String, email: String, familyName: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, roleId: Int): User!
+  userUpdate(address: String, avatar: String, email: String, familyId: String, familyListIds: [String], familyName: String, groupId: String, id: String!, name: String, parentsPhones: String, password: String, phone: String, roleId: Int): User!
 }
 
 type PageCursor {

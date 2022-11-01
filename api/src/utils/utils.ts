@@ -8,13 +8,17 @@ export const isNullish = (obj: any) =>
 
 		return true;
 	});
-export const removeNullObjects = (obj: any) =>
-	Object.entries(obj).reduce((acc, [key, value]) => {
+export const removeNullObjects = (obj: any) => {
+	return Object.entries(obj).reduce((acc, [key, value]) => {
 		if (value === null) {
 			return acc;
 		}
-		return { [key]: value };
+		if (typeof value === "string" && value.trim() === "") {
+			return { ...acc, [key]: undefined };
+		}
+		return { ...acc, [key]: value };
 	}, {});
+};
 
 export const getDomainPermissions = async (roleId: number, domainId: number) => {
 	try {

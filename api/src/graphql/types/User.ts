@@ -672,7 +672,8 @@ export async function GetUserByEmail(prisma: PrismaClient, email: string): Promi
 export async function UpdateUser(ctx: Context, studentParam: any, userPassword?: string | null | undefined) {
 	try {
 		const hashedPassword = userPassword ? await hashPassword(userPassword) : undefined;
-		const { name, id, groupId, roleId, avatar, familyName, familyId, ...rest } = studentParam;
+		const { name, id, groupId, roleId, avatar, familyName, familyId, familyListIds, ...rest } =
+			studentParam;
 		const password = hashedPassword
 			? {
 					update: {
@@ -689,32 +690,72 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 					},
 			  }
 			: undefined;
-		const family = familyName
+
+		let family =
+			familyListIds?.length > 0
+				? undefined
+				: familyName
+				? {
+						upsert: {
+							create: {
+								createdBy: ctx.user?.id || "",
+								familyName: familyName,
+							},
+							update: {
+								updatedBy: ctx.user?.id || "",
+								familyName: familyName,
+							},
+						},
+				  }
+				: undefined;
+
+		const profile = groupId
 			? {
 					upsert: {
 						create: {
 							createdBy: ctx.user?.id || "",
-							familyName: familyName,
+							group: {
+								connect: {
+									id: groupId,
+								},
+							},
 						},
 						update: {
 							updatedBy: ctx.user?.id || "",
-							familyName: familyName,
-						},
-					},
-			  }
-			: undefined;
-		const profile = groupId
-			? {
-					update: {
-						updatedBy: ctx.user?.id || "",
-						group: {
-							connect: {
-								id: groupId,
+							group: {
+								connect: {
+									id: groupId,
+								},
 							},
 						},
 					},
 			  }
 			: undefined;
+
+		if (roleId === 5 && familyListIds?.length > 0) {
+			const getParentFamily = await ctx.prisma.user.findFirst({
+				where: {
+					id: familyListIds[0],
+				},
+			});
+
+			if (getParentFamily) {
+				family = {
+					connect: {
+						id: getParentFamily.familyId,
+					},
+				} as any;
+			}
+		}
+
+		if (roleId === 4 && familyId) {
+			family = {
+				connect: {
+					id: familyId,
+				},
+			} as any;
+		}
+
 		const allIsNull = isNullish(rest);
 		const contact = !allIsNull
 			? {
@@ -727,24 +768,48 @@ export async function UpdateUser(ctx: Context, studentParam: any, userPassword?:
 			name: name ? name : undefined,
 			avatar: avatar ? avatar : undefined,
 			role,
-			password,
 			contact,
 			profile,
 			family,
 		};
 		const include = {
-			password: hashedPassword ? true : false,
 			contact: allIsNull ? false : true,
-			profile: groupId ? true : false,
+			profile: profile ? true : false,
+			role: role ? true : false,
 			family: family ? true : false,
-			role: roleId ? true : false,
 		};
-		return await ctx.prisma.user.update({
+		const updateUser = await ctx.prisma.user.update({
 			where: { id },
 			data,
 			include,
 		});
+
+		if (roleId === 4 && familyListIds?.length > 0) {
+			if (!familyListIds || familyListIds.length < 1 || roleId !== 4 || roleId !== 5) return updateUser;
+
+			const orObjectList = (familyListIds as string[])?.map((item) => {
+				return {
+					id: {
+						equals: item,
+					},
+				};
+			});
+			await ctx.prisma.user.updateMany({
+				where: {
+					roleId: {
+						equals: 5,
+					},
+					OR: orObjectList,
+				},
+				data: {
+					familyId: updateUser.familyId,
+				},
+			});
+		}
+
+		return updateUser;
 	} catch (error) {
+		console.log("🚀 ~ file: User.ts ~ line 808 ~ UpdateUser ~ error", error);
 		return Promise.reject("error");
 	}
 }
@@ -922,6 +987,8 @@ export const userUpdate = extendType({
 				phone: stringArg(),
 				groupId: stringArg(),
 				familyName: stringArg(),
+				familyId: stringArg(),
+				familyListIds: list(stringArg()),
 			},
 			resolve: async (
 				_parent,
@@ -937,6 +1004,8 @@ export const userUpdate = extendType({
 					avatar,
 					familyName,
 					roleId,
+					familyId,
+					familyListIds,
 				},
 				ctx
 			) => {
@@ -952,12 +1021,14 @@ export const userUpdate = extendType({
 						email,
 						address,
 						phone,
-						parentsPhones: parentsPhones ?? phone,
-						name: name ?? email,
-						groupId: groupId,
+						parentsPhones: parentsPhones,
+						name,
+						groupId,
 						avatar,
 						familyName,
 						roleId,
+						familyId,
+						familyListIds,
 					};
 
 					if (permissionsList.includes("editSelf")) {
