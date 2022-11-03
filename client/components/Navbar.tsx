@@ -71,6 +71,10 @@ const Navbar = () => {
 				<Link href={`${Paths.GROUP}`}>
 					<a className="menu-line">Group</a>
 				</Link>
+
+				<Link href={`${Paths.Role}`}>
+					<a className="menu-line">role</a>
+				</Link>
 			</div>
 			{
 				//#endregion

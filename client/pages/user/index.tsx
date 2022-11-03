@@ -46,9 +46,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 		// }
 		const { user, accessToken } = session || {};
 
-		const { role } = (user as user) || {};
-		const variables = role === "ADMIN" ? { userRole: ["USER", "ADMIN"] } : { userRole: ["USER"] };
+		const variables = { roleIds: [1, 2, 3] };
 		const { list, rest } = await usersByRolesListQuery(variables, accessToken);
+
 		let flattenedList = [];
 		if (list?.length > 0) {
 			flattenedList = list.reduce((acc, curr) => [...acc, ObjectFlatten(curr)], []);

@@ -209,7 +209,7 @@ type Query {
   Contact(contactId: String!): Contact!
   Exam(id: String!): Exam!
   Exams: [Exam]!
-  FilteredUsers(data: PaginationInputType, familyName: String, family_Id: String, isActive: Boolean, roleId: Int): UsersResponse
+  FilteredUsers(data: PaginationInputType, familyName: String, family_Id: String, isActive: Boolean, roleIds: [Int]): UsersResponse
   FilteredUsersByPhoneQuery(phones: [String]!, roleId: Int!): [User]
   Grade(id: String!): Grade!
   Grades: [Grade]!
@@ -259,6 +259,7 @@ type User {
   name: String
   profile: Profile
   role: UserRole
+  roleId: Int
   updatedAt: DateTime
 }
 

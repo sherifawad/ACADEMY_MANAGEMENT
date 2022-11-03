@@ -77,7 +77,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 				skip: null,
 				sort: [{ id: "asc" }],
 			},
-			roleId: 5,
+			roleIds: [5],
 		};
 
 		const { list, rest, error } = await studentsListQuery(variables, accessToken);

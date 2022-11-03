@@ -9,6 +9,7 @@ export interface user {
 	isActive?: boolean | null;
 	profile?: any | null;
 	family?: any | null;
+	role?: any;
 }
 
 export interface userInitialProperties {

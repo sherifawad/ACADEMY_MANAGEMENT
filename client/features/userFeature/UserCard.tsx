@@ -12,6 +12,7 @@ import {
 	AiOutlineMail,
 	AiOutlineFieldTime,
 } from "react-icons/ai";
+import { RiChatPrivateLine } from "react-icons/ri";
 import { GiUpgrade, GiTeamDowngrade } from "react-icons/gi";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
@@ -26,9 +27,9 @@ function UserCard({
 	id,
 	isActive,
 	avatar,
-	isStudent = true,
 	roleId,
 	family,
+	role,
 }) {
 	const { Model, modelProps, itemData, setItemData, setIsOpened } = useModel();
 	// const AddUser = dynamic(() => import("./AddUser"), {
@@ -59,11 +60,10 @@ function UserCard({
 					<div className="pt-6 md:pis-8 text-center md:text-left space-y-4 w-full">
 						<div className="flex flex-col md:flex-row-reverse flex-nowrap md:justify-between justify-center items-center">
 							{show ? (
-								<Model title={`${isStudent ? "Student" : "User"}`}>
+								<Model title={`${role?.name}`}>
 									<AddUser
 										onProceed={onProceed}
 										onClose={modelProps.onClose}
-										isStudent={isStudent}
 										gradeId={group ? (group as Group)?.grade?.id : undefined}
 										roleId={roleId}
 										initialUser={{
@@ -80,14 +80,14 @@ function UserCard({
 							) : null}
 							<div className="text-sky-500 dark:text-sky-400 font-bold">{name}</div>
 						</div>
-						{isStudent && (
+						{bio ? (
 							<blockquote>
 								<p className="text-lg font-medium">“{bio}”</p>
 							</blockquote>
-						)}
+						) : null}
 						<div
 							className={`flex flex-col md:flex-row gap-2 p-2 md:items-start ${
-								isStudent ? "justify-around" : ""
+								bio ? "justify-around" : ""
 							} `}
 						>
 							<div>
@@ -99,21 +99,25 @@ function UserCard({
 											<p className="text-sm font-medium">{(contact as any)?.email}</p>
 										</a>
 									</div>
+									<div className="flex gap-2 py-2 items-center">
+										<RiChatPrivateLine />
+										<p className="text-sm font-medium">{(role as any)?.name}</p>
+									</div>
 									<div className="flex gap-2 py-2  items-center">
 										<AiOutlineMobile />
 										<p className="text-sm font-medium ">{(contact as any)?.phone}</p>
 									</div>
-									{isStudent && (
+									{(contact as any)?.parentsPhones ? (
 										<div className="flex gap-2 py-2  items-center">
 											<AiOutlinePhone />
 											<p className="text-sm font-medium ">
 												{(contact as any)?.parentsPhones}
 											</p>
 										</div>
-									)}
+									) : null}
 								</div>
 							</div>
-							{isStudent && (
+							{(group as any)?.name ? (
 								<div>
 									<h3 className="font-bold underline-offset-4 underline">Group Details</h3>
 									<div className="divide-y">
@@ -155,7 +159,7 @@ function UserCard({
 										</div>
 									</div>
 								</div>
-							)}
+							) : null}
 						</div>
 						<figcaption className="font-medium">
 							<div className="flex gap-2 p-2">

@@ -2,12 +2,12 @@ import { createAxiosService } from "core/utils";
 import { userVariables } from "./userTypes";
 
 export const GET_USERS_BY_ROLES = `
-    query FilteredUsers($userRole: [Role]) {
-        FilteredUsers(user_role: $userRole) {
+    query FilteredUsers($roleIds: [Int]) {
+        FilteredUsers(roleIds: $roleIds) {
             list {
                 id
                 name
-                role
+                roleId
                 avatar
                 isActive
                 contact {
@@ -20,8 +20,8 @@ export const GET_USERS_BY_ROLES = `
 `;
 
 export const GET_USERS_BY_FAMILY_NAME = `
-    query Query($familyName: String, $roleId: Int) {
-        FilteredUsers(familyName: $familyName, roleId: $roleId) {
+    query Query($familyName: String, $roleIds: [Int]) {
+        FilteredUsers(familyName: $familyName, roleIds: $roleIds) {
         list {
             family {
                 familyName
@@ -86,25 +86,34 @@ export const GET_STUDENT_DETAILS = `
 `;
 
 export const GET_USER_DETAILS = `
-    query User($userId: String!) {
+query Query($userId: String!) {
         User(id: $userId) {
-            id
             name
+            id
             isActive
             avatar
-            role,
+            roleId
             contact {
+                id
+                note
                 phone
+                parentsPhones
                 address
                 email
+                emailConfirmed
+            }
+            role {
+                id
+                name
+                description
             }
         }
     }
 `;
 
 export const GET_USERS_IDS = `
-    query FilteredUsers($role: [Role]) {
-        FilteredUsers(role: $role) {
+    query FilteredUsers($roleIds: [Int]) {
+        FilteredUsers(roleIds: $roleIds) {
             prevCursor
             nextCursor
             totalCount {
@@ -117,8 +126,8 @@ export const GET_USERS_IDS = `
     }
 `;
 export const GET_STUDENTS_paginated_LIST = `
-    query FilteredUsers( $data: PaginationInputType, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject, $userRole: [Role], $familyId: String) {
-        FilteredUsers( data: $data, user_role: $userRole, family_Id: $familyId) {
+    query FilteredUsers( $data: PaginationInputType, $take: Int, $orderByList: JSONObject, $attendancesTake2: Int, $attendancesOrderByList2: JSONObject, $roleIds: [Int], $familyId: String) {
+        FilteredUsers( data: $data,roleIds: $roleIds, family_Id: $familyId) {
             totalCount {
                 _count
             }
@@ -143,8 +152,8 @@ export const GET_STUDENTS_paginated_LIST = `
 }
 `;
 export const GET_STUDENTS_LIST = `
-    query Query($data: PaginationInputType, $roleId: Int) {
-        FilteredUsers(data: $data, roleId: $roleId) {
+    query Query($data: PaginationInputType, $roleIds: [Int]) {
+        FilteredUsers(data: $data, roleIds: $roleIds) {
         list {
             name
             id
@@ -211,7 +220,7 @@ export const usersByPhonesListQuery = async (variables: userVariables, token = n
 	}
 };
 
-export const usersByRolesListQuery = async (variables: { userRole: string[] }, token = null) => {
+export const usersByRolesListQuery = async (variables: userVariables, token = null) => {
 	try {
 		const {
 			data: {

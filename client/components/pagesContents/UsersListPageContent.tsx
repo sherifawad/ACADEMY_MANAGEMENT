@@ -2,17 +2,23 @@ import { getDayNames } from "core/utils";
 import useModel from "customHooks/useModel";
 import useReactTable from "customHooks/useReactTable";
 import { format } from "date-fns";
+import AddUser from "features/userFeature/AddUser";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { MdOutlineRadioButtonChecked } from "react-icons/md";
 
 function UsersListPageContent({ flattenedList }) {
-	const AddUser = dynamic(() => import("features/userFeature/AddUser"), {
-		ssr: false,
-	});
+	// const AddUser = dynamic(() => import("features/userFeature/AddUser"), {
+	// 	ssr: false,
+	// });
+
+	const [show, setShow] = useState(false);
+	useEffect(() => {
+		setShow(true);
+	}, []);
 
 	const { Model, modelProps } = useModel();
 
@@ -115,9 +121,11 @@ function UsersListPageContent({ flattenedList }) {
 	});
 	return (
 		<div className="container">
-			<Model title="User">
-				<AddUser onProceed={onProceed} onClose={modelProps.onClose} isStudent={false} />
-			</Model>
+			{show ? (
+				<Model title="User">
+					<AddUser onProceed={onProceed} onClose={modelProps.onClose} isStudent={false} />
+				</Model>
+			) : null}
 			<RenderedTable />
 		</div>
 	);

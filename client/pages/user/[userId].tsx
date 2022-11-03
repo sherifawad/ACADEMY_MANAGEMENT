@@ -8,8 +8,6 @@ import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 
 function User({ user }) {
-	const { id, name, isActive, avatar, contact } = user || {};
-
 	return (
 		<div className="container w-full">
 			<div className="w-full">
@@ -19,7 +17,7 @@ function User({ user }) {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, res, params }) => {
 	try {
 		// If you don't have NEXTAUTH_SECRET set, you will have to pass your secret as `secret` to `getToken`
 
@@ -35,17 +33,18 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 		// }
 		const { user, accessToken } = session || {};
 
-		const { id } = (user as user) || {};
+		const { userId } = params;
+
 		const { User } = await userDetailsQuery(
 			{
-				userId: id,
+				userId,
 			},
 			accessToken
 		);
 
 		return {
 			props: {
-				user: User,
+				user: User ?? {},
 			},
 		};
 	} catch (error) {

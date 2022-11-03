@@ -7,6 +7,7 @@ export enum Paths {
 	USER = "/user",
 	GRADE = "/grade",
 	GROUP = "/group",
+	Role = "/roles",
 	Home = "/",
 	SignIn = "/auth/signin",
 	SignUp = "/auth/signup",

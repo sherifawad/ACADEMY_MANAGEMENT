@@ -60,6 +60,7 @@ export const User = objectType({
 		t.string("name");
 		t.boolean("isActive");
 		t.string("avatar");
+		t.int("roleId");
 		t.string("familyId");
 		t.field("createdAt", { type: "DateTime" });
 		t.field("updatedAt", { type: "DateTime" });
@@ -364,7 +365,7 @@ export const FilteredUsersQuery = extendType({
 			args: {
 				data: PaginationInputType,
 				isActive: nullable(booleanArg()),
-				roleId: nullable(intArg()),
+				roleIds: nullable(list(intArg())),
 				family_Id: nullable(stringArg()),
 				familyName: nullable(stringArg()),
 			},
@@ -381,7 +382,7 @@ export const FilteredUsersQuery = extendType({
 					) {
 						throw new Error("Not Allowed");
 					}
-					const { data, isActive, family_Id, roleId, familyName } = args;
+					const { data, isActive, family_Id, roleIds, familyName } = args;
 
 					if (permissionsList.includes("readFamily")) {
 						if (!family_Id || family_Id != user.familyId) {
@@ -390,8 +391,11 @@ export const FilteredUsersQuery = extendType({
 					}
 
 					let where = {};
-					if (roleId) {
-						where = { ...where, roleId: roleId };
+					if (roleIds) {
+						const orQuery = (roleIds as number[]).map((role) => {
+							return { roleId: role };
+						});
+						where = { ...where, OR: orQuery };
 					}
 					if (family_Id) {
 						where = { ...where, familyId: family_Id };
