@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../node_modules/@internal/prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Contact {
+    id            String  @id
+    phone         String? @unique
+    parentsPhones String?
+    address       String?
+    note          String?
+    user          User    @relation(fields: [id], references: [id])
+
+    @@map("Contacts")
+}
+
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Role {
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    createdBy   String
+    updatedBy   String?
+    users       User[]
+}
+
+model Profile {
+    id          String       @id
+    bio         String?
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    createdBy   String
+    updatedBy   String?
+    user        User         @relation(fields: [id], references: [id])
+    exams       Exam[]
+    attendances Attendance[]
+    // Relation fields
+    groupId     String?
+    group       Group?       @relation(fields: [groupId], references: [id])
+
+    @@map("profiles")
+}
+
+model family {
+    id         String   @id @default(uuid())
+    familyName String
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+    createdBy  String
+    updatedBy  String?
+    users      User[]
+}
+
+model Grade {
+    id        String   @id @default(uuid())
+    name      String
+    isActive  Boolean  @default(true)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    createdBy String
+    updatedBy String?
+    groups    Group[]
+
+    @@map("grades")
+}
+
+model Group {
+    id         String       @id @default(uuid())
+    name       String
+    isActive   Boolean      @default(true)
+    createdAt  DateTime     @default(now())
+    updatedAt  DateTime     @updatedAt
+    startAt    DateTime?
+    endAt      DateTime?
+    createdBy  String
+    updatedBy  String?
+    profiles   Profile[]
+    attendance Attendance[]
+    // Relation fields
+    gradeId    String
+    grade      Grade?       @relation(fields: [gradeId], references: [id])
+
+    @@map("groups")
+}
+
+model Exam {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    score     Float    @default(0.0)
+    note      String?
+    date      DateTime
+    createdBy String
+    updatedBy String?
+    // Relation fields
+    profileId String
+    Profile   Profile? @relation(fields: [profileId], references: [id])
+
+    @@map("exams")
+}
+
+model Attendance {
+    id        String    @id @default(uuid())
+    startAt   DateTime  @default(now())
+    endAt     DateTime?
+    note      String?
+    createdBy String
+    updatedBy String?
+    // Relation fields
+    profileId String
+    Profile   Profile   @relation(fields: [profileId], references: [id])
+    groupId   String?
+    group     Group?    @relation(fields: [groupId], references: [id])
+}
+
+model User {
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    isActive      Boolean   @default(true)
+    role          Role      @relation(fields: [roleId], references: [id])
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+    profile       Profile?
+    family        family?   @relation(fields: [familyId], references: [id])
+    familyId      String?
+    roleId        Int
+    accounts      Account[]
+    sessions      Session[]
+    Contact       Contact[]
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
