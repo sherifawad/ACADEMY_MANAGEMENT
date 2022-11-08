@@ -1,13 +1,13 @@
 import { booleanArg, extendType, intArg, list, nonNull, nullable, objectType, stringArg } from "nexus";
 import { PaginationInputType, queryArgs, StudentsResponse, UsersResponse } from ".";
 import { Role } from "./Role";
-import { User as userType, Contact as contactType, Group as groupType } from "@internal/prisma/client";
+import { User as userType, Contact as contactType, Group as groupType } from "@prisma/client";
 import { Profile } from "./Profile";
 import { Contact } from "./Contact";
 import { Family } from "./Family";
-import { PrismaClient } from "@internal/prisma/client";
 import { Context } from "../context";
 import { isNullish, removeNullObjects } from "utils/objectsUtils";
+import prisma from "../../lib/prisma";
 
 export const User = objectType({
 	name: "User",
@@ -15,13 +15,13 @@ export const User = objectType({
 		t.id("id");
 		t.string("name");
 		t.string("email");
-		t.date("emailVerified");
+		t.field("emailVerified", { type: "DateTime" });
 		t.string("image");
 		t.boolean("isActive");
 		t.int("roleId");
 		t.string("familyId");
-		t.date("createdAt");
-		t.date("updatedAt");
+		t.field("createdAt", { type: "DateTime" });
+		t.field("updatedAt", { type: "DateTime" });
 		t.field("role", {
 			type: Role,
 			resolve: async (parent, _, { prisma, session }) => {
@@ -354,14 +354,6 @@ export type UserParam = Pick<userType, "image" | "name"> &
 export type StudentParam = Pick<userType, "name"> &
 	Pick<contactType, "parentsPhones" | "address" | "phone"> &
 	Partial<Pick<groupType, "id">>;
-
-export async function GetUserByEmail(prisma: PrismaClient, email: string) {
-	return await prisma.user.findUniqueOrThrow({
-		where: {
-			email,
-		},
-	});
-}
 
 // export async function CreateStudent(ctx: Context, studentParam: StudentParam, password: string) {
 // 	const hashedPassword = await hashPassword(password);

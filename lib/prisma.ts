@@ -1,4 +1,6 @@
-import { PrismaClient } from "@internal/prisma/client";
+// import { PrismaClient } from "@internal/prisma/client";
+
+import { PrismaClient } from "@prisma/client";
 
 interface CustomNodeJsGlobal {
 	prisma: PrismaClient | undefined;
@@ -6,8 +8,8 @@ interface CustomNodeJsGlobal {
 
 declare const global: CustomNodeJsGlobal;
 
-const prisma = global.prisma || new PrismaClient();
+const client = global.prisma || new PrismaClient();
 
-if (process.env.NODE_ENV !== "production") global.prisma = prisma;
+if (process.env.NODE_ENV !== "production") global.prisma = client;
 
-export default prisma;
+export default client;

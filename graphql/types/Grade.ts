@@ -9,8 +9,8 @@ export const Grade = objectType({
 		t.string("name");
 		t.string("createdBy");
 		t.string("updatedBy");
-		t.date("createdAt");
-		t.date("updatedAt");
+		t.field("createdAt", { type: "DateTime" });
+		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("groups", {
 			type: Group,
 			async resolve(_parent, _args, { session, prisma }) {

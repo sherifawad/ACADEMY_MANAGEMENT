@@ -8,8 +8,8 @@ export const Family = objectType({
 		t.string("familyName");
 		t.string("createdBy");
 		t.string("updatedBy");
-		t.date("createdAt");
-		t.date("updatedAt");
+		t.field("createdAt", { type: "DateTime" });
+		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("users", {
 			type: User,
 			async resolve({ id }, _args, { session, prisma }) {

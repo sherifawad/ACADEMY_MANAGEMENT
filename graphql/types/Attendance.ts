@@ -2,7 +2,8 @@ import { arg, extendType, intArg, list, nonNull, nullable, objectType, stringArg
 import { Count, PaginationInputType, queryArgs } from ".";
 import { Group } from "./Group";
 import { Profile } from "./Profile";
-import { Attendance as attendanceType } from "@internal/prisma/client";
+// import { Attendance as attendanceType } from "@internal/prisma/client";
+import { Attendance as attendanceType } from "@prisma/client";
 
 export interface prismaCursorPagination {
 	take: number;
@@ -37,8 +38,8 @@ export const Attendance = objectType({
 		t.string("profileId");
 		t.string("createdBy");
 		t.string("updatedBy");
-		t.date("startAt");
-		t.date("endAt");
+		t.field("startAt", { type: "DateTime" });
+		t.field("endAt", { type: "DateTime" });
 		t.field("profile", {
 			type: Profile,
 			resolve: async (parent, _, { prisma, session }) => {

@@ -1,6 +1,6 @@
 import { arg, extendType, intArg, list, nonNull, nullable, objectType, stringArg } from "nexus";
 import { User } from "./User";
-import { Role as roleType } from "@internal/prisma/client";
+import { Role as roleType } from "@prisma/client";
 
 export const Role = objectType({
 	name: "Role",
@@ -8,8 +8,8 @@ export const Role = objectType({
 		t.id("id");
 		t.string("name");
 		t.string("description");
-		t.date("createdAt");
-		t.date("updatedAt");
+		t.field("createdAt", { type: "DateTime" });
+		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("users", {
 			type: User,
 			resolve: async (parent, _, { prisma, session }) => {

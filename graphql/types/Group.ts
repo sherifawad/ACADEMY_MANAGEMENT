@@ -1,7 +1,7 @@
 import { arg, booleanArg, extendType, nonNull, nullable, objectType, stringArg } from "nexus";
 import { PaginationInputType, paginationResult, queryArgs } from ".";
 import { ProfilesResponse } from "./Profile";
-import { Group as groupType } from "@internal/prisma/client";
+import { Group as groupType } from "@prisma/client";
 import { Grade } from "./Grade";
 import { Attendance } from "./Attendance";
 
@@ -14,10 +14,10 @@ export const Group = objectType({
 		t.string("name");
 		t.string("createdBy");
 		t.string("updatedBy");
-		t.date("createdAt");
-		t.date("updatedAt");
-		t.date("startAt");
-		t.date("endAt");
+		t.field("createdAt", { type: "DateTime" });
+		t.field("updatedAt", { type: "DateTime" });
+		t.field("startAt", { type: "DateTime" });
+		t.field("endAt", { type: "DateTime" });
 		t.field("profiles", {
 			type: ProfilesResponse,
 			args: { data: PaginationInputType },

@@ -1,5 +1,5 @@
 import { arg, extendType, floatArg, list, nonNull, nullable, objectType, stringArg } from "nexus";
-import { Exam as examType } from "@internal/prisma/client";
+import { Exam as examType } from "@prisma/client";
 import { Profile } from "./Profile";
 import { Count, PaginationInputType, queryArgs } from ".";
 
@@ -13,9 +13,9 @@ export const Exam = objectType({
 		t.float("score");
 		t.string("createdBy");
 		t.string("updatedBy");
-		t.date("createdAt");
-		t.date("updatedAt");
-		t.date("date");
+		t.field("createdAt", { type: "DateTime" });
+		t.field("updatedAt", { type: "DateTime" });
+		t.field("date", { type: "DateTime" });
 		t.field("profile", {
 			type: Profile,
 			resolve: async (parent, _, { session, prisma }) => {

@@ -4,7 +4,7 @@ import { Attendance } from "./Attendance";
 import { Exam } from "./Exam";
 import { Group } from "./Group";
 import { User } from "./User";
-import { Profile as profileType } from "@internal/prisma/client";
+import { Profile as profileType } from "@prisma/client";
 
 export const Profile = objectType({
 	name: "Profile",
@@ -13,8 +13,8 @@ export const Profile = objectType({
 		t.string("bio");
 		t.string("createdBy");
 		t.string("updatedBy");
-		t.date("createdAt");
-		t.date("updatedAt");
+		t.field("createdAt", { type: "DateTime" });
+		t.field("updatedAt", { type: "DateTime" });
 		t.list.field("exams", {
 			type: Exam,
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
