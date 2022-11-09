@@ -155,14 +155,15 @@ model User {
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    password      String?
     isActive      Boolean   @default(true)
-    role          Role      @relation(fields: [roleId], references: [id])
+    role          Role?     @relation(fields: [roleId], references: [id])
     createdAt     DateTime  @default(now())
     updatedAt     DateTime  @updatedAt
     profile       Profile?
     family        family?   @relation(fields: [familyId], references: [id])
     familyId      String?
-    roleId        Int
+    roleId        Int?
     accounts      Account[]
     sessions      Session[]
     Contact       Contact[]
