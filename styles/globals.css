@@ -1,7 +1,7 @@
 @tailwind base;
 @layer base {
     h1 {
-      @apply text-3xl font-semibold text-center text-gray-700 dark:text-white;
+      @apply text-3xl font-bold text-center text-gray-700 dark:text-white;
     }
     a {
       @apply text-xs text-gray-600 dark:text-gray-400 hover:underline;

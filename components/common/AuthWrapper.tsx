@@ -8,7 +8,7 @@ const authRoutes = ["/dashboard"];
 const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
 	const session = useSession();
 	const router = useRouter();
-	console.log(session);
+	console.log(session, new Date().getMinutes());
 
 	if (session.status === "loading") return null;
 

@@ -8,7 +8,7 @@ import { fromDate, verifyPassword } from "utils/authUtils";
 import GoogleProvider from "next-auth/providers/google";
 import { randomUUID } from "crypto";
 import Cookies from "cookies";
-import { decode, JWT } from "next-auth/jwt";
+import { decode, encode } from "next-auth/jwt";
 
 const GOOGLE_AUTHORIZATION_URL =
 	"https://accounts.google.com/o/oauth2/v2/auth?" +
@@ -70,7 +70,6 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 			GoogleProvider({
 				clientId: process.env.GOOGLE_CLIENT_ID ?? "",
 				clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-				authorization: GOOGLE_AUTHORIZATION_URL,
 			}),
 			GithubProvider({
 				clientId: process.env.GITHUB_ID ?? "",
@@ -120,7 +119,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 			signOut: "/auth/signout",
 		},
 		callbacks: {
-			jwt({ token, user, account }) {
+			jwt({ token, user, account, isNewUser }) {
 				// Initial sign in
 				if (account && user) {
 					delete (user as any)?.password;
@@ -149,47 +148,70 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 					if (token.accessToken) (session as any).accessToken = token.accessToken;
 					if (token.error) (session as any).error = token.error;
 				}
-
 				return session;
 			},
-			async signIn({ account, user }) {
-				if (account?.provider === "credentials" && user) {
-					const checkAccount = await prisma.account.findFirst({
-						where: {
-							userId: user.id,
-						},
-					});
-					if (!checkAccount) {
-						await prisma.account.create({
-							data: {
+			async signIn({ account, user, profile }) {
+				if (user) {
+					if (account?.provider === "credentials") {
+						const checkAccount = await prisma.account.findFirst({
+							where: {
 								userId: user.id,
-								type: "credentials",
-								provider: "credentials",
-								providerAccountId: user.id,
 							},
 						});
-					}
+						if (!checkAccount) {
+							await prisma.account.create({
+								data: {
+									userId: user.id,
+									type: "credentials",
+									provider: "credentials",
+									providerAccountId: user.id,
+								},
+							});
+						}
 
-					const sessionToken = randomUUID?.();
-					const time = Number(process.env.Session_maxAge) || 30 * 24 * 60 * 60;
-					const sessionExpiry = fromDate(time);
-					await prisma.session.create({
-						data: {
-							sessionToken: sessionToken,
-							userId: user.id,
+						const sessionToken = randomUUID?.();
+						const time = Number(process.env.Session_maxAge) || 30 * 24 * 60 * 60;
+						const sessionExpiry = fromDate(time);
+						await prisma.session.create({
+							data: {
+								sessionToken: sessionToken,
+								userId: user.id,
+								expires: sessionExpiry,
+							},
+						});
+						const cookies = new Cookies(req, res);
+
+						cookies.set("next-auth.session-token", sessionToken, {
 							expires: sessionExpiry,
-						},
-					});
-					const cookies = new Cookies(req, res);
-
-					cookies.set("next-auth.session-token", sessionToken, {
-						expires: sessionExpiry,
-					});
+						});
+					} else {
+						if (
+							profile?.image ||
+							(profile as any)?.picture ||
+							(profile as any)?.avatar ||
+							(profile as any)?.avatar_url
+						) {
+							await prisma.user.update({
+								where: {
+									id: user.id,
+								},
+								data: {
+									image:
+										profile?.image ||
+										(profile as any)?.picture ||
+										(profile as any)?.avatar ||
+										(profile as any)?.avatar_url ||
+										user.image,
+								},
+							});
+						}
+					}
 				}
 				return true;
 			},
 		},
 		jwt: {
+			secret: process.env.NEXTAUTH_SECRET,
 			encode(params) {
 				if (
 					req?.query?.nextauth?.includes("callback") &&
@@ -197,14 +219,12 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 					req?.method === "POST"
 				) {
 					const cookies = new Cookies(req, res);
-					console.log("🚀 ~ file: [...nextauth].ts ~ line 199 ~ encode ~ cookies", cookies);
-
 					const cookie = cookies.get("next-auth.session-token");
-					console.log("🚀 ~ file: [...nextauth].ts ~ line 201 ~ encode ~ cookie", cookie);
 
 					if (cookie) return cookie;
+					return "";
 				}
-				return "";
+				return encode(params);
 			},
 			decode(params) {
 				if (
@@ -219,7 +239,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 				return decode(params);
 			},
 		},
-		secret: process.env.SECRET,
+		secret: process.env.NEXTAUTH_SECRET,
 		session: {
 			// Choose how you want to save the user session.
 			// The default is `"jwt"`, an encrypted JWT (JWE) stored in the session cookie.
