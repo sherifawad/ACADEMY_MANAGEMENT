@@ -119,7 +119,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 			signOut: "/auth/signout",
 		},
 		callbacks: {
-			jwt({ token, user, account, isNewUser }) {
+			async jwt({ token, user, account, isNewUser }) {
 				// Initial sign in
 				if (account && user) {
 					delete (user as any)?.password;
@@ -151,11 +151,11 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 				return session;
 			},
 			async signIn({ account, user, profile }) {
-				if (user) {
-					if (account?.provider === "credentials") {
+				if (user && account) {
+					if (account.provider === "credentials") {
 						const checkAccount = await prisma.account.findFirst({
 							where: {
-								userId: user.id,
+								AND: [{ userId: user.id }, { provider: "credentials" }],
 							},
 						});
 						if (!checkAccount) {
@@ -185,15 +185,39 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 							expires: sessionExpiry,
 						});
 					} else {
+						// check if user already logged in
+						const cookies = new Cookies(req, res);
+						const cookie = cookies.get("next-auth.session-token");
+						// if user is not logged in then check if the user already registered the provider
+						if (!cookie) {
+							const accountExist = await prisma.account.findUnique({
+								where: {
+									provider_providerAccountId: {
+										provider: account.provider,
+										providerAccountId: account.providerAccountId,
+									},
+								},
+							});
+							// if the provider not registered deny access
+							if (!accountExist) return false;
+						}
+						// in this step the linked account not happened yet so
+						// we check id the provider associated with a user before updating image
+						const existUser = await prisma.user.findFirst({
+							where: {
+								id: account.userId,
+							},
+						});
 						if (
-							profile?.image ||
-							(profile as any)?.picture ||
-							(profile as any)?.avatar ||
-							(profile as any)?.avatar_url
+							existUser &&
+							(profile?.image ||
+								(profile as any)?.picture ||
+								(profile as any)?.avatar ||
+								(profile as any)?.avatar_url)
 						) {
 							await prisma.user.update({
 								where: {
-									id: user.id,
+									id: existUser.id,
 								},
 								data: {
 									image:
@@ -201,13 +225,14 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 										(profile as any)?.picture ||
 										(profile as any)?.avatar ||
 										(profile as any)?.avatar_url ||
-										user.image,
+										existUser.image,
 								},
 							});
 						}
 					}
+					return true;
 				}
-				return true;
+				return false;
 			},
 		},
 		jwt: {
