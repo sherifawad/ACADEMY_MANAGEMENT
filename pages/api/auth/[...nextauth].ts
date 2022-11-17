@@ -1,6 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextApiRequest, NextApiResponse } from "next";
-import NextAuth from "next-auth";
+import NextAuth, { Session, User } from "next-auth";
 import prisma from "@/lib/prisma";
 import GithubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -8,7 +8,9 @@ import { fromDate, verifyPassword } from "utils/authUtils";
 import GoogleProvider from "next-auth/providers/google";
 import { randomUUID } from "crypto";
 import Cookies from "cookies";
-import { decode, encode } from "next-auth/jwt";
+import { decode, encode, JWT } from "next-auth/jwt";
+import { User as userType } from "@prisma/client";
+import { AdapterUser } from "next-auth/adapters";
 
 const GOOGLE_AUTHORIZATION_URL =
 	"https://accounts.google.com/o/oauth2/v2/auth?" +
@@ -142,12 +144,22 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 				// // Access token has expired, try to update it
 				// return refreshAccessToken(token);
 			},
-			async session({ session, token }) {
+			async session({
+				session,
+				token,
+				user,
+			}: {
+				session: Session;
+				token: JWT;
+				user: userType | User | AdapterUser;
+			}) {
 				if (token) {
 					if (token.user) session.user = token.user;
 					if (token.accessToken) (session as any).accessToken = token.accessToken;
 					if (token.error) (session as any).error = token.error;
 				}
+				(session.user as any).role = (user as userType).roleId;
+				console.log("🚀 ~ file: [...nextauth].ts ~ line 146 ~ session ~ token", token);
 				return session;
 			},
 			async signIn({ account, user, profile }) {

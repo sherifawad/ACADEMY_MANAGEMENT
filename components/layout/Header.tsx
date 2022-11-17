@@ -1,6 +1,7 @@
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
-import { PrimaryButton } from "../ui/Button";
+import Dropdowns from "../Dropdowns";
+import { IconButton, PrimaryButton } from "../ui/Button";
 import LinkAsButton from "../ui/LinkAsButton";
 
 const Header = () => {
@@ -11,6 +12,7 @@ const Header = () => {
 		});
 	};
 	const [isOpen, setIsOpen] = useState(false);
+	const [isAccountMenUOpen, setIsAccountMenuOpen] = useState(false);
 	return (
 		<header className="bg-white dark:bg-gray-900">
 			<nav x-data={`isOpen: ${isOpen} `} className="border-b dark:border-gray-700">
@@ -24,7 +26,7 @@ const Header = () => {
 
 						{/* Mobile menu button */}
 						<div className="flex lg:hidden">
-							<button
+							<PrimaryButton
 								type="button"
 								className="text-gray-500 dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-400 focus:outline-none focus:text-gray-600 dark:focus:text-gray-400"
 								aria-label="toggle menu"
@@ -62,7 +64,7 @@ const Header = () => {
 										/>
 									</svg>
 								</div>
-							</button>
+							</PrimaryButton>
 						</div>
 					</div>
 
@@ -99,7 +101,7 @@ const Header = () => {
 							</a>
 							{status === "authenticated" ? (
 								<div className="flex items-center mt-4 lg:mt-0">
-									<button
+									<IconButton
 										className="hidden mx-4 text-gray-600 transition-colors duration-300 transform lg:block dark:text-gray-200 hover:text-gray-700 dark:hover:text-gray-400 focus:text-gray-700 dark:focus:text-gray-400 focus:outline-none"
 										aria-label="show notifications"
 									>
@@ -117,25 +119,32 @@ const Header = () => {
 												strokeWidth="2"
 											/>
 										</svg>
-									</button>
+									</IconButton>
+									<PrimaryButton onClick={handleLogout}>Sign Out</PrimaryButton>
+									<div className="relative inline-block">
+										<PrimaryButton
+											type="button"
+											onClick={() => {
+												console.log("clicked");
+												setIsAccountMenuOpen(!isAccountMenUOpen);
+											}}
+											className="relative z-10 flex items-center p-2 text-sm text-gray-600 bg-transparent hover:bg-transparent border border-transparent rounded-md  dark:text-white dark:bg-gray-800 focus:outline-none"
+											aria-label="toggle profile dropdown"
+										>
+											<div className="w-8 h-8 overflow-hidden border-2 border-gray-400 rounded-full">
+												<img
+													src={session.user?.image || ""}
+													alt="avatar"
+													className="object-cover w-full h-full"
+												/>
+											</div>
 
-									<button
-										type="button"
-										className="flex items-center focus:outline-none"
-										aria-label="toggle profile dropdown"
-									>
-										<div className="w-8 h-8 overflow-hidden border-2 border-gray-400 rounded-full">
-											<img
-												src={session.user?.image || ""}
-												alt="avatar"
-												className="object-cover w-full h-full"
-											/>
-										</div>
-
-										<h3 className="mx-2 text-gray-700 dark:text-gray-200 lg:hidden">
-											{session.user?.name || ""}
-										</h3>
-									</button>
+											<h3 className="mx-2 text-gray-700 dark:text-gray-200 lg:hidden">
+												{session.user?.name || ""}
+											</h3>
+										</PrimaryButton>
+										<Dropdowns isOpen={isAccountMenUOpen} />
+									</div>
 								</div>
 							) : (
 								<LinkAsButton href="/auth/signin">
