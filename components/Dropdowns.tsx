@@ -1,11 +1,23 @@
+import { Session } from "next-auth";
+import { signOut } from "next-auth/react";
 import { HtmlHTMLAttributes, ReactNode } from "react";
 
 interface Props extends HtmlHTMLAttributes<HTMLDivElement> {
 	isOpen: boolean;
+	user?: {
+		name?: string | null;
+		email?: string | null;
+		image?: string | null;
+	};
 }
 
 // css multiple transitions [transition:_opacity_.3s_ease-in-out,_visibility_.3s_ease-in-out]
 const Dropdowns = (props: Props) => {
+	const handleLogout = async () => {
+		await signOut({
+			callbackUrl: "http://localhost:3000/",
+		});
+	};
 	return (
 		<div
 			className={`${
@@ -14,16 +26,18 @@ const Dropdowns = (props: Props) => {
 		>
 			<a
 				href="#"
-				className="flex items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
+				className="flex flex-wrap items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
 			>
 				<img
 					className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
-					src="https://images.unsplash.com/photo-1523779917675-b6ed3a42a561?ixid=MnwxMjA3fDB8MHxzZWFyY2h8N3x8d29tYW4lMjBibHVlfGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=face&w=500&q=200"
-					alt="jane avatar"
+					src={props.user?.image || ""}
+					alt="avatar"
 				/>
 				<div className="mx-1">
-					<h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Jane Doe</h1>
-					<p className="text-sm text-gray-500 dark:text-gray-400">janedoe@exampl.com</p>
+					<h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+						{props?.user?.name}
+					</h1>
+					<p className="text-sm text-gray-500 dark:text-gray-400">{props?.user?.email}</p>
 				</div>
 			</a>
 
@@ -83,6 +97,7 @@ const Dropdowns = (props: Props) => {
 			</a>
 			<a
 				href="#"
+				onClick={handleLogout}
 				className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
 			>
 				Sign Out

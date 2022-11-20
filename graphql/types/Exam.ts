@@ -20,8 +20,8 @@ export const Exam = objectType({
 			type: Profile,
 			resolve: async (parent, _, { session, prisma }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.exam
 						.findUniqueOrThrow({
 							where: { id: parent.id },
@@ -63,8 +63,8 @@ export const ExamsQuery = extendType({
 			type: Exam,
 			resolve: async (_parent, _args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.exam.findMany();
 					return output;
 				} catch (error) {
@@ -87,8 +87,8 @@ export const ExamsByUserIdQuery = extendType({
 			},
 			resolve: async (_parent, args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const { studentId, data } = args;
 
 					let where = {};
@@ -149,8 +149,8 @@ export const ExamByIdQuery = extendType({
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.exam.findUniqueOrThrow({
 						where: { id },
 					});
@@ -177,8 +177,8 @@ export const createExamMutation = extendType({
 			},
 			resolve: async (_parent, { score, date, note, profileId }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const newExam = {
 						score,
 						date,
@@ -220,8 +220,8 @@ export const createMultipleExamMutation = extendType({
 				{ prisma, session }
 			) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const newExams: Omit<examType, "id" | "createdAt" | "updatedAt" | "updatedBy">[] = [];
 					const isEmpty = Object.keys(studentsAndScores).length === 0;
 					if (isEmpty) {
@@ -272,8 +272,8 @@ export const UpdateExamMutation = extendType({
 			},
 			resolve: async (_parent, { id, score, date, note }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const updateExam = {
 						score,
 						date,
@@ -314,8 +314,8 @@ export const UpdateMultipleExamMutation = extendType({
 				{ prisma, session }
 			) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const ANDConditions = [];
 					if (dateCondition) {
 						ANDConditions.push({ date: dateCondition });
@@ -362,8 +362,8 @@ export const DeleteExamMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, session }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.exam.delete({
 						where: { id },
 					});

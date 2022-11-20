@@ -12,6 +12,10 @@ export * from "./Contact";
 export * from "./Family";
 export * from "./Role";
 
+export interface Variables {
+	[x: string]: any;
+}
+
 export interface CursorPaginationInput {
 	take?: number | null;
 	skip?: number | null; // Skip the cursor

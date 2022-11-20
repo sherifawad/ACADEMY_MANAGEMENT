@@ -14,8 +14,8 @@ export const Family = objectType({
 			type: User,
 			async resolve({ id }, _args, { session, prisma }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.family
 						.findUniqueOrThrow({
 							where: {
@@ -42,7 +42,7 @@ export const FamilyByIdQuery = extendType({
 			resolve: async (_parent, { id }, { prisma, session }) => {
 				try {
 					const { role = null } = session || {};
-					if (!role) throw new Error("Not Allowed");
+					// if (!role) throw new Error("Not Allowed");
 
 					const output = await prisma.family.findUniqueOrThrow({
 						where: { id },
@@ -97,7 +97,7 @@ export const UpdateFamilyMutation = extendType({
 			resolve: async (_parent, { id, familyName }, { prisma, session }) => {
 				try {
 					const { role = null } = session || {};
-					if (!role) throw new Error("Not Allowed");
+					// if (!role) throw new Error("Not Allowed");
 					const updateFamily = {
 						familyName,
 						updatedBy: session.user.id,
@@ -125,8 +125,8 @@ export const DeleteFamilyMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, session }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.family.delete({
 						where: { id },
 					});

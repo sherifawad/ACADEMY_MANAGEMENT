@@ -14,7 +14,7 @@ export const Role = objectType({
 			type: User,
 			resolve: async (parent, _, { prisma, session }) => {
 				try {
-					const { role = null } = session;
+					const { role = null } = session || {};
 					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.role
 						.findUniqueOrThrow({
@@ -36,7 +36,7 @@ export const RolesQuery = extendType({
 			type: Role,
 			resolve: async (_parent, _args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
+					const { role = null } = session || {};
 					if (!role || role.id !== 1) throw new Error("Not Allowed");
 
 					return await prisma.role.findMany();
@@ -57,7 +57,7 @@ export const RoleIdQuery = extendType({
 			},
 			resolve: async (_parent, { roleId }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
+					const { role = null } = session || {};
 					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.role.findUniqueOrThrow({
 						where: { id: roleId },
@@ -81,7 +81,7 @@ export const createRoleMutation = extendType({
 			},
 			resolve: async (_parent, { name, description }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
+					const { role = null } = session || {};
 					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					const newRole: Omit<roleType, "id" | "createdAt" | "updatedAt" | "updatedBy"> = {
 						name,
@@ -111,7 +111,7 @@ export const UpdateRoleMutation = extendType({
 			},
 			resolve: async (_parent, { roleId, name, description }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
+					const { role = null } = session || {};
 					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					const originalData = await prisma.role.findUniqueOrThrow({ where: { id: roleId } });
 					if (!originalData) throw new Error("Not Exist");
@@ -144,7 +144,7 @@ export const DeleteRoleMutation = extendType({
 			},
 			async resolve(_parent, { roleId }, { prisma, session }) {
 				try {
-					const { role = null } = session;
+					const { role = null } = session || {};
 					if (!role || role.id !== 1) throw new Error("Not Allowed");
 					return await prisma.role.delete({
 						where: { id: roleId },

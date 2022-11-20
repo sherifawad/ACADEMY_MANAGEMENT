@@ -23,8 +23,8 @@ export const Group = objectType({
 			args: { data: PaginationInputType },
 			async resolve(parent, args, { prisma, session }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const { data } = args;
 
 					if (data) {
@@ -70,8 +70,8 @@ export const Group = objectType({
 			type: Attendance,
 			async resolve(parent, _args, { prisma, session }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.group
 						.findUniqueOrThrow({
 							where: {
@@ -88,8 +88,8 @@ export const Group = objectType({
 			type: Grade,
 			resolve: async ({ id }, _, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.group
 						.findUniqueOrThrow({
 							where: { id },
@@ -111,8 +111,8 @@ export const GroupsQuery = extendType({
 			type: Group,
 			resolve: async (_parent, _args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.group.findMany();
 				} catch (error) {
 					return Promise.reject("error");
@@ -131,8 +131,8 @@ export const GroupByIdQuery = extendType({
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.group.findUniqueOrThrow({
 						where: { id },
 					});
@@ -163,8 +163,8 @@ export const createGroupMutation = extendType({
 				{ prisma, session }
 			) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const newGroup = {
 						name,
 						startAt,
@@ -209,8 +209,8 @@ export const UpdateGroupMutation = extendType({
 				{ prisma, session }
 			) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					let updateGroup: Omit<
 						groupType,
 						"id" | "createdAt" | "createdBy" | "gradeId" | "updatedAt"
@@ -256,8 +256,8 @@ export const DeleteGroupMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, session }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.group.delete({
 						where: { id },
 					});

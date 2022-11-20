@@ -20,8 +20,8 @@ export const Profile = objectType({
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
 			async resolve(parent, { take, orderByList }, { session, prisma }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 					let orderList: { [x: string]: string }[];
 					if (isEmpty) {
@@ -57,8 +57,8 @@ export const Profile = objectType({
 			type: User,
 			async resolve(parent, _args, { session, prisma }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.profile
 						.findUniqueOrThrow({
 							where: {
@@ -77,8 +77,8 @@ export const Profile = objectType({
 			args: { take: nullable(intArg()), orderByList: nullable(arg({ type: "JSONObject" })) },
 			async resolve(parent, { take, orderByList }, { session, prisma }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const isEmpty = !orderByList || Object.keys(orderByList).length === 0;
 					let orderList: { [x: string]: string }[];
 					if (isEmpty) {
@@ -115,7 +115,7 @@ export const Profile = objectType({
 			type: Group,
 			resolve: async ({ id }, _, { session, prisma }) => {
 				try {
-					const { role = null } = session;
+					const { role = null } = session || {};
 					return await prisma.profile
 						.findUniqueOrThrow({
 							where: { id },
@@ -149,8 +149,8 @@ export const ProfilesQuery = extendType({
 			type: Profile,
 			resolve: async (_parent, _args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.profile.findMany();
 				} catch (error) {
 					return Promise.reject("error");
@@ -169,8 +169,8 @@ export const ProfileByIdQuery = extendType({
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.profile.findUniqueOrThrow({
 						where: { id },
 					});
@@ -193,8 +193,8 @@ export const ProfileAttendancesQuery = extendType({
 
 			resolve: async (_parent, { studentId }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.attendance.findMany({
 						where: { profileId: studentId },
 					});
@@ -219,8 +219,8 @@ export const createProfileMutation = extendType({
 			},
 			resolve: async (_parent, { id, bio }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const newProfile: Omit<profileType, "createdAt" | "updatedAt" | "updatedBy" | "groupId"> =
 						{
 							id,
@@ -252,8 +252,8 @@ export const UpdateProfileMutation = extendType({
 				try {
 					//TODO: role recheck
 
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 
 					const updateProfile = {
 						bio,
@@ -284,8 +284,8 @@ export const DeleteProfileMutation = extendType({
 				try {
 					//TODO: role recheck
 
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 
 					return await prisma.profile.delete({
 						where: { id },

@@ -26,8 +26,8 @@ export const User = objectType({
 			type: Role,
 			resolve: async (parent, _, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.user
 						.findUniqueOrThrow({
 							where: { id: parent.id },
@@ -43,8 +43,8 @@ export const User = objectType({
 			type: Profile,
 			resolve: async (parent, _, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					// const { role = null } = session;
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.user
 						.findUniqueOrThrow({
 							where: { id: parent.id },
@@ -61,8 +61,8 @@ export const User = objectType({
 			resolve: async (parent, _, { prisma, session }) => {
 				try {
 					//TODO: contacts in student domain and user domain combine domains
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.contact.findUniqueOrThrow({
 						where: { id: parent.id },
 					});
@@ -76,8 +76,8 @@ export const User = objectType({
 			type: Family,
 			resolve: async (parent, _, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output = await prisma.user
 						.findUniqueOrThrow({
 							where: { id: parent.id },
@@ -100,10 +100,11 @@ export const UsersQuery = extendType({
 			type: User,
 			resolve: async (_parent, _args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.user.findMany();
 				} catch (error) {
+					console.log("🚀 ~ file: User.ts ~ line 107 ~ resolve: ~ error", error);
 					return Promise.reject("error");
 				}
 			},
@@ -125,8 +126,8 @@ export const FilteredUsersQuery = extendType({
 			},
 			resolve: async (_parent, args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const { data, isActive, family_Id, roleIds, familyName } = args;
 
 					let where = {};
@@ -203,8 +204,8 @@ export const FilteredUsersByPhoneQuery = extendType({
 			},
 			resolve: async (_parent, args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const { phones, roleId } = args;
 
 					// if (permissionsList.includes("readFamily")) {
@@ -274,8 +275,8 @@ export const GroupStudentsQuery = extendType({
 			},
 			resolve: async (_parent, args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const { data, isActive, groupId } = args;
 					let where = {};
 					// if (role) {
@@ -643,7 +644,7 @@ export const UserByIdQuery = extendType({
 			resolve: async (_parent, { id }, { session, prisma }) => {
 				try {
 					const { role = null } = session || {};
-					if (!role) throw new Error("Not Allowed");
+					// if (!role) throw new Error("Not Allowed");
 					const output: any = await prisma.user.findUniqueOrThrow({
 						where: { id },
 					});
@@ -697,7 +698,7 @@ export const userUpdate = extendType({
 				try {
 					const { session, prisma } = ctx || {};
 					const { role = null } = session || {};
-					if (!role) throw new Error("Not Allowed");
+					// if (!role) throw new Error("Not Allowed");
 
 					const studentParam = {
 						id,
@@ -762,7 +763,7 @@ export const userRegister = extendType({
 				try {
 					const { prisma, session } = ctx || {};
 					const { role = null } = session || {};
-					if (!role) throw new Error("Not Allowed");
+					// if (!role) throw new Error("Not Allowed");
 					const userParam = {
 						avatar,
 						email,

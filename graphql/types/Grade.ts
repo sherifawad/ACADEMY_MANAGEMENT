@@ -15,8 +15,8 @@ export const Grade = objectType({
 			type: Group,
 			async resolve(_parent, _args, { session, prisma }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.grade
 						.findUniqueOrThrow({
 							where: {
@@ -40,8 +40,8 @@ export const GradesQuery = extendType({
 			type: Grade,
 			resolve: async (_parent, _args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.grade.findMany();
 				} catch (error) {
 					return Promise.reject("error");
@@ -59,8 +59,8 @@ export const ActiveGradesQuery = extendType({
 			type: Grade,
 			resolve: async (_parent, _args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.grade.findMany({
 						where: { isActive: true },
 					});
@@ -81,8 +81,8 @@ export const GradeByIdQuery = extendType({
 			args: { id: nonNull(stringArg()) },
 			resolve: async (_parent, { id }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.grade.findUniqueOrThrow({
 						where: { id },
 					});
@@ -106,8 +106,8 @@ export const createGradeMutation = extendType({
 			},
 			resolve: async (_parent, { name, isActive }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const newGrade = {
 						name,
 						isActive,
@@ -137,8 +137,8 @@ export const UpdateGradeMutation = extendType({
 			},
 			resolve: async (_parent, { id, name, isActive }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const updateGrade = {
 						name,
 						isActive,
@@ -167,8 +167,8 @@ export const DeleteGradeMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, session }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.grade.delete({
 						where: { id },
 					});

@@ -1,6 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextApiRequest, NextApiResponse } from "next";
-import NextAuth, { Session, User } from "next-auth";
+import NextAuth, { NextAuthOptions, Session, User } from "next-auth";
 import prisma from "@/lib/prisma";
 import GithubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -65,8 +65,8 @@ async function refreshAccessToken(token: any) {
 	}
 }
 
-export default async function auth(req: NextApiRequest, res: NextApiResponse) {
-	return await NextAuth(req, res, {
+export const authOptions = (req: NextApiRequest, res: NextApiResponse): NextAuthOptions => {
+	return {
 		adapter: PrismaAdapter(prisma),
 		providers: [
 			GoogleProvider({
@@ -316,5 +316,9 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 				// console.log(code, message);
 			},
 		},
-	});
+	};
+};
+
+export default async function auth(req: NextApiRequest, res: NextApiResponse) {
+	return await NextAuth(req, res, authOptions(req, res));
 }

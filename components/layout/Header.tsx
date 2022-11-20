@@ -1,16 +1,12 @@
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import Dropdowns from "../Dropdowns";
-import { IconButton, PrimaryButton } from "../ui/Button";
+import { IconAsButton, IconButton, PrimaryButton, ProfileButton } from "../ui/Button";
 import LinkAsButton from "../ui/LinkAsButton";
 
 const Header = () => {
 	const { status, data: session } = useSession();
-	const handleLogout = async () => {
-		await signOut({
-			callbackUrl: "http://localhost:3000/",
-		});
-	};
+
 	const [isOpen, setIsOpen] = useState(false);
 	const [isAccountMenUOpen, setIsAccountMenuOpen] = useState(false);
 	return (
@@ -101,8 +97,7 @@ const Header = () => {
 							</a>
 							{status === "authenticated" ? (
 								<div className="flex items-center mt-4 lg:mt-0">
-									<IconButton
-										className="hidden mx-4 text-gray-600 transition-colors duration-300 transform lg:block dark:text-gray-200 hover:text-gray-700 dark:hover:text-gray-400 focus:text-gray-700 dark:focus:text-gray-400 focus:outline-none"
+									<IconAsButton
 										aria-label="show notifications"
 									>
 										<svg
@@ -119,16 +114,13 @@ const Header = () => {
 												strokeWidth="2"
 											/>
 										</svg>
-									</IconButton>
-									<PrimaryButton onClick={handleLogout}>Sign Out</PrimaryButton>
+									</IconAsButton>
 									<div className="relative inline-block">
-										<PrimaryButton
-											type="button"
+										<ProfileButton
 											onClick={() => {
 												console.log("clicked");
 												setIsAccountMenuOpen(!isAccountMenUOpen);
 											}}
-											className="relative z-10 flex items-center p-2 text-sm text-gray-600 bg-transparent hover:bg-transparent border border-transparent rounded-md  dark:text-white dark:bg-gray-800 focus:outline-none"
 											aria-label="toggle profile dropdown"
 										>
 											<div className="w-8 h-8 overflow-hidden border-2 border-gray-400 rounded-full">
@@ -142,8 +134,8 @@ const Header = () => {
 											<h3 className="mx-2 text-gray-700 dark:text-gray-200 lg:hidden">
 												{session.user?.name || ""}
 											</h3>
-										</PrimaryButton>
-										<Dropdowns isOpen={isAccountMenUOpen} />
+										</ProfileButton>
+										<Dropdowns isOpen={isAccountMenUOpen} user={session.user} />
 									</div>
 								</div>
 							) : (

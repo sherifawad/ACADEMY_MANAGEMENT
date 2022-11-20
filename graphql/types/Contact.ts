@@ -20,8 +20,8 @@ export const ContactByIdQuery = extendType({
 			args: { contactId: nonNull(stringArg()) },
 			resolve: async (_parent, { contactId }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const userQuery = await prisma.user.findUniqueOrThrow({
 						where: { id: contactId },
 						include: { Contact: true },
@@ -50,8 +50,8 @@ export const createContactMutation = extendType({
 			},
 			resolve: async (_parent, { phone, address, note, parentsPhones, email }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const newContact: any = {
 						phone,
 						address,
@@ -91,8 +91,8 @@ export const UpdateContactMutation = extendType({
 				{ prisma, session }
 			) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 
 					const updateContact = {
 						phone,
@@ -126,8 +126,8 @@ export const DeleteContactMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, session }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 
 					return await prisma.contact.delete({
 						where: { id },

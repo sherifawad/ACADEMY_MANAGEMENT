@@ -44,8 +44,8 @@ export const Attendance = objectType({
 			type: Profile,
 			resolve: async (parent, _, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const profileResult = await prisma.attendance
 						.findUniqueOrThrow({
 							where: { id: parent.id },
@@ -62,8 +62,8 @@ export const Attendance = objectType({
 			type: Group,
 			resolve: async ({ id }, _, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					return await prisma.attendance
 						.findUniqueOrThrow({
 							where: { id },
@@ -156,8 +156,8 @@ export const AttendanceByUserDateQuery = extendType({
 			},
 			resolve: async (_parent, { id, date }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const Result = await prisma.attendance.findMany({
 						where: { profileId: id, startAt: { gte: date } },
 					});
@@ -181,8 +181,8 @@ export const AttendanceByUserIdQuery = extendType({
 			},
 			resolve: async (_parent, args, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const { data, studentId } = args;
 
 					let where = {};
@@ -266,8 +266,8 @@ export const AttendanceByUserQuery = extendType({
 			},
 			resolve: async (_parent, { studentId, take, skip }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const output: attendanceType[] = await prisma.attendance.findMany({
 						skip: skip ?? 1,
 						take: take ?? 1,
@@ -298,8 +298,8 @@ export const createAttendanceMutation = extendType({
 			},
 			resolve: async (_parent, { startAt, endAt, note, profileId }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const newAttendance = {
 						startAt,
 						endAt,
@@ -333,8 +333,8 @@ export const createMultipleAttendanceMutation = extendType({
 			},
 			resolve: async (_parent, { startAt, endAt, note, profileIds }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const newAttendances: Omit<attendanceType, "id" | "updatedBy" | "groupId">[] = [];
 					profileIds.forEach((id: string) =>
 						newAttendances.push({
@@ -373,8 +373,8 @@ export const UpdateAttendanceMutation = extendType({
 			},
 			resolve: async (_parent, { id, startAt, endAt, note, profileId }, { prisma, session }) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const updateAttendance = {
 						startAt,
 						endAt,
@@ -415,8 +415,8 @@ export const UpdateMultipleAttendanceMutation = extendType({
 				{ prisma, session }
 			) => {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 					const ANDConditions = [];
 					if (startAtCondition) {
 						ANDConditions.push({ startAt: startAtCondition });
@@ -464,8 +464,8 @@ export const DeleteAttendanceMutation = extendType({
 			},
 			async resolve(_parent, { id }, { prisma, session }) {
 				try {
-					const { role = null } = session;
-					if (!role) throw new Error("Not Allowed");
+					const { role = null } = session || {};
+					// if (!role) throw new Error("Not Allowed");
 
 					return await prisma.attendance.delete({
 						where: { id },
