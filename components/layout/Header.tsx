@@ -79,9 +79,9 @@ const Header = () => {
 							</a>
 							<a
 								className="block font-medium text-gray-700 dark:text-gray-200 lg:mx-8 hover:text-gray-900 dark:hover:text-gray-400 hover:underline"
-								href="#"
+								href="/user"
 							>
-								How it works!
+								Users
 							</a>
 							<a
 								className="block font-medium text-gray-700 dark:text-gray-200 lg:mx-8 hover:text-gray-900 dark:hover:text-gray-400 hover:underline"
@@ -97,9 +97,7 @@ const Header = () => {
 							</a>
 							{status === "authenticated" ? (
 								<div className="flex items-center mt-4 lg:mt-0">
-									<IconAsButton
-										aria-label="show notifications"
-									>
+									<IconAsButton aria-label="show notifications">
 										<svg
 											className="w-6 h-6"
 											viewBox="0 0 24 24"

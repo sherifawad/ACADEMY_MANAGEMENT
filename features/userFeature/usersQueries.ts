@@ -40,6 +40,8 @@ export const GET_STUDENT_DETAILS = `
             id
             name
             isActive
+            email
+            emailConfirmed
             avatar
             familyId
             role {
@@ -80,8 +82,6 @@ export const GET_STUDENT_DETAILS = `
                 phone
                 parentsPhones
                 address
-                email
-                emailConfirmed
             }
         }
     }
@@ -95,14 +95,14 @@ query Query($userId: String!) {
             isActive
             avatar
             roleId
+            email
+            emailConfirmed
             contact {
                 id
                 note
                 phone
                 parentsPhones
                 address
-                email
-                emailConfirmed
             }
             role {
                 id
@@ -160,12 +160,12 @@ export const GET_STUDENTS_LIST = `
             name
             id
             avatar
+            email
             isActive
             contact {
                 phone
                 parentsPhones
                 address
-                email
             }
         }
         prevCursor

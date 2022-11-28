@@ -10,6 +10,7 @@ module.exports = {
 	},
 	plugins: [
 		require("tailwindcss-logical"),
+		require("tailwindcss-debug-screens"),
 		function ({ addVariant }) {
 			addVariant("child", "& > *");
 			addVariant("children", "& *");

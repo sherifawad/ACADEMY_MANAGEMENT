@@ -42,10 +42,6 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 
 		const variables = { roleIds: [1, 2, 3, 4, 5, 6] };
 		const { list, rest } = await usersByRolesListQuery(variables, accessToken);
-		console.log(
-			"🚀 ~ file: index.tsx ~ line 45 ~ constgetServerSideProps:GetServerSideProps= ~ list",
-			list
-		);
 
 		let flattenedList = [];
 		if (list?.length > 0) {
