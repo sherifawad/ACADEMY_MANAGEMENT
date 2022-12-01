@@ -43,11 +43,23 @@ export default function Home() {
 		e.target.reset();
 	};
 	const calculateSports = () => {
+		const currentDay = new Date().getDate();
+		console.log("🚀 ~ file: index.tsx ~ line 47 ~ calculateSports ~ currentDay", currentDay);
 		const result = data.reduce((acc: player[], current: player) => {
 			// لاعب واحد
 			if (data.length === 1) {
 				// لو عدد الرياضات واحد
 				if (data[0].sports.length === 1) {
+					if (currentDay <= 7) {
+						return [
+							{
+								name: current.name,
+								sports: current.sports.map((s) => {
+									return { ...s, price: s.price * 0.9 };
+								}),
+							},
+						];
+					}
 					return [current];
 				}
 				// لو عدد الرياضات 2
@@ -142,10 +154,17 @@ export default function Home() {
 										return { ...s, price: s.price * 0.9 };
 									}),
 								},
-								{
-									name: data[1].name,
-									sports: data[1].sports,
-								},
+								currentDay <= 7
+									? {
+											name: data[1].name,
+											sports: data[1].sports.map((s) => {
+												return { ...s, price: s.price * 0.9 };
+											}),
+									  }
+									: {
+											name: data[1].name,
+											sports: data[1].sports,
+									  },
 							];
 						}
 						return [
@@ -155,10 +174,17 @@ export default function Home() {
 									return { ...s, price: s.price * 0.9 };
 								}),
 							},
-							{
-								name: data[0].name,
-								sports: data[0].sports,
-							},
+							currentDay <= 7
+								? {
+										name: data[0].name,
+										sports: data[0].sports.map((s) => {
+											return { ...s, price: s.price * 0.9 };
+										}),
+								  }
+								: {
+										name: data[0].name,
+										sports: data[0].sports,
+								  },
 						];
 					} else {
 						// اللاعب الذي يملك أكثر من لعبة
